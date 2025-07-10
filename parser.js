@@ -60,14 +60,11 @@ function parseFileContent(buffer) {
                     singleDose: match[5].trim()
                 };
                 parsedData.medicines.push(medicine);
-            } else {
-                // This provides a warning for entries that don't match the expected format.
-                console.warn(`Could not parse medicine entry: ${entry}`);
             }
         });
 
         if (parsedData.medicines.length === 0) {
-            console.warn("No medicine entries found in JVMHEAD.");
+            // No medicine entries found
         }
     }
 
