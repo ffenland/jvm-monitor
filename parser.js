@@ -11,7 +11,7 @@ function parseFileContent(buffer) {
 
         // Use regex to extract fields based on patterns of non-space characters and spaces
         // This regex is carefully crafted based on the sample to capture specific fields
-        const headRegex = /^(\d{11})\s+(\d{2})\s+(\d{2})\s+(\d{8})\s+(\d{13})\s+(\d{8})\s+(.*?)\s+(\d)\s+(.*?)\s+.*$/;
+        const headRegex = /^(\d{11})\s+(\d+)\s+(\d+)\s+(\d{8})\s+(\d{13})\s+(\d{8})\s+(.*?)(?:\s+(\d))?\s+(.*?)\s+.*$/;
         const headFields = jvpHeadContent.match(headRegex);
 
         if (headFields) {
@@ -48,12 +48,12 @@ function parseFileContent(buffer) {
 
         medicineEntries.forEach(entry => {
             // Regex now expects 'T' or 'E' at the beginning of the entry string.
-            const medicineRegex = /^[TE](\d{9})\s+(.*?)\s+(\d+)\s+(\d)(\d)\s*.*$/;
+            const medicineRegex = /^([TE]\d{9})\s+(.*?)\s+(\d+)\s+(\d)(\d)\s*.*$/;
             const match = entry.match(medicineRegex);
 
             if (match) {
                 const medicine = {
-                    code: match[1].trim(),
+                    code: match[1].trim(), // Now includes 'T' or 'E' prefix
                     name: match[2].trim().replace(/_$/, ''), // Clean trailing underscores
                     prescriptionDays: match[3].trim(),
                     dailyDose: match[4].trim(),

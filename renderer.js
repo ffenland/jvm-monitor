@@ -1,80 +1,92 @@
 window.addEventListener('DOMContentLoaded', () => {
-    const parsedDataDisplay = document.getElementById('parsed-data-display');
-    const prevBtn = document.getElementById('prev-btn');
-    const nextBtn = document.getElementById('next-btn');
-    const pageInfo = document.getElementById('page-info');
+    const prescriptionListContainer = document.getElementById('prescription-list-container');
     const dateSelect = document.getElementById('date-select');
+    const detailPatientName = document.getElementById('detail-patient-name');
+    const detailPatientId = document.getElementById('detail-patient-id');
+    const detailMedicineListTableBody = document.querySelector('#detail-medicine-list tbody');
 
-    let history = [];
-    let currentIndex = -1;
+    let prescriptions = []; // This will hold the list of prescriptions for the selected date
+    let selectedPrescriptionIndex = -1;
 
-    function updateDisplay(data) {
+    function renderPrescriptionList() {
+        prescriptionListContainer.innerHTML = ''; // Clear existing list
+        if (prescriptions.length === 0) {
+            prescriptionListContainer.innerHTML = '<p>표시할 데이터가 없습니다.</p>';
+            return;
+        }
+
+        prescriptions.forEach((data, index) => {
+            const itemDiv = document.createElement('div');
+            itemDiv.classList.add('prescription-item');
+            if (index === selectedPrescriptionIndex) {
+                itemDiv.classList.add('selected');
+            }
+            itemDiv.dataset.index = index; // Store index for click handling
+
+            let html = `<span><strong>환자: ${data.patientName}</strong> (${data.patientId}) / 접수번호: ${data.medicationNumber} / 병원: ${data.hospitalName} / 처방일: ${data.receiptDate}</span>`;
+            itemDiv.innerHTML = html;
+            prescriptionListContainer.prepend(itemDiv); // Prepend to display newest at top
+        });
+    }
+
+    function updateDetailView(data) {
         if (!data) {
-            parsedDataDisplay.innerHTML = '<p>표시할 데이터가 없습니다.</p>';
+            detailPatientName.textContent = '';
+            detailPatientId.textContent = '';
+            detailMedicineListTableBody.innerHTML = '<tr><td colspan="6">선택된 처방 정보가 없습니다.</td></tr>';
             return;
         }
-        let html = `<div class="patient-info">`;
-        html += `<h3>환자: ${data.patientName} (${data.patientId})</h3>`;
-        html += `<p>병원: ${data.hospitalName} / 처방일: ${data.receiptDate}</p>`;
-        html += `</div>`;
-        html += `<div class="medicine-list">`;
-        html += `<h4>처방 약품:</h4>`;
-        html += `<ul>`;
+
+        detailPatientName.textContent = data.patientName;
+        detailPatientId.textContent = data.patientId;
+
+        detailMedicineListTableBody.innerHTML = ''; // Clear existing medicine list
         data.medicines.forEach(med => {
-            html += `<li><strong>${med.name}</strong> (코드: ${med.code})<br>`;
-            html += `  투약일수: ${med.prescriptionDays}일, 1일 투여량: ${med.dailyDose}, 1회 투여량: ${med.singleDose}</li>`;
-        });
-        html += `</ul>`;
-        html += `</div>`;
-        parsedDataDisplay.innerHTML = html;
-    }
-
-    function updatePagination() {
-        if (history.length === 0) {
-            pageInfo.textContent = '기록 없음';
-            prevBtn.disabled = true;
-            nextBtn.disabled = true;
-            return;
-        }
-        pageInfo.textContent = `${currentIndex + 1} / ${history.length}`;
-        prevBtn.disabled = currentIndex <= 0;
-        nextBtn.disabled = currentIndex >= history.length - 1;
-    }
-    
-    function sortHistory(data) {
-        return data.sort((a, b) => {
-            const dateComparison = b.receiptDateRaw.localeCompare(a.receiptDateRaw);
-            if (dateComparison !== 0) return dateComparison;
-            return b.medicationNumber - a.medicationNumber;
+            const row = detailMedicineListTableBody.insertRow();
+            const type = med.code.charAt(0) === 'T' ? '정상' : '오류'; // Assuming T for normal, E for error
+            row.insertCell().textContent = type;
+            row.insertCell().textContent = med.code;
+            row.insertCell().textContent = med.name;
+            row.insertCell().textContent = med.prescriptionDays;
+            row.insertCell().textContent = med.singleDose;
+            row.insertCell().textContent = med.dailyDose;
         });
     }
 
-    function updateHistoryAndDisplay(data) {
-        history = sortHistory(data);
-        currentIndex = history.length > 0 ? 0 : -1;
-        updateDisplay(history[currentIndex]);
-        updatePagination();
+    function sortPrescriptions(data) {
+        // Sort by timestamp in ascending order (oldest first)
+        return data.sort((a, b) => a.timestamp - b.timestamp);
     }
 
-    prevBtn.addEventListener('click', () => {
-        if (currentIndex > 0) {
-            currentIndex--;
-            updateDisplay(history[currentIndex]);
-            updatePagination();
-        }
-    });
+    function updatePrescriptionsAndDisplay(data) {
+        prescriptions = sortPrescriptions(data);
+        selectedPrescriptionIndex = prescriptions.length > 0 ? 0 : -1; // Select the first item by default
+        renderPrescriptionList();
+        updateDetailView(prescriptions[selectedPrescriptionIndex]);
+    }
 
-    nextBtn.addEventListener('click', () => {
-        if (currentIndex < history.length - 1) {
-            currentIndex++;
-            updateDisplay(history[currentIndex]);
-            updatePagination();
-        }
-    });
-
+    // Event listener for date selection
     dateSelect.addEventListener('change', (event) => {
         const selectedDate = event.target.value;
         window.electronAPI.getDataForDate(selectedDate);
+    });
+
+    // Event listener for clicking on a prescription item in the list
+    prescriptionListContainer.addEventListener('click', (event) => {
+        const clickedItem = event.target.closest('.prescription-item');
+        if (clickedItem) {
+            // Remove 'selected' class from previously selected item
+            const currentSelected = prescriptionListContainer.querySelector('.prescription-item.selected');
+            if (currentSelected) {
+                currentSelected.classList.remove('selected');
+            }
+
+            // Add 'selected' class to the clicked item
+            clickedItem.classList.add('selected');
+
+            selectedPrescriptionIndex = parseInt(clickedItem.dataset.index, 10);
+            updateDetailView(prescriptions[selectedPrescriptionIndex]);
+        }
     });
 
     window.electronAPI.onInitialData((payload) => {
@@ -92,21 +104,37 @@ window.addEventListener('DOMContentLoaded', () => {
             dateSelect.appendChild(option);
         });
 
-        updateHistoryAndDisplay(data);
+        updatePrescriptionsAndDisplay(data);
     });
 
     window.electronAPI.onDataForDate((data) => {
-        updateHistoryAndDisplay(data);
+        updatePrescriptionsAndDisplay(data);
     });
 
     window.electronAPI.onParsedData((data) => {
-        const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-        const match = data.fileName.match(/Copy\d+-(\d{8})(\d{6})\.txt/);
-        const preparationDate = match ? match[1] : null;
-
+        const preparationDate = data.preparationDate; // Assuming preparationDate is now part of data
         if (preparationDate === dateSelect.value) {
-             history.push(data);
-             updateHistoryAndDisplay(history);
+             // Check if this data already exists (e.g., if the file was re-processed)
+             // Add new entry, allowing duplicates as requested
+             prescriptions.push(data);
+             updatePrescriptionsAndDisplay(prescriptions);
+        }
+    });
+
+    window.electronAPI.onUpdateDateList((updatedDates) => {
+        // Clear existing options
+        dateSelect.innerHTML = '';
+        // Repopulate with updated dates
+        updatedDates.forEach(dateStr => {
+            const option = document.createElement('option');
+            option.value = dateStr;
+            option.textContent = `${dateStr.substring(0, 4)}-${dateStr.substring(4, 6)}-${dateStr.substring(6, 8)}`;
+            dateSelect.appendChild(option);
+        });
+        // Optionally, select the newest date or keep the current selection if it still exists
+        if (updatedDates.length > 0) {
+            dateSelect.value = updatedDates[0]; // Select the newest date
+            window.electronAPI.getDataForDate(updatedDates[0]); // Load data for the newly selected date
         }
     });
 

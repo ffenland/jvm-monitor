@@ -6,11 +6,10 @@ const { parseFileContent } = require('./parser');
 
 const monitorPath = 'C:\\atc'; // Directory to monitor
 const dataDirPath = path.join(__dirname, 'result');
-const dataFilePath = path.join(dataDirPath, 'result.json'); // JSON file to store data - This will be removed
 const originFilesPath = path.join(__dirname, 'originFiles'); // Directory for original files
 
 let mainWindow;
-let allParsedData = []; // In-memory storage for all parsed data from all files
+let currentAvailableDates = new Set(); // To keep track of dates for dynamic updates
 
 function createWindow() {
     mainWindow = new BrowserWindow({
@@ -35,7 +34,7 @@ app.whenReady().then(() => {
     // Send initial log message to renderer
     mainWindow.webContents.on('did-finish-load', () => {
         mainWindow.webContents.send('log-message', `Monitoring directory: ${monitorPath}`);
-        mainWindow.webContents.send('log-message', `Data will be saved to: ${dataFilePath}`);
+        mainWindow.webContents.send('log-message', `Data will be saved to: ${dataDirPath}`);
     });
 
     const watcher = chokidar.watch(monitorPath, {
@@ -67,6 +66,10 @@ app.whenReady().then(() => {
 
                 parsedContent = parseFileContent(buffer); // Pass buffer to parser
 
+                // Add timestamp and preparationDate to parsedContent for renderer
+                const timestamp = Date.now();
+                const dataToSend = { ...parsedContent, fileName, preparationDate, timestamp };
+
                 // --- Copy original file to preparation date-specific folder ---
                 if (preparationDate) {
                     const dailyOriginPath = path.join(originFilesPath, `origin_${preparationDate}`);
@@ -76,6 +79,7 @@ app.whenReady().then(() => {
                     const destPath = path.join(dailyOriginPath, fileName);
                     fs.copyFile(filePath, destPath, (err) => {
                         if (err) {
+                            console.error(`Error copying original file: ${err.message}`);
                             mainWindow.webContents.send('log-message', `Error copying original file: ${err.message}`);
                         } else {
                             mainWindow.webContents.send('log-message', `Original file saved to ${path.basename(dailyOriginPath)}.`);
@@ -84,13 +88,12 @@ app.whenReady().then(() => {
                 }
                 // --- End of copy ---
 
-                // allParsedData is no longer needed for initial load, but could be kept for other purposes if required.
-                // For now, we remove the line that populates it on 'add' to avoid confusion.
                 mainWindow.webContents.send('log-message', `Content of ${fileName} parsed and stored.`);
-                mainWindow.webContents.send('parsed-data', { ...parsedContent, fileName }); // Send parsed data with fileName
+                mainWindow.webContents.send('parsed-data', dataToSend); // Send parsed data with fileName, preparationDate, and timestamp
                 saveDataToFile(parsedContent, preparationDate); // Save the new data to the appropriate files
             } catch (parseError) {
                 const errorMessage = `Error parsing ${fileName}: ${parseError.message}. Moving to error folder.`;
+                console.error(errorMessage); // Added console.error
                 mainWindow.webContents.send('log-message', errorMessage);
 
                 // Move the problematic file to an error directory
@@ -101,6 +104,7 @@ app.whenReady().then(() => {
                 const errorDestPath = path.join(errorDirPath, fileName);
                 fs.rename(filePath, errorDestPath, (err) => {
                     if (err) {
+                        console.error(`Could not move error file: ${err.message}`); // Added console.error
                         mainWindow.webContents.send('log-message', `Could not move error file: ${err.message}`);
                     }
                 });
@@ -132,6 +136,8 @@ app.whenReady().then(() => {
             .filter(file => file.startsWith('prepare_') && file.endsWith('.json'))
             .map(file => file.substring(8, 16)) // 'prepare_'.length, 'prepare_YYYYMMDD'.length
             .sort((a, b) => b.localeCompare(a)); // Sort descending
+        
+        currentAvailableDates = new Set(availableDates); // Initialize the set of available dates
 
         event.sender.send('initial-data', { data: todayData, dates: availableDates, today: today });
     });
@@ -167,7 +173,16 @@ function saveDataToFile(newData, preparationDate) {
     // Save to prepare_{preparationDate}.json
     if (newData && preparationDate) {
         const prepareFilePath = path.join(dataDirPath, `prepare_${preparationDate}.json`);
+        const isNewDate = !currentAvailableDates.has(preparationDate); // Check if it's a new date
+        
         writeDataToDailyFile(prepareFilePath, newData);
+
+        if (isNewDate) {
+            currentAvailableDates.add(preparationDate);
+            const updatedDates = Array.from(currentAvailableDates).sort((a, b) => b.localeCompare(a));
+            mainWindow.webContents.send('update-date-list', updatedDates);
+            mainWindow.webContents.send('log-message', `New date ${preparationDate} added. Updating date list.`);
+        }
     } else {
         mainWindow.webContents.send('log-message', 'Error: Cannot save prepare data without a preparation date.');
     }

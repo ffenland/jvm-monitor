@@ -1,0 +1,225 @@
+[
+  {
+    "patientId": "11005988001",
+    "medicationNumber": "93",
+    "receiptDateRaw": "20250714",
+    "patientName": "김병기",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월14일",
+    "medicines": [
+      {
+        "code": "669806280",
+        "name": "테리아엠서방정10/750밀리그램_(1",
+        "prescriptionDays": "60",
+        "dailyDose": "2",
+        "singleDose": "1"
+      },
+      {
+        "code": "693901860",
+        "name": "칸타칸정16mg",
+        "prescriptionDays": "60",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "621802320",
+        "name": "암로비스정(암로디핀베실산염)_(6.9",
+        "prescriptionDays": "60",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "643103730",
+        "name": "로수넥스정10mg(로수바스타틴칼슘)",
+        "prescriptionDays": "60",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11005988001",
+    "medicationNumber": "93",
+    "receiptDateRaw": "20250714",
+    "patientName": "김병기",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월14일",
+    "medicines": [
+      {
+        "code": "669806280",
+        "name": "테리아엠서방정10/750밀리그램_(1",
+        "prescriptionDays": "60",
+        "dailyDose": "2",
+        "singleDose": "1"
+      },
+      {
+        "code": "693901860",
+        "name": "칸타칸정16mg",
+        "prescriptionDays": "60",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "621802320",
+        "name": "암로비스정(암로디핀베실산염)_(6.9",
+        "prescriptionDays": "60",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "643103730",
+        "name": "로수넥스정10mg(로수바스타틴칼슘)",
+        "prescriptionDays": "60",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11007116003",
+    "medicationNumber": "96",
+    "receiptDateRaw": "20250714",
+    "patientName": "윤순남",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월14일",
+    "medicines": [
+      {
+        "code": "656000260",
+        "name": "록사펜정(록소프로펜나트륨수화물)_(6",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "640903010",
+        "name": "스트렌정(애엽95%에탄올연조엑스(20",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "641701610",
+        "name": "일양디세텔정(피나베륨브롬화물)_(50",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "649405200",
+        "name": "영일알마게이트정500밀리그램_(0.5",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11013996791",
+    "medicationNumber": "97",
+    "receiptDateRaw": "20250714",
+    "patientName": "김옥순",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월14일",
+    "medicines": [
+      {
+        "code": "645903690",
+        "name": "발탄필름코팅정160밀리그람(발사르탄)",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "621802320",
+        "name": "암로비스정(암로디핀베실산염)_(6.9",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11013950043",
+    "medicationNumber": "98",
+    "receiptDateRaw": "20250714",
+    "patientName": "조황현",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월14일",
+    "medicines": [
+      {
+        "code": "693901850",
+        "name": "칸타칸정8mg",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11013999710",
+    "medicationNumber": "94",
+    "receiptDateRaw": "20250714",
+    "patientName": "루벨라이",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월14일",
+    "medicines": [
+      {
+        "code": "665002200",
+        "name": "텔미로핀정40/5mg_(1정)",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11013998534",
+    "medicationNumber": "95",
+    "receiptDateRaw": "20250714",
+    "patientName": "알란",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월14일",
+    "medicines": [
+      {
+        "code": "645906160",
+        "name": "텔미스타정40밀리그램(텔미사르탄)_(",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11013999710",
+    "medicationNumber": "94",
+    "receiptDateRaw": "20250714",
+    "patientName": "루벨라이",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월14일",
+    "medicines": [
+      {
+        "code": "T665002200",
+        "name": "텔미로핀정40/5mg_(1정)",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11013998534",
+    "medicationNumber": "95",
+    "receiptDateRaw": "20250714",
+    "patientName": "알란",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월14일",
+    "medicines": [
+      {
+        "code": "T645906160",
+        "name": "텔미스타정40밀리그램(텔미사르탄)_(",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  }
+]
