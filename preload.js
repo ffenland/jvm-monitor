@@ -6,5 +6,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getInitialData: () => ipcRenderer.send('get-initial-data'),
     onInitialData: (callback) => ipcRenderer.on('initial-data', (event, payload) => callback(payload)),
     getDataForDate: (date) => ipcRenderer.send('get-data-for-date', date),
-    onDataForDate: (callback) => ipcRenderer.on('data-for-date', (event, data) => callback(data))
+    onDataForDate: (callback) => ipcRenderer.on('data-for-date', (event, data) => callback(data)),
+    onUpdateDateList: (callback) => ipcRenderer.on('update-date-list', (event, dates) => callback(dates))
 });
