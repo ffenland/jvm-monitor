@@ -126,15 +126,153 @@
         #detail-medicine-list th {
             background-color: #e0e0e0;
         }
+        
+        /* 설정 버튼 스타일 */
+        #settings-btn {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            padding: 5px 10px;
+            font-size: 13px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        #settings-btn:hover {
+            background-color: #5a6268;
+        }
+        
+        /* 모달 스타일 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            border-radius: 8px;
+            width: 500px;
+            max-width: 80%;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover,
+        .close:focus {
+            color: black;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        .modal-buttons {
+            margin-top: 20px;
+            text-align: right;
+        }
+        
+        .modal-buttons button {
+            margin-left: 10px;
+            padding: 8px 16px;
+            font-size: 14px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .save-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .save-btn:hover {
+            background-color: #45a049;
+        }
+        
+        .cancel-btn {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        .cancel-btn:hover {
+            background-color: #da190b;
+        }
     </style>
 </head>
 <body>
+    <button id="settings-btn">설정</button>
+    
+    <!-- 설정 모달 -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>설정</h2>
+            <form id="settings-form">
+                <div class="form-group">
+                    <label for="pharmacy-name">약국 이름:</label>
+                    <input type="text" id="pharmacy-name" name="pharmacyName" placeholder="약국 이름을 입력하세요">
+                </div>
+                <div class="form-group">
+                    <label for="template-path">인쇄 템플릿 파일:</label>
+                    <select id="template-path" name="templatePath">
+                        <option value="">템플릿을 선택하세요</option>
+                    </select>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="cancel-btn" id="cancel-btn">취소</button>
+                    <button type="submit" class="save-btn">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
     <div class="container">
         <h1>처방전 정보</h1>
         <div class="controls">
             <div class="date-selector">
                 <label for="date-select">조회할 날짜:</label>
                 <select id="date-select"></select>
+            </div>
+            <div class="printer-selector" style="margin-left: 20px;">
+                <label for="printer-select">프린터:</label>
+                <select id="printer-select">
+                    <option>로딩 중...</option>
+                </select>
             </div>
         </div>
         <div id="prescription-list-container">
@@ -151,7 +289,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>종류</th>
+                            <th>라벨출력</th>
                             <th>약품코드</th>
                             <th>약품명</th>
                             <th>처방일수</th>

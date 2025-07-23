@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(del brother-printer.js)",
+      "Bash(powershell:*)",
+      "Bash(rm:*)",
+      "Bash(C:WINDOWSSysWOW64WindowsPowerShellv1.0powershell.exe -ExecutionPolicy Bypass -NoProfile -File \".\\scripts\\test_step1_template.ps1\" -templatePath \"C:\\Users\\BoramATDPS\\Documents\\dev\\electron-file-monitor\\templates\\test01.lbx\")",
+      "Bash(node:*)"
+    ],
+    "deny": []
+  }
+}

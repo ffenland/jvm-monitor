@@ -3,13 +3,14 @@ const path = require('path');
 const fs = require('fs');
 const chokidar = require('chokidar');
 const { parseFileContent } = require('./parser');
-
+const { printWithBrother, getBrotherPrinters, checkBPacAvailability, diagnoseBPac, findBPacFiles } = require('./print_brother');
 const monitorPath = 'C:\\atc'; // Directory to monitor
 const dataDirPath = path.join(__dirname, 'result');
 const originFilesPath = path.join(__dirname, 'originFiles'); // Directory for original files
 
 let mainWindow;
 let currentAvailableDates = new Set(); // To keep track of dates for dynamic updates
+let currentConfig = {}; // Store current configuration
 
 function createWindow() {
     mainWindow = new BrowserWindow({
@@ -28,13 +29,225 @@ function createWindow() {
     // mainWindow.webContents.openDevTools();
 }
 
-app.whenReady().then(() => {
-    createWindow();
+// 설정 파일 읽기/쓰기 함수
+function loadConfig() {
+    const configPath = path.join(__dirname, 'config', 'config.json');
+    try {
+        if (fs.existsSync(configPath)) {
+            const configData = fs.readFileSync(configPath, 'utf8');
+            currentConfig = JSON.parse(configData);
+        } else {
+            // 기본 설정
+            currentConfig = {
+                pharmacyName: "",
+                templatePath: "./templates/testTemplate.lbx"
+            };
+            saveConfig(currentConfig);
+        }
+    } catch (error) {
+        console.error('Error loading config:', error);
+        currentConfig = {
+            pharmacyName: "",
+            templatePath: "./templates/testTemplate.lbx"
+        };
+    }
+    return currentConfig;
+}
 
+function saveConfig(config) {
+    const configPath = path.join(__dirname, 'config', 'config.json');
+    const configDir = path.join(__dirname, 'config');
+    
+    try {
+        if (!fs.existsSync(configDir)) {
+            fs.mkdirSync(configDir, { recursive: true });
+        }
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf8');
+        currentConfig = config;
+        return true;
+    } catch (error) {
+        console.error('Error saving config:', error);
+        return false;
+    }
+}
+
+// IPC 핸들러 등록
+
+// 설정 관련 핸들러
+ipcMain.handle('get-config', async () => {
+    return loadConfig();
+});
+
+ipcMain.handle('save-config', async (event, config) => {
+    try {
+        const success = saveConfig(config);
+        if (success) {
+            return { success: true, message: '설정이 저장되었습니다.' };
+        } else {
+            return { success: false, error: '설정 저장에 실패했습니다.' };
+        }
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+});
+
+// 템플릿 목록 가져오기
+ipcMain.handle('get-templates', async () => {
+    try {
+        const templatesDir = path.join(__dirname, 'templates');
+        if (!fs.existsSync(templatesDir)) {
+            return { success: true, templates: [] };
+        }
+        
+        const files = fs.readdirSync(templatesDir);
+        const templates = files
+            .filter(file => file.endsWith('.lbx'))
+            .map(file => ({
+                name: file,
+                path: `./templates/${file}`
+            }));
+        
+        return { success: true, templates };
+    } catch (error) {
+        console.error('Error getting templates:', error);
+        return { success: false, templates: [], error: error.message };
+    }
+});
+
+// 템플릿 필드 확인
+ipcMain.handle('check-template-fields', async (event, templatePath) => {
+    try {
+        const { executePowerShell } = require('./print_brother');
+        let fullPath = templatePath;
+        
+        // 상대 경로를 절대 경로로 변환
+        if (templatePath.startsWith('./')) {
+            fullPath = path.join(__dirname, templatePath.substring(2));
+        } else if (!path.isAbsolute(templatePath)) {
+            fullPath = path.join(__dirname, templatePath);
+        }
+        
+        const result = await executePowerShell('check_template_fields.ps1', { templatePath: fullPath });
+        return result;
+    } catch (error) {
+        console.error('Error checking template fields:', error);
+        return { error: true, message: error.message, fields: [] };
+    }
+});
+
+// 프린터 목록 가져오기
+ipcMain.handle('get-brother-printers', async () => {
+    try {
+        const printers = await getBrotherPrinters();
+        return { success: true, printers };
+    } catch (error) {
+        console.error('Error getting printers:', error);
+        return { success: false, error: error.message, printers: [] };
+    }
+});
+
+// 출력 기능
+ipcMain.handle('print-prescription', async (event, prescriptionData, printerName) => {
+    try {
+        // 템플릿 파일 경로
+        const templatePath = path.join(__dirname, 'templates', 'prescription_label.lbx');
+        
+        const printData = {
+            templatePath,
+            printerName,
+            patientName: prescriptionData.name || prescriptionData.patientName,
+            hospitalName: prescriptionData.hos || prescriptionData.hospitalName,
+            receiptDate: prescriptionData.recvDate || prescriptionData.receiptDate,
+            prepareDate: prescriptionData.prepareDate,
+            prescriptionNo: prescriptionData.receiptNo || prescriptionData.medicationNumber,
+            doctorName: prescriptionData.doc || prescriptionData.doctorName,
+            // 약품 정보 추가
+            medicines: prescriptionData.medicines || []
+        };
+        
+        const result = await printWithBrother(printData);
+        return { success: true, message: result };
+    } catch (error) {
+        console.error('Error printing prescription:', error);
+        return { success: false, error: error.message };
+    }
+});
+
+// B-PAC 진단
+ipcMain.handle('diagnose-bpac', async () => {
+    try {
+        const diagnosis = await diagnoseBPac();
+        return { success: true, diagnosis };
+    } catch (error) {
+        console.error('Error diagnosing b-PAC:', error);
+        return { success: false, error: error.message };
+    }
+});
+
+// 약품별 라벨 출력
+ipcMain.handle('print-medicine-label', async (event, labelData, printerName) => {
+    try {
+        // 설정에서 템플릿 경로 가져오기
+        const config = loadConfig();
+        let templatePath = config.templatePath || './templates/testTemplate.lbx';
+        
+        // 상대 경로를 절대 경로로 변환
+        if (templatePath.startsWith('./')) {
+            templatePath = path.join(__dirname, templatePath.substring(2));
+        } else if (!path.isAbsolute(templatePath)) {
+            templatePath = path.join(__dirname, templatePath);
+        }
+        
+        const printData = {
+            templatePath,
+            printerName,
+            medicineName: labelData.medicineName,
+            dailyDose: labelData.dailyDose,
+            singleDose: labelData.singleDose,
+            prescriptionDays: labelData.prescriptionDays,
+            patientName: labelData.patientName,
+            date: labelData.date,
+            pharmacyName: config.pharmacyName || '',  // 약국명 추가
+            // testTemplate.lbx용 필드
+            medicine: `${labelData.medicineName} ${labelData.dailyDose}/${labelData.singleDose} ${labelData.prescriptionDays}일분`
+        };
+        
+        const result = await printWithBrother(printData);
+        return { success: true, message: result };
+    } catch (error) {
+        console.error('Error printing medicine label:', error);
+        return { success: false, error: error.message };
+    }
+});
+
+app.whenReady().then(async () => {
+    createWindow();
+    
+    // 설정 파일 로드
+    loadConfig();
+    
     // Send initial log message to renderer
     mainWindow.webContents.on('did-finish-load', () => {
         mainWindow.webContents.send('log-message', `Monitoring directory: ${monitorPath}`);
         mainWindow.webContents.send('log-message', `Data will be saved to: ${dataDirPath}`);
+        
+        // B-PAC 사용 가능 여부 확인 - 비동기로 실행하여 앱 로딩을 블록하지 않음
+        setTimeout(async () => {
+            try {
+                const bpacAvailable = await checkBPacAvailability();
+                if (bpacAvailable) {
+                    console.log('B-PAC SDK is available');
+                    mainWindow.webContents.send('log-message', 'B-PAC SDK is available and ready for use.');
+                } else {
+                    // B-PAC SDK가 없어도 정상 작동 - 간단히 처리
+                    console.log('B-PAC SDK not available, using direct printing method');
+                    mainWindow.webContents.send('log-message', 'Brother 프린터 직접 출력 모드로 작동합니다.');
+                }
+            } catch (error) {
+                console.warn('Could not check B-PAC availability:', error.message);
+                mainWindow.webContents.send('log-message', `Could not check B-PAC availability: ${error.message}`);
+            }
+        }, 1000); // 1초 후에 실행
     });
 
     const watcher = chokidar.watch(monitorPath, {
@@ -111,6 +324,7 @@ app.whenReady().then(() => {
             }
         });
     });
+    
 
     watcher.on('error', (error) => {
         mainWindow.webContents.send('log-message', `Watcher error: ${error.message}`);
@@ -152,6 +366,72 @@ app.whenReady().then(() => {
         }
         event.sender.send('data-for-date', data);
     });
+
+    ipcMain.on('get-printers', async (event) => {
+    try {
+        // B-PAC SDK 확인을 스킵하고 바로 프린터 목록을 가져옴
+        mainWindow.webContents.send('log-message', 'Getting Brother printers...');
+        
+        const printers = await getBrotherPrinters();
+        
+        if (printers.length === 0) {
+            mainWindow.webContents.send('log-message', 'No Brother printers found. Please check if Brother QL-700 is properly installed and connected.');
+            event.sender.send('printer-list', {
+                error: false,
+                message: 'No Brother printers found.',
+                printers: []
+            });
+        } else {
+            mainWindow.webContents.send('log-message', `Found ${printers.length} Brother printer(s): ${printers.join(', ')}`);
+            event.sender.send('printer-list', {
+                error: false,
+                message: `Found ${printers.length} Brother printer(s).`,
+                printers: printers
+            });
+        }
+    } catch (error) {
+        console.error(`Failed to get printers: ${error.message}`);
+        mainWindow.webContents.send('log-message', `Failed to get printers: ${error.message}`);
+        event.sender.send('printer-list', {
+            error: true,
+            message: error.message,
+            printers: []
+        });
+    }
+});
+
+
+    ipcMain.on('print-label', async (event, printData) => {
+    try {
+        // 필수 필드 검증
+        if (!printData.templatePath || !fs.existsSync(printData.templatePath)) {
+            throw new Error('Template file not found or not specified');
+        }
+
+        if (!printData.printerName) {
+            throw new Error('Printer name not specified');
+        }
+
+        mainWindow.webContents.send('log-message', `Starting print job with printer: ${printData.printerName}`);
+        
+        const result = await printWithBrother(printData);
+        
+        mainWindow.webContents.send('log-message', `Print completed successfully: ${result}`);
+        event.sender.send('print-label-result', { 
+            success: true, 
+            message: result 
+        });
+        
+    } catch (error) {
+        const errorMessage = `Failed to print: ${error.message}`;
+        console.error(errorMessage, error.stack);
+        mainWindow.webContents.send('log-message', errorMessage);
+        event.sender.send('print-label-result', { 
+            success: false, 
+            message: errorMessage 
+        });
+    }
+});
 });
 
 app.on('window-all-closed', () => {

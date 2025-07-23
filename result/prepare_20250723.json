@@ -1,0 +1,955 @@
+[
+  {
+    "patientId": "11013954643",
+    "medicationNumber": "7",
+    "receiptDateRaw": "20250723",
+    "patientName": "김명숙",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월23일",
+    "medicines": [
+      {
+        "code": "T656000260",
+        "name": "록사펜정(록소프로펜나트륨수화물)_(6",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T649401610",
+        "name": "에도스캡슐(에르도스테인)_(0.3g/",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T643506740",
+        "name": "코싹엘정(레보세티리진,슈도에페드린)",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "0"
+      },
+      {
+        "code": "T640903010",
+        "name": "스트렌정(애엽95%에탄올연조엑스(20",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "E671807171",
+        "name": "코대원에스시럽_(20mL)",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11009706003",
+    "medicationNumber": "8",
+    "receiptDateRaw": "20250723",
+    "patientName": "임영숙",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월23일",
+    "medicines": [
+      {
+        "code": "T656000260",
+        "name": "록사펜정(록소프로펜나트륨수화물)_(6",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T649401610",
+        "name": "에도스캡슐(에르도스테인)_(0.3g/",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T640903010",
+        "name": "스트렌정(애엽95%에탄올연조엑스(20",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T649405200",
+        "name": "영일알마게이트정500밀리그램_(0.5",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "E671807171",
+        "name": "코대원에스시럽_(20mL)",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11007923001",
+    "medicationNumber": "9",
+    "receiptDateRaw": "20250723",
+    "patientName": "고종태",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월23일",
+    "medicines": [
+      {
+        "code": "T659900100",
+        "name": "쏘메토320밀리그램연질캡슐(세레노아레              hspo",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "T641702010",
+        "name": "일양하이트린정2밀리그람(테라조신염산염            hspo",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "T643100080",
+        "name": "닥스펜정(덱시부프로펜)_(0.3g/1",
+        "prescriptionDays": "7",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T649401610",
+        "name": "에도스캡슐(에르도스테인)_(0.3g/",
+        "prescriptionDays": "7",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T643506740",
+        "name": "코싹엘정(레보세티리진,슈도에페드린)",
+        "prescriptionDays": "7",
+        "dailyDose": "3",
+        "singleDose": "0"
+      },
+      {
+        "code": "T640903010",
+        "name": "스트렌정(애엽95%에탄올연조엑스(20",
+        "prescriptionDays": "7",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "E671807171",
+        "name": "코대원에스시럽_(20mL)",
+        "prescriptionDays": "7",
+        "dailyDose": "3",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11006544005",
+    "medicationNumber": "10",
+    "receiptDateRaw": "20250723",
+    "patientName": "김종여",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월23일",
+    "medicines": [
+      {
+        "code": "E643500261",
+        "name": "데옥손겔0.05%(데속시메타손)_(7",
+        "prescriptionDays": "2",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11007446001",
+    "medicationNumber": "11",
+    "receiptDateRaw": "20250723",
+    "patientName": "이병용",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월23일",
+    "medicines": [
+      {
+        "code": "T640903010",
+        "name": "스트렌정(애엽95%에탄올연조엑스(20",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T643100170",
+        "name": "레프정(레보설피리드)_(25mg/1정",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T641701610",
+        "name": "일양디세텔정(피나베륨브롬화물)_(50",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T649405200",
+        "name": "영일알마게이트정500밀리그램_(0.5",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11013981538",
+    "medicationNumber": "12",
+    "receiptDateRaw": "20250723",
+    "patientName": "김춘여",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월23일",
+    "medicines": [
+      {
+        "code": "T640900430",
+        "name": "베타드렌정(비소프롤롤푸마르산염)_(5",
+        "prescriptionDays": "45",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "T656004100",
+        "name": "디오디핀정5/160밀리그램_(1정)",
+        "prescriptionDays": "45",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "T654004520",
+        "name": "아나콕스캡슐200밀리그램(세레콕시브)",
+        "prescriptionDays": "45",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11013947377",
+    "medicationNumber": "13",
+    "receiptDateRaw": "20250723",
+    "patientName": "성광용",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월23일",
+    "medicines": [
+      {
+        "code": "T641100270",
+        "name": "아스피린프로텍트정100밀리그람_(0.",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "T640003910",
+        "name": "헤르벤서방정90밀리그램(딜티아젬염산염",
+        "prescriptionDays": "30",
+        "dailyDose": "2",
+        "singleDose": "1"
+      },
+      {
+        "code": "T645907030",
+        "name": "알제트정10/10밀리그램_(1정)",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "T660703690",
+        "name": "위마코연질캡슐(오메가-3-산에틸에스테",
+        "prescriptionDays": "30",
+        "dailyDose": "2",
+        "singleDose": "1"
+      },
+      {
+        "code": "T648101670",
+        "name": "유로스칸정(피나스테리드)_(5mg/1",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11013946747",
+    "medicationNumber": "14",
+    "receiptDateRaw": "20250723",
+    "patientName": "김란구",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월23일",
+    "medicines": [
+      {
+        "code": "T640003910",
+        "name": "헤르벤서방정90밀리그램(딜티아젬염산염",
+        "prescriptionDays": "30",
+        "dailyDose": "2",
+        "singleDose": "1"
+      },
+      {
+        "code": "T645907030",
+        "name": "알제트정10/10밀리그램_(1정)",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11003305001",
+    "medicationNumber": "15",
+    "receiptDateRaw": "20250723",
+    "patientName": "김옥순",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월23일",
+    "medicines": [
+      {
+        "code": "T645907030",
+        "name": "알제트정10/10밀리그램_(1정)",
+        "prescriptionDays": "60",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11012919001",
+    "medicationNumber": "16",
+    "receiptDateRaw": "20250723",
+    "patientName": "이성근",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월23일",
+    "medicines": [
+      {
+        "code": "T641100270",
+        "name": "아스피린프로텍트정100밀리그람_(0.",
+        "prescriptionDays": "45",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "T656005390",
+        "name": "시타글민듀오서방정50/500밀리그램",
+        "prescriptionDays": "45",
+        "dailyDose": "2",
+        "singleDose": "1"
+      },
+      {
+        "code": "T649404550",
+        "name": "글리피론정2밀리그램(글리메피리드)_(",
+        "prescriptionDays": "45",
+        "dailyDose": "2",
+        "singleDose": "1"
+      },
+      {
+        "code": "T658204710",
+        "name": "다파로진정10밀리그램(다파글리플로진프",
+        "prescriptionDays": "45",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "T656004660",
+        "name": "디오르반정160mg(발사르탄)_(0.",
+        "prescriptionDays": "45",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "T621802320",
+        "name": "암로비스정(암로디핀베실산염)_(6.9",
+        "prescriptionDays": "45",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "T643103730",
+        "name": "로수넥스정10mg(로수바스타틴칼슘)",
+        "prescriptionDays": "45",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11013987045",
+    "medicationNumber": "1",
+    "receiptDateRaw": "20250719",
+    "patientName": "김승하",
+    "hospitalName": "조은안과",
+    "receiptDate": "2025년07월19일",
+    "medicines": [
+      {
+        "code": "E665600161",
+        "name": "코솝점안액_(5mL)                                  2006",
+        "prescriptionDays": "4",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "E624900511",
+        "name": "알파간피점안액0.15%(브리모니딘타르                2006",
+        "prescriptionDays": "4",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11013946982",
+    "medicationNumber": "17",
+    "receiptDateRaw": "20250723",
+    "patientName": "이명화",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월23일",
+    "medicines": [
+      {
+        "code": "T669806280",
+        "name": "테리아엠서방정10/750밀리그램_(1",
+        "prescriptionDays": "40",
+        "dailyDose": "2",
+        "singleDose": "1"
+      },
+      {
+        "code": "T649404550",
+        "name": "글리피론정2밀리그램(글리메피리드)_(",
+        "prescriptionDays": "40",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "T643104220",
+        "name": "트윈스핀정40/5mg_(1정)",
+        "prescriptionDays": "40",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "T640900430",
+        "name": "베타드렌정(비소프롤롤푸마르산염)_(5",
+        "prescriptionDays": "40",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "T645907030",
+        "name": "알제트정10/10밀리그램_(1정)",
+        "prescriptionDays": "40",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "T660703690",
+        "name": "위마코연질캡슐(오메가-3-산에틸에스테",
+        "prescriptionDays": "40",
+        "dailyDose": "2",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11014000980",
+    "medicationNumber": "18",
+    "receiptDateRaw": "20250723",
+    "patientName": "한정희",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월23일",
+    "medicines": [
+      {
+        "code": "T669806270",
+        "name": "테리아엠서방정20/1000밀리그램_(",
+        "prescriptionDays": "45",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "T693901860",
+        "name": "칸타칸정16mg",
+        "prescriptionDays": "45",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "T655605230",
+        "name": "알카본정_(1정)",
+        "prescriptionDays": "45",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "T654003750",
+        "name": "로스틴정10밀리그램(로수바스타틴칼슘)",
+        "prescriptionDays": "45",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11013992152",
+    "medicationNumber": "19",
+    "receiptDateRaw": "20250723",
+    "patientName": "주영숙",
+    "hospitalName": "이안과의원",
+    "receiptDate": "2025년07월23일",
+    "medicines": [
+      {
+        "code": "E665600321",
+        "name": "알레지온점안액0.05%(에피나스틴염산",
+        "prescriptionDays": "1",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11001446001",
+    "medicationNumber": "20",
+    "receiptDateRaw": "20250723",
+    "patientName": "전상영",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월23일",
+    "medicines": [
+      {
+        "code": "T693901860",
+        "name": "칸타칸정16mg",
+        "prescriptionDays": "45",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "T654003750",
+        "name": "로스틴정10밀리그램(로수바스타틴칼슘)",
+        "prescriptionDays": "45",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11014000549",
+    "medicationNumber": "21",
+    "receiptDateRaw": "20250723",
+    "patientName": "김정봉",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월23일",
+    "medicines": [
+      {
+        "code": "T669806230",
+        "name": "테리아정20밀리그램(테네리글립틴이토실",
+        "prescriptionDays": "15",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "T693901860",
+        "name": "칸타칸정16mg",
+        "prescriptionDays": "15",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "T640903010",
+        "name": "스트렌정(애엽95%에탄올연조엑스(20",
+        "prescriptionDays": "15",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T643100170",
+        "name": "레프정(레보설피리드)_(25mg/1정",
+        "prescriptionDays": "15",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T641701610",
+        "name": "일양디세텔정(피나베륨브롬화물)_(50",
+        "prescriptionDays": "15",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T649405200",
+        "name": "영일알마게이트정500밀리그램_(0.5",
+        "prescriptionDays": "15",
+        "dailyDose": "3",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11014004847",
+    "medicationNumber": "22",
+    "receiptDateRaw": "20250723",
+    "patientName": "김은숙",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월23일",
+    "medicines": [
+      {
+        "code": "T656000260",
+        "name": "록사펜정(록소프로펜나트륨수화물)_(6",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T642102570",
+        "name": "페니라민정(클로르페니라민말레산염)_(",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T649401610",
+        "name": "에도스캡슐(에르도스테인)_(0.3g/",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T640903010",
+        "name": "스트렌정(애엽95%에탄올연조엑스(20",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "E671807171",
+        "name": "코대원에스시럽_(20mL)",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11013994784",
+    "medicationNumber": "23",
+    "receiptDateRaw": "20250723",
+    "patientName": "이승일",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월23일",
+    "medicines": [
+      {
+        "code": "T656000830",
+        "name": "아페낙정(아세클로페낙)_(0.1g/1",
+        "prescriptionDays": "7",
+        "dailyDose": "2",
+        "singleDose": "1"
+      },
+      {
+        "code": "T654004610",
+        "name": "엑손SR정(에페리손염산염)_(75mg",
+        "prescriptionDays": "7",
+        "dailyDose": "2",
+        "singleDose": "1"
+      },
+      {
+        "code": "T640903010",
+        "name": "스트렌정(애엽95%에탄올연조엑스(20",
+        "prescriptionDays": "7",
+        "dailyDose": "2",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11014004848",
+    "medicationNumber": "24",
+    "receiptDateRaw": "20250723",
+    "patientName": "조한희",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월23일",
+    "medicines": [
+      {
+        "code": "T644309680",
+        "name": "라베듀오정20/800밀리그램_(1정)",
+        "prescriptionDays": "15",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "T643100170",
+        "name": "레프정(레보설피리드)_(25mg/1정",
+        "prescriptionDays": "15",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T641701610",
+        "name": "일양디세텔정(피나베륨브롬화물)_(50",
+        "prescriptionDays": "15",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T640903010",
+        "name": "스트렌정(애엽95%에탄올연조엑스(20",
+        "prescriptionDays": "15",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "E641701101",
+        "name": "알드린현탁액(알마게이트)_(1.5g/",
+        "prescriptionDays": "15",
+        "dailyDose": "3",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11013950151",
+    "medicationNumber": "25",
+    "receiptDateRaw": "20250723",
+    "patientName": "김성길",
+    "hospitalName": "에스엠가정의학과의원",
+    "receiptDate": "2025년07월23일",
+    "medicines": [
+      {
+        "code": "T622803730",
+        "name": "모사프리엠정(모사프리드시트르산염수화물           매식전",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "4"
+      },
+      {
+        "code": "T641902670",
+        "name": "스토가정10밀리그램(라푸티딘)_(10                  매식전",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "4"
+      },
+      {
+        "code": "T653700240",
+        "name": "마그밀정(수산화마그네슘)_(0.5g/                   매식전",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "4"
+      },
+      {
+        "code": "T622804330",
+        "name": "로수엠젯정10/10밀리그램_(1정)",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11013952783",
+    "medicationNumber": "27",
+    "receiptDateRaw": "20250723",
+    "patientName": "이인숙",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월23일",
+    "medicines": [
+      {
+        "code": "T656000260",
+        "name": "록사펜정(록소프로펜나트륨수화물)_(6",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T640903010",
+        "name": "스트렌정(애엽95%에탄올연조엑스(20",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T649405200",
+        "name": "영일알마게이트정500밀리그램_(0.5",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T643100170",
+        "name": "레프정(레보설피리드)_(25mg/1정",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11014004849",
+    "medicationNumber": "28",
+    "receiptDateRaw": "20250723",
+    "patientName": "천미인",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월23일",
+    "medicines": [
+      {
+        "code": "T640903010",
+        "name": "스트렌정(애엽95%에탄올연조엑스(20",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T641700560",
+        "name": "보나링에이정(디멘히드리네이트)_(50",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T643100170",
+        "name": "레프정(레보설피리드)_(25mg/1정",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T649405200",
+        "name": "영일알마게이트정500밀리그램_(0.5",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11000632001",
+    "medicationNumber": "29",
+    "receiptDateRaw": "20250723",
+    "patientName": "전영철",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월23일",
+    "medicines": [
+      {
+        "code": "T693901660",
+        "name": "칸타칸플러스정16/12.5mg",
+        "prescriptionDays": "45",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "T643103730",
+        "name": "로수넥스정10mg(로수바스타틴칼슘)",
+        "prescriptionDays": "45",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "T646004140",
+        "name": "메디핀정(암로디핀베실산염)_(6.94",
+        "prescriptionDays": "45",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11013417001",
+    "medicationNumber": "30",
+    "receiptDateRaw": "20250723",
+    "patientName": "김두봉",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월23일",
+    "medicines": [
+      {
+        "code": "T643100080",
+        "name": "닥스펜정(덱시부프로펜)_(0.3g/1",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T649401610",
+        "name": "에도스캡슐(에르도스테인)_(0.3g/",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T643506740",
+        "name": "코싹엘정(레보세티리진,슈도에페드린)",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "0"
+      },
+      {
+        "code": "T640903010",
+        "name": "스트렌정(애엽95%에탄올연조엑스(20",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "E671807171",
+        "name": "코대원에스시럽_(20mL)",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11013962911",
+    "medicationNumber": "31",
+    "receiptDateRaw": "20250723",
+    "patientName": "송덕헌",
+    "hospitalName": "김치과의원",
+    "receiptDate": "2025년07월23일",
+    "medicines": [
+      {
+        "code": "T643303130",
+        "name": "종근당아목시실린캡슐500밀리그램_(0",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T643301620",
+        "name": "아나프록스정(나프록센나트륨)_(0.2",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T660402340",
+        "name": "보리레바정(레바미피드)_(0.1g/1",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11013968708",
+    "medicationNumber": "32",
+    "receiptDateRaw": "20250723",
+    "patientName": "김종을",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월23일",
+    "medicines": [
+      {
+        "code": "T643104220",
+        "name": "트윈스핀정40/5mg_(1정)",
+        "prescriptionDays": "45",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "T643103730",
+        "name": "로수넥스정10mg(로수바스타틴칼슘)",
+        "prescriptionDays": "45",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  }
+]
