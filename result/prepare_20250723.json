@@ -951,5 +951,53 @@
         "singleDose": "1"
       }
     ]
+  },
+  {
+    "patientId": "11006510002",
+    "medicationNumber": "40",
+    "receiptDateRaw": "20250723",
+    "patientName": "이경희",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월23일",
+    "medicines": [
+      {
+        "code": "T643104220",
+        "name": "트윈스핀정40/5mg_(1정)",
+        "prescriptionDays": "45",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "T640900430",
+        "name": "베타드렌정(비소프롤롤푸마르산염)_(5",
+        "prescriptionDays": "45",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11014001547",
+    "medicationNumber": "41",
+    "receiptDateRaw": "20250723",
+    "patientName": "에디슨",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월23일",
+    "medicines": [
+      {
+        "code": "T693901850",
+        "name": "칸타칸정8mg",
+        "prescriptionDays": "40",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "T664602690",
+        "name": "메티졸정5밀리그램(메티마졸)_(5mg",
+        "prescriptionDays": "40",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
   }
 ]

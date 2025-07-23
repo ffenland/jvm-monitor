@@ -239,83 +239,91 @@ async function printWithBrother(data) {
 }
 
 /**
- * Gets a list of available Brother printers via PowerShell.
+ * Gets a list of available Brother printers
  * @returns {Promise<string[]>} A promise that resolves with a list of printer names.
  */
 async function getBrotherPrinters() {
-    try {
-        const result = await executePowerShell('get_printers.ps1');
+    return new Promise((resolve) => {
+        // 한글 지원을 위한 PowerShell 스크립트 생성
+        const scriptContent = `
+# Get Brother printers
+$OutputEncoding = [System.Text.Encoding]::UTF8
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
+try {
+    $printers = Get-WmiObject -Class Win32_Printer | Where-Object { 
+        $_.Name -match "Brother" -or $_.DriverName -match "Brother"
+    } | Select-Object -ExpandProperty Name
+    
+    $result = @{
+        error = $false
+        data = @($printers)
+    }
+    Write-Output ($result | ConvertTo-Json -Compress)
+} catch {
+    $result = @{
+        error = $true
+        message = "Error getting printers: $_"
+        data = @()
+    }
+    Write-Output ($result | ConvertTo-Json -Compress)
+}`;
+
+        const BOM = '\ufeff';
+        const tempScriptPath = path.join(__dirname, `temp_get_printers_${Date.now()}.ps1`);
+        fs.writeFileSync(tempScriptPath, BOM + scriptContent, 'utf8');
+
+        const powershellPath = 'C:\\WINDOWS\\SysWOW64\\WindowsPowerShell\\v1.0\\powershell.exe';
         
-        if (result.error) {
-            // console.warn('Warning getting printers:', result.message);
-            return result.data || [];
-        }
+        const ps = spawn(powershellPath, [
+            '-ExecutionPolicy', 'Bypass',
+            '-NoProfile',
+            '-File', tempScriptPath
+        ], {
+            stdio: ['pipe', 'pipe', 'pipe'],
+            encoding: 'utf8'
+        });
+
+        let stdout = '';
         
-        return result.data || [];
-    } catch (error) {
-        // console.error('Error in getBrotherPrinters:', error);
-        return [];
-    }
-}
+        ps.stdout.on('data', (data) => {
+            stdout += data.toString();
+        });
 
-/**
- * B-PAC3 SDK가 설치되어 있는지 확인
- * @returns {Promise<boolean>} A promise that resolves with true if B-PAC3 is available.
- */
-async function checkBPacAvailability() {
-    // b-PAC SDK 실제 사용 가능 여부 확인
-    try {
-        const result = await executePowerShell('check_bpac.ps1');
-        return result && !result.error;
-    } catch (error) {
-        // console.log('b-PAC availability check failed:', error.message);
-        return false;
-    }
-}
+        ps.on('close', () => {
+            // Clean up temp file
+            try {
+                fs.unlinkSync(tempScriptPath);
+            } catch (e) {
+                // Ignore cleanup errors
+            }
 
-/**
- * B-PAC3 SDK 설치 상태를 자세히 진단
- * @returns {Promise<object>} A promise that resolves with detailed diagnostic information.
- */
-async function diagnoseBPac() {
-    try {
-        const result = await executePowerShell('diagnose_bpac.ps1');
-        return result;
-    } catch (error) {
-        console.error('Error in diagnoseBPac:', error);
-        return {
-            bpacAvailable: false,
-            errorMessage: error.message,
-            diagnosisError: true
-        };
-    }
-}
+            try {
+                const jsonMatch = stdout.match(/\{.*\}/);
+                if (jsonMatch) {
+                    const result = JSON.parse(jsonMatch[0]);
+                    resolve(result.data || []);
+                } else {
+                    resolve([]);
+                }
+            } catch (e) {
+                resolve([]);
+            }
+        });
 
-/**
- * b-PAC3 SDK 파일들을 찾고 등록 상태를 확인
- * @returns {Promise<object>} A promise that resolves with file information and recommendations.
- */
-async function findBPacFiles() {
-    try {
-        const result = await executePowerShell('find_bpac_files.ps1');
-        return result;
-    } catch (error) {
-        console.error('Error in findBPacFiles:', error);
-        return {
-            sdkPath: "",
-            dllFiles: [],
-            exeFiles: [],
-            registryEntries: [],
-            recommendations: [`Error: ${error.message}`]
-        };
-    }
+        ps.on('error', () => {
+            // Clean up temp file
+            try {
+                fs.unlinkSync(tempScriptPath);
+            } catch (e) {
+                // Ignore cleanup errors
+            }
+            resolve([]);
+        });
+    });
 }
 
 module.exports = { 
     printWithBrother, 
-    getBrotherPrinters, 
-    checkBPacAvailability,
-    diagnoseBPac,
-    findBPacFiles,
-    executePowerShell
+    getBrotherPrinters
 };

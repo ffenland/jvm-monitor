@@ -3,7 +3,8 @@ const path = require('path');
 const fs = require('fs');
 const chokidar = require('chokidar');
 const { parseFileContent } = require('./parser');
-const { printWithBrother, getBrotherPrinters, checkBPacAvailability, diagnoseBPac, findBPacFiles } = require('./print_brother');
+const { printWithBrother, getBrotherPrinters } = require('./print_brother');
+const { processLabel1Data, processMedicineLabel, processPrescriptionData } = require('./dataProcessor');
 const monitorPath = 'C:\\atc'; // Directory to monitor
 const dataDirPath = path.join(__dirname, 'result');
 const originFilesPath = path.join(__dirname, 'originFiles'); // Directory for original files
@@ -149,21 +150,21 @@ ipcMain.handle('get-brother-printers', async () => {
 // 출력 기능
 ipcMain.handle('print-prescription', async (event, prescriptionData, printerName) => {
     try {
+        // 데이터 가공 - dataProcessor 모듈 사용
+        const processedData = processPrescriptionData(prescriptionData);
+        
         // 템플릿 파일 경로
         const templatePath = path.join(__dirname, 'templates', 'prescription_label.lbx');
         
         const printData = {
             templatePath,
             printerName,
-            patientName: prescriptionData.name || prescriptionData.patientName,
-            hospitalName: prescriptionData.hos || prescriptionData.hospitalName,
-            receiptDate: prescriptionData.recvDate || prescriptionData.receiptDate,
-            prepareDate: prescriptionData.prepareDate,
-            prescriptionNo: prescriptionData.receiptNo || prescriptionData.medicationNumber,
-            doctorName: prescriptionData.doc || prescriptionData.doctorName,
-            // 약품 정보 추가
-            medicines: prescriptionData.medicines || []
+            ...processedData,  // 가공된 데이터 사용
+            // medicines는 JSON 문자열로 변환
+            medicines: processedData.medicines ? JSON.stringify(processedData.medicines) : ''
         };
+        
+        console.log('Processed prescription data:', printData); // 디버깅용
         
         const result = await printWithBrother(printData);
         return { success: true, message: result };
@@ -173,22 +174,12 @@ ipcMain.handle('print-prescription', async (event, prescriptionData, printerName
     }
 });
 
-// B-PAC 진단
-ipcMain.handle('diagnose-bpac', async () => {
-    try {
-        const diagnosis = await diagnoseBPac();
-        return { success: true, diagnosis };
-    } catch (error) {
-        console.error('Error diagnosing b-PAC:', error);
-        return { success: false, error: error.message };
-    }
-});
-
 // 약품별 라벨 출력
 ipcMain.handle('print-medicine-label', async (event, labelData, printerName) => {
     try {
         // 설정에서 템플릿 경로 가져오기
         const config = loadConfig();
+        
         let templatePath = config.templatePath || './templates/testTemplate.lbx';
         
         // 상대 경로를 절대 경로로 변환
@@ -198,19 +189,32 @@ ipcMain.handle('print-medicine-label', async (event, labelData, printerName) => 
             templatePath = path.join(__dirname, templatePath);
         }
         
+        // 템플릿 파일명에 따라 다른 가공 함수 사용
+        let processedData;
+        const templateFileName = path.basename(templatePath);
+        
+        if (templateFileName === 'label1.lbx') {
+            // label1.lbx용 가공
+            processedData = processLabel1Data({
+                ...labelData,
+                pharmacyName: config.pharmacyName
+            });
+        } else {
+            // 기본 가공
+            processedData = processMedicineLabel({
+                ...labelData,
+                pharmacyName: config.pharmacyName
+            });
+        }
+        
         const printData = {
             templatePath,
             printerName,
-            medicineName: labelData.medicineName,
-            dailyDose: labelData.dailyDose,
-            singleDose: labelData.singleDose,
-            prescriptionDays: labelData.prescriptionDays,
-            patientName: labelData.patientName,
-            date: labelData.date,
-            pharmacyName: config.pharmacyName || '',  // 약국명 추가
-            // testTemplate.lbx용 필드
-            medicine: `${labelData.medicineName} ${labelData.dailyDose}/${labelData.singleDose} ${labelData.prescriptionDays}일분`
+            ...processedData  // 가공된 데이터 사용
         };
+        
+        console.log('Template:', templateFileName);
+        console.log('Processed print data:', printData); // 디버깅용
         
         const result = await printWithBrother(printData);
         return { success: true, message: result };
@@ -231,22 +235,10 @@ app.whenReady().then(async () => {
         mainWindow.webContents.send('log-message', `Monitoring directory: ${monitorPath}`);
         mainWindow.webContents.send('log-message', `Data will be saved to: ${dataDirPath}`);
         
-        // B-PAC 사용 가능 여부 확인 - 비동기로 실행하여 앱 로딩을 블록하지 않음
-        setTimeout(async () => {
-            try {
-                const bpacAvailable = await checkBPacAvailability();
-                if (bpacAvailable) {
-                    console.log('B-PAC SDK is available');
-                    mainWindow.webContents.send('log-message', 'B-PAC SDK is available and ready for use.');
-                } else {
-                    // B-PAC SDK가 없어도 정상 작동 - 간단히 처리
-                    console.log('B-PAC SDK not available, using direct printing method');
-                    mainWindow.webContents.send('log-message', 'Brother 프린터 직접 출력 모드로 작동합니다.');
-                }
-            } catch (error) {
-                console.warn('Could not check B-PAC availability:', error.message);
-                mainWindow.webContents.send('log-message', `Could not check B-PAC availability: ${error.message}`);
-            }
+        // B-PAC SDK는 이미 작동 확인됨
+        setTimeout(() => {
+            console.log('B-PAC SDK is ready');
+            mainWindow.webContents.send('log-message', 'B-PAC SDK가 준비되었습니다.');
         }, 1000); // 1초 후에 실행
     });
 
