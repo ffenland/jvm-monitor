@@ -91,7 +91,7 @@ function processPrescriptionData(rawData) {
         hospitalName: rawData.hos || rawData.hospitalName || '',
         receiptDate: rawData.recvDate || rawData.receiptDate || '',
         prepareDate: rawData.prepareDate || new Date().toLocaleDateString('ko-KR'),
-        prescriptionNo: rawData.receiptNo || rawData.medicationNumber || '',
+        receiptNum:  rawData.receiptNum || '',
         doctorName: rawData.doc || rawData.doctorName || '',
         medicines: rawData.medicines || []
     };

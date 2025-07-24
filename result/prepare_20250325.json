@@ -1,10 +1,10 @@
 [
   {
     "patientId": "11013987045",
-    "receiptDateRaw": "20250331",
+    "receiptDateRaw": "20250325",
     "patientName": "김승하",
     "hospitalName": "조은안과",
-    "receiptDate": "2025년03월31일",
+    "receiptDate": "2025년03월25일",
     "medicines": [
       {
         "code": "E073400141",
@@ -28,15 +28,14 @@
         "singleDose": "1"
       }
     ],
-    "receiptNum": "110"
+    "receiptNum": "54"
   },
   {
     "patientId": "11013987045",
-    "receiptNum": "110",
-    "receiptDateRaw": "20250331",
+    "receiptDateRaw": "20250329",
     "patientName": "김승하",
     "hospitalName": "조은안과",
-    "receiptDate": "2025년03월31일",
+    "receiptDate": "2025년03월29일",
     "medicines": [
       {
         "code": "E073400141",
@@ -59,15 +58,15 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "3"
   },
   {
     "patientId": "11013987045",
-    "receiptNum": "110",
-    "receiptDateRaw": "20250331",
+    "receiptDateRaw": "20250325",
     "patientName": "김승하",
     "hospitalName": "조은안과",
-    "receiptDate": "2025년03월31일",
+    "receiptDate": "2025년03월25일",
     "medicines": [
       {
         "code": "E073400141",
@@ -90,6 +89,7 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "55"
   }
 ]

@@ -75,7 +75,7 @@ window.addEventListener('DOMContentLoaded', () => {
             }
             itemDiv.dataset.index = index; // Store index for click handling
 
-            let html = `<span><strong>환자: ${data.patientName}</strong> (${data.patientId}) / 접수번호: ${data.medicationNumber} / 병원: ${data.hospitalName} / 처방일: ${data.receiptDate}</span>`;
+            let html = `<span><strong>환자: ${data.patientName}</strong> (${data.patientId}) / 접수번호: ${data.receiptNum} / 병원: ${data.hospitalName} / 처방일: ${data.receiptDate}</span>`;
             itemDiv.innerHTML = html;
             prescriptionListContainer.prepend(itemDiv); // Prepend to display newest at top
         });

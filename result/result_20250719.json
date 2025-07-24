@@ -1,7 +1,6 @@
 [
   {
     "patientId": "11013987045",
-    "medicationNumber": "1",
     "receiptDateRaw": "20250719",
     "patientName": "김승하",
     "hospitalName": "조은안과",
@@ -21,6 +20,7 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "1"
   }
 ]

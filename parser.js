@@ -16,7 +16,7 @@ function parseFileContent(buffer) {
 
         if (headFields) {
             parsedData.patientId = headFields[1].trim();
-            parsedData.medicationNumber = headFields[2].trim();
+            parsedData.receiptNum = headFields[2].trim();
             // headFields[3] is '54' - not used in parsed output
             parsedData.receiptDateRaw = headFields[4].trim();
             // headFields[5] and headFields[6] are other numbers - not used in parsed output
@@ -47,19 +47,35 @@ function parseFileContent(buffer) {
         const medicineEntries = jvmHeadContent.trim().split(/(?=[TE]\d{9})/).filter(entry => entry.trim().length > 0);
 
         medicineEntries.forEach(entry => {
-            // Regex now expects 'T' or 'E' at the beginning of the entry string.
-            const medicineRegex = /^([TE]\d{9})\s+(.*?)\s+(\d+)\s+(\d)(\d)\s*.*$/;
-            const match = entry.match(medicineRegex);
-
+            // First try the pattern with usage instructions (e.g., "매식전 30")
+            const medicineWithInstructionsRegex = /^([TE]\d{9})\s+(.*?)\s+([가-힣]+\s*\d+)\s+(\d+)\s+(\d+)(\d+(?:\.\d+)?)\s*.*$/;
+            let match = entry.match(medicineWithInstructionsRegex);
+            
             if (match) {
+                // Pattern with usage instructions found
                 const medicine = {
                     code: match[1].trim(), // Now includes 'T' or 'E' prefix
                     name: match[2].trim().replace(/_$/, ''), // Clean trailing underscores
-                    prescriptionDays: match[3].trim(),
-                    dailyDose: match[4].trim(),
-                    singleDose: match[5].trim()
+                    prescriptionDays: match[4].trim(), // Skip the usage instruction
+                    dailyDose: match[5].trim(),
+                    singleDose: match[6].trim()
                 };
                 parsedData.medicines.push(medicine);
+            } else {
+                // Try the original pattern without usage instructions
+                const medicineRegex = /^([TE]\d{9})\s+(.*?)\s+(\d+)\s+(\d+)(\d+(?:\.\d+)?)\s*.*$/;
+                match = entry.match(medicineRegex);
+                
+                if (match) {
+                    const medicine = {
+                        code: match[1].trim(), // Now includes 'T' or 'E' prefix
+                        name: match[2].trim().replace(/_$/, ''), // Clean trailing underscores
+                        prescriptionDays: match[3].trim(),
+                        dailyDose: match[4].trim(),
+                        singleDose: match[5].trim()
+                    };
+                    parsedData.medicines.push(medicine);
+                }
             }
         });
 

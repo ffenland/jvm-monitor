@@ -1,7 +1,6 @@
 [
   {
     "patientId": "11013995634",
-    "medicationNumber": "10",
     "receiptDateRaw": "20250716",
     "patientName": "유득수",
     "hospitalName": "성광용내과의원",
@@ -42,11 +41,11 @@
         "dailyDose": "3",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "10"
   },
   {
     "patientId": "11014004815",
-    "medicationNumber": "11",
     "receiptDateRaw": "20250716",
     "patientName": "이은미",
     "hospitalName": "성광용내과의원",
@@ -59,11 +58,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "11"
   },
   {
     "patientId": "11009169003",
-    "medicationNumber": "12",
     "receiptDateRaw": "20250716",
     "patientName": "홍기석",
     "hospitalName": "성광용내과의원",
@@ -83,11 +82,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "12"
   },
   {
     "patientId": "11013977178",
-    "medicationNumber": "13",
     "receiptDateRaw": "20250716",
     "patientName": "전병철",
     "hospitalName": "성광용내과의원",
@@ -121,11 +120,11 @@
         "dailyDose": "2",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "13"
   },
   {
     "patientId": "11013964570",
-    "medicationNumber": "14",
     "receiptDateRaw": "20250716",
     "patientName": "천성길",
     "hospitalName": "성광용내과의원",
@@ -145,11 +144,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "14"
   },
   {
     "patientId": "11013964904",
-    "medicationNumber": "15",
     "receiptDateRaw": "20250716",
     "patientName": "이인자",
     "hospitalName": "성광용내과의원",
@@ -232,11 +231,11 @@
         "dailyDose": "3",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "15"
   },
   {
     "patientId": "11013998863",
-    "medicationNumber": "16",
     "receiptDateRaw": "20250716",
     "patientName": "김영한",
     "hospitalName": "성광용내과의원",
@@ -256,11 +255,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "16"
   },
   {
     "patientId": "11013998483",
-    "medicationNumber": "17",
     "receiptDateRaw": "20250716",
     "patientName": "김은숙",
     "hospitalName": "성광용내과의원",
@@ -308,11 +307,11 @@
         "dailyDose": "3",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "17"
   },
   {
     "patientId": "11014000672",
-    "medicationNumber": "18",
     "receiptDateRaw": "20250716",
     "patientName": "박현숙",
     "hospitalName": "성광용내과의원",
@@ -339,11 +338,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "18"
   },
   {
     "patientId": "11007459001",
-    "medicationNumber": "19",
     "receiptDateRaw": "20250716",
     "patientName": "이정희",
     "hospitalName": "성광용내과의원",
@@ -370,11 +369,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "19"
   },
   {
     "patientId": "11013965657",
-    "medicationNumber": "20",
     "receiptDateRaw": "20250716",
     "patientName": "신화자",
     "hospitalName": "성광용내과의원",
@@ -401,11 +400,11 @@
         "dailyDose": "1",
         "singleDose": "0"
       }
-    ]
+    ],
+    "receiptNum": "20"
   },
   {
     "patientId": "11014004816",
-    "medicationNumber": "21",
     "receiptDateRaw": "20250716",
     "patientName": "김경태",
     "hospitalName": "성광용내과의원",
@@ -432,11 +431,11 @@
         "dailyDose": "2",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "21"
   },
   {
     "patientId": "11001592002",
-    "medicationNumber": "22",
     "receiptDateRaw": "20250716",
     "patientName": "김진숙",
     "hospitalName": "성광용내과의원",
@@ -463,11 +462,11 @@
         "dailyDose": "3",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "22"
   },
   {
     "patientId": "11013947780",
-    "medicationNumber": "23",
     "receiptDateRaw": "20250716",
     "patientName": "김화정",
     "hospitalName": "성광용내과의원",
@@ -494,11 +493,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "23"
   },
   {
     "patientId": "11013985919",
-    "medicationNumber": "24",
     "receiptDateRaw": "20250716",
     "patientName": "박정근",
     "hospitalName": "성광용내과의원",
@@ -532,11 +531,11 @@
         "dailyDose": "3",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "24"
   },
   {
     "patientId": "11013957754",
-    "medicationNumber": "25",
     "receiptDateRaw": "20250716",
     "patientName": "김보원",
     "hospitalName": "성광용내과의원",
@@ -577,11 +576,11 @@
         "dailyDose": "3",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "25"
   },
   {
     "patientId": "11013988956",
-    "medicationNumber": "26",
     "receiptDateRaw": "20250716",
     "patientName": "양창배",
     "hospitalName": "성광용내과의원",
@@ -622,11 +621,11 @@
         "dailyDose": "3",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "26"
   },
   {
     "patientId": "11001396001",
-    "medicationNumber": "27",
     "receiptDateRaw": "20250716",
     "patientName": "손학열",
     "hospitalName": "성광용내과의원",
@@ -646,11 +645,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "27"
   },
   {
     "patientId": "11003369001",
-    "medicationNumber": "28",
     "receiptDateRaw": "20250716",
     "patientName": "임일현",
     "hospitalName": "성광용내과의원",
@@ -677,11 +676,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "28"
   },
   {
     "patientId": "11008117001",
-    "medicationNumber": "34",
     "receiptDateRaw": "20250716",
     "patientName": "김순애",
     "hospitalName": "성광용내과의원",
@@ -694,11 +693,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "34"
   },
   {
     "patientId": "11013990928",
-    "medicationNumber": "30",
     "receiptDateRaw": "20250716",
     "patientName": "정경분",
     "hospitalName": "성광용내과의원",
@@ -718,11 +717,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "30"
   },
   {
     "patientId": "11014002968",
-    "medicationNumber": "35",
     "receiptDateRaw": "20250716",
     "patientName": "홍성권",
     "hospitalName": "성광용내과의원",
@@ -770,11 +769,11 @@
         "dailyDose": "2",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "35"
   },
   {
     "patientId": "11003643001",
-    "medicationNumber": "36",
     "receiptDateRaw": "20250716",
     "patientName": "심병화",
     "hospitalName": "성광용내과의원",
@@ -836,11 +835,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "36"
   },
   {
     "patientId": "11013976917",
-    "medicationNumber": "37",
     "receiptDateRaw": "20250716",
     "patientName": "김경호",
     "hospitalName": "성광용내과의원",
@@ -874,11 +873,11 @@
         "dailyDose": "3",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "37"
   },
   {
     "patientId": "11013999271",
-    "medicationNumber": "38",
     "receiptDateRaw": "20250716",
     "patientName": "한순애",
     "hospitalName": "성광용내과의원",
@@ -919,11 +918,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "38"
   },
   {
     "patientId": "11013996587",
-    "medicationNumber": "39",
     "receiptDateRaw": "20250716",
     "patientName": "박대영",
     "hospitalName": "성광용내과의원",
@@ -943,11 +942,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "39"
   },
   {
     "patientId": "11013958265",
-    "medicationNumber": "40",
     "receiptDateRaw": "20250716",
     "patientName": "홍옥화",
     "hospitalName": "성광용내과의원",
@@ -967,11 +966,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "40"
   },
   {
     "patientId": "11013946642",
-    "medicationNumber": "41",
     "receiptDateRaw": "20250716",
     "patientName": "김순덕",
     "hospitalName": "성광용내과의원",
@@ -1005,11 +1004,11 @@
         "dailyDose": "3",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "41"
   },
   {
     "patientId": "11013978596",
-    "medicationNumber": "42",
     "receiptDateRaw": "20250716",
     "patientName": "선원영",
     "hospitalName": "성광용내과의원",
@@ -1036,11 +1035,11 @@
         "dailyDose": "2",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "42"
   },
   {
     "patientId": "11012910002",
-    "medicationNumber": "43",
     "receiptDateRaw": "20250716",
     "patientName": "장경옥",
     "hospitalName": "성광용내과의원",
@@ -1074,11 +1073,11 @@
         "dailyDose": "3",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "43"
   },
   {
     "patientId": "11013964126",
-    "medicationNumber": "44",
     "receiptDateRaw": "20250716",
     "patientName": "김주호",
     "hospitalName": "성광용내과의원",
@@ -1098,11 +1097,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "44"
   },
   {
     "patientId": "11013952390",
-    "medicationNumber": "45",
     "receiptDateRaw": "20250716",
     "patientName": "김금녀",
     "hospitalName": "성광용내과의원",
@@ -1136,11 +1135,11 @@
         "dailyDose": "2",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "45"
   },
   {
     "patientId": "11013973950",
-    "medicationNumber": "46",
     "receiptDateRaw": "20250716",
     "patientName": "심정자",
     "hospitalName": "성광용내과의원",
@@ -1174,11 +1173,11 @@
         "dailyDose": "3",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "46"
   },
   {
     "patientId": "11013990124",
-    "medicationNumber": "47",
     "receiptDateRaw": "20250716",
     "patientName": "김동희",
     "hospitalName": "성광용내과의원",
@@ -1198,11 +1197,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "47"
   },
   {
     "patientId": "11013981074",
-    "medicationNumber": "48",
     "receiptDateRaw": "20250716",
     "patientName": "노영용",
     "hospitalName": "성광용내과의원",
@@ -1215,11 +1214,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "48"
   },
   {
     "patientId": "11013964633",
-    "medicationNumber": "49",
     "receiptDateRaw": "20250716",
     "patientName": "최효정",
     "hospitalName": "성광용내과의원",
@@ -1253,11 +1252,11 @@
         "dailyDose": "3",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "49"
   },
   {
     "patientId": "11013953221",
-    "medicationNumber": "50",
     "receiptDateRaw": "20250716",
     "patientName": "유재관",
     "hospitalName": "성광용내과의원",
@@ -1277,11 +1276,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "50"
   },
   {
     "patientId": "11013949486",
-    "medicationNumber": "51",
     "receiptDateRaw": "20250716",
     "patientName": "심혜옥",
     "hospitalName": "성광용내과의원",
@@ -1294,11 +1293,11 @@
         "dailyDose": "2",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "51"
   },
   {
     "patientId": "11000944002",
-    "medicationNumber": "52",
     "receiptDateRaw": "20250716",
     "patientName": "최영희",
     "hospitalName": "성광용내과의원",
@@ -1346,11 +1345,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "52"
   },
   {
     "patientId": "11000944001",
-    "medicationNumber": "53",
     "receiptDateRaw": "20250716",
     "patientName": "김승래",
     "hospitalName": "성광용내과의원",
@@ -1370,11 +1369,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "53"
   },
   {
     "patientId": "11013954980",
-    "medicationNumber": "54",
     "receiptDateRaw": "20250716",
     "patientName": "이정표",
     "hospitalName": "성광용내과의원",
@@ -1408,11 +1407,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "54"
   },
   {
     "patientId": "11013957754",
-    "medicationNumber": "25",
     "receiptDateRaw": "20250716",
     "patientName": "김보원",
     "hospitalName": "성광용내과의원",
@@ -1488,11 +1487,11 @@
         "dailyDose": "3",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "25"
   },
   {
     "patientId": "11013998201",
-    "medicationNumber": "55",
     "receiptDateRaw": "20250716",
     "patientName": "박선춘",
     "hospitalName": "성광용내과의원",
@@ -1505,11 +1504,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "55"
   },
   {
     "patientId": "11013950046",
-    "medicationNumber": "56",
     "receiptDateRaw": "20250716",
     "patientName": "최연자",
     "hospitalName": "성광용내과의원",
@@ -1550,11 +1549,11 @@
         "dailyDose": "2",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "56"
   },
   {
     "patientId": "11013995023",
-    "medicationNumber": "57",
     "receiptDateRaw": "20250716",
     "patientName": "김형용",
     "hospitalName": "성광용내과의원",
@@ -1567,11 +1566,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "57"
   },
   {
     "patientId": "11010745003",
-    "medicationNumber": "58",
     "receiptDateRaw": "20250716",
     "patientName": "최대영",
     "hospitalName": "성광용내과의원",
@@ -1591,11 +1590,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "58"
   },
   {
     "patientId": "11014004819",
-    "medicationNumber": "60",
     "receiptDateRaw": "20250716",
     "patientName": "이유순",
     "hospitalName": "성광용내과의원",
@@ -1608,11 +1607,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "60"
   },
   {
     "patientId": "11013954980",
-    "medicationNumber": "54",
     "receiptDateRaw": "20250716",
     "patientName": "이정표",
     "hospitalName": "성광용내과의원",
@@ -1646,11 +1645,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "54"
   },
   {
     "patientId": "11013953221",
-    "medicationNumber": "50",
     "receiptDateRaw": "20250716",
     "patientName": "유재관",
     "hospitalName": "성광용내과의원",
@@ -1670,11 +1669,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "50"
   },
   {
     "patientId": "11000944002",
-    "medicationNumber": "52",
     "receiptDateRaw": "20250716",
     "patientName": "최영희",
     "hospitalName": "성광용내과의원",
@@ -1722,11 +1721,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "52"
   },
   {
     "patientId": "11013949486",
-    "medicationNumber": "51",
     "receiptDateRaw": "20250716",
     "patientName": "심혜옥",
     "hospitalName": "성광용내과의원",
@@ -1739,11 +1738,11 @@
         "dailyDose": "2",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "51"
   },
   {
     "patientId": "11000944001",
-    "medicationNumber": "53",
     "receiptDateRaw": "20250716",
     "patientName": "김승래",
     "hospitalName": "성광용내과의원",
@@ -1763,11 +1762,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "53"
   },
   {
     "patientId": "11009351005",
-    "medicationNumber": "8",
     "receiptDateRaw": "20250716",
     "patientName": "홍순희",
     "hospitalName": "성광용내과의원",
@@ -1808,11 +1807,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "8"
   },
   {
     "patientId": "11014000633",
-    "medicationNumber": "9",
     "receiptDateRaw": "20250716",
     "patientName": "김기식",
     "hospitalName": "성광용내과의원",
@@ -1832,11 +1831,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "9"
   },
   {
     "patientId": "11014004817",
-    "medicationNumber": "59",
     "receiptDateRaw": "20250716",
     "patientName": "박시윤",
     "hospitalName": "성광용내과의원",
@@ -1863,11 +1862,11 @@
         "dailyDose": "4",
         "singleDose": "6"
       }
-    ]
+    ],
+    "receiptNum": "59"
   },
   {
     "patientId": "11013984804",
-    "medicationNumber": "61",
     "receiptDateRaw": "20250716",
     "patientName": "임정강",
     "hospitalName": "성광용내과의원",
@@ -1908,11 +1907,11 @@
         "dailyDose": "3",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "61"
   },
   {
     "patientId": "11014004766",
-    "medicationNumber": "62",
     "receiptDateRaw": "20250716",
     "patientName": "최성용",
     "hospitalName": "성광용내과의원",
@@ -1925,11 +1924,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "62"
   },
   {
     "patientId": "11013985221",
-    "medicationNumber": "63",
     "receiptDateRaw": "20250716",
     "patientName": "김호연",
     "hospitalName": "성광용내과의원",
@@ -1963,11 +1962,11 @@
         "dailyDose": "1",
         "singleDose": "2"
       }
-    ]
+    ],
+    "receiptNum": "63"
   },
   {
     "patientId": "11013995845",
-    "medicationNumber": "64",
     "receiptDateRaw": "20250716",
     "patientName": "한흥주",
     "hospitalName": "성광용내과의원",
@@ -1987,11 +1986,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "64"
   },
   {
     "patientId": "11014004820",
-    "medicationNumber": "65",
     "receiptDateRaw": "20250716",
     "patientName": "최상근",
     "hospitalName": "성광용내과의원",
@@ -2032,11 +2031,11 @@
         "dailyDose": "3",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "65"
   },
   {
     "patientId": "11013999232",
-    "medicationNumber": "66",
     "receiptDateRaw": "20250716",
     "patientName": "김태훈",
     "hospitalName": "성광용내과의원",
@@ -2070,11 +2069,11 @@
         "dailyDose": "3",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "66"
   },
   {
     "patientId": "11001803003",
-    "medicationNumber": "67",
     "receiptDateRaw": "20250716",
     "patientName": "정재진",
     "hospitalName": "성광용내과의원",
@@ -2108,11 +2107,11 @@
         "dailyDose": "2",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "67"
   },
   {
     "patientId": "11001803001",
-    "medicationNumber": "68",
     "receiptDateRaw": "20250716",
     "patientName": "김승국",
     "hospitalName": "성광용내과의원",
@@ -2139,11 +2138,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "68"
   },
   {
     "patientId": "11014004380",
-    "medicationNumber": "69",
     "receiptDateRaw": "20250716",
     "patientName": "이선필",
     "hospitalName": "성광용내과의원",
@@ -2163,11 +2162,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "69"
   },
   {
     "patientId": "11013972604",
-    "medicationNumber": "70",
     "receiptDateRaw": "20250716",
     "patientName": "이옥하",
     "hospitalName": "성광용내과의원",
@@ -2208,11 +2207,11 @@
         "dailyDose": "2",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "70"
   },
   {
     "patientId": "11013985372",
-    "medicationNumber": "71",
     "receiptDateRaw": "20250716",
     "patientName": "홍상철",
     "hospitalName": "성광용내과의원",
@@ -2225,11 +2224,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "71"
   },
   {
     "patientId": "11001803001",
-    "medicationNumber": "68",
     "receiptDateRaw": "20250716",
     "patientName": "김승국",
     "hospitalName": "성광용내과의원",
@@ -2263,11 +2262,11 @@
         "dailyDose": "2",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "68"
   },
   {
     "patientId": "11013951062",
-    "medicationNumber": "72",
     "receiptDateRaw": "20250716",
     "patientName": "김상구",
     "hospitalName": "성광용내과의원",
@@ -2308,11 +2307,11 @@
         "dailyDose": "3",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "72"
   },
   {
     "patientId": "11013951063",
-    "medicationNumber": "73",
     "receiptDateRaw": "20250716",
     "patientName": "공목선",
     "hospitalName": "성광용내과의원",
@@ -2353,11 +2352,11 @@
         "dailyDose": "3",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "73"
   },
   {
     "patientId": "11001606001",
-    "medicationNumber": "74",
     "receiptDateRaw": "20250716",
     "patientName": "전현철",
     "hospitalName": "성광용내과의원",
@@ -2384,11 +2383,11 @@
         "dailyDose": "1",
         "singleDose": "2"
       }
-    ]
+    ],
+    "receiptNum": "74"
   },
   {
     "patientId": "11014000453",
-    "medicationNumber": "75",
     "receiptDateRaw": "20250716",
     "patientName": "조민호",
     "hospitalName": "성광용내과의원",
@@ -2422,11 +2421,11 @@
         "dailyDose": "3",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "75"
   },
   {
     "patientId": "11013994506",
-    "medicationNumber": "76",
     "receiptDateRaw": "20250716",
     "patientName": "김민철",
     "hospitalName": "성광용내과의원",
@@ -2460,11 +2459,11 @@
         "dailyDose": "3",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "76"
   },
   {
     "patientId": "11009197001",
-    "medicationNumber": "77",
     "receiptDateRaw": "20250716",
     "patientName": "이희순",
     "hospitalName": "성광용내과의원",
@@ -2484,11 +2483,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "77"
   },
   {
     "patientId": "11014001859",
-    "medicationNumber": "78",
     "receiptDateRaw": "20250716",
     "patientName": "이수빈",
     "hospitalName": "에스엠가정의학과의원",
@@ -2501,11 +2500,11 @@
         "dailyDose": "2",
         "singleDose": "2"
       }
-    ]
+    ],
+    "receiptNum": "78"
   },
   {
     "patientId": "11014004795",
-    "medicationNumber": "79",
     "receiptDateRaw": "20250716",
     "patientName": "박현선",
     "hospitalName": "김치과의원",
@@ -2532,11 +2531,11 @@
         "dailyDose": "3",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "79"
   },
   {
     "patientId": "11013973057",
-    "medicationNumber": "80",
     "receiptDateRaw": "20250716",
     "patientName": "장성남",
     "hospitalName": "성광용내과의원",
@@ -2570,11 +2569,11 @@
         "dailyDose": "3",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "80"
   },
   {
     "patientId": "11013953369",
-    "medicationNumber": "81",
     "receiptDateRaw": "20250716",
     "patientName": "박성희",
     "hospitalName": "성광용내과의원",
@@ -2629,11 +2628,11 @@
         "dailyDose": "3",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "81"
   },
   {
     "patientId": "11014004582",
-    "medicationNumber": "82",
     "receiptDateRaw": "20250716",
     "patientName": "임규재",
     "hospitalName": "성광용내과의원",
@@ -2674,11 +2673,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "82"
   },
   {
     "patientId": "11003950003",
-    "medicationNumber": "83",
     "receiptDateRaw": "20250716",
     "patientName": "강명순",
     "hospitalName": "성광용내과의원",
@@ -2712,11 +2711,11 @@
         "dailyDose": "3",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "83"
   },
   {
     "patientId": "11014004821",
-    "medicationNumber": "84",
     "receiptDateRaw": "20250716",
     "patientName": "김하루",
     "hospitalName": "성광용내과의원",
@@ -2750,11 +2749,11 @@
         "dailyDose": "3",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "84"
   },
   {
     "patientId": "11013962706",
-    "medicationNumber": "85",
     "receiptDateRaw": "20250716",
     "patientName": "박화선",
     "hospitalName": "성광용내과의원",
@@ -2802,11 +2801,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "85"
   },
   {
     "patientId": "11013962109",
-    "medicationNumber": "86",
     "receiptDateRaw": "20250716",
     "patientName": "김일봉",
     "hospitalName": "성광용내과의원",
@@ -2826,11 +2825,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "86"
   },
   {
     "patientId": "11013973633",
-    "medicationNumber": "87",
     "receiptDateRaw": "20250716",
     "patientName": "김기석",
     "hospitalName": "성광용내과의원",
@@ -2871,11 +2870,11 @@
         "dailyDose": "3",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "87"
   },
   {
     "patientId": "11003834001",
-    "medicationNumber": "88",
     "receiptDateRaw": "20250716",
     "patientName": "이선행",
     "hospitalName": "성광용내과의원",
@@ -2888,11 +2887,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "88"
   },
   {
     "patientId": "11013953790",
-    "medicationNumber": "89",
     "receiptDateRaw": "20250716",
     "patientName": "김선득",
     "hospitalName": "성광용내과의원",
@@ -2947,11 +2946,11 @@
         "dailyDose": "2",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "89"
   },
   {
     "patientId": "11013973167",
-    "medicationNumber": "90",
     "receiptDateRaw": "20250716",
     "patientName": "김애경",
     "hospitalName": "성광용내과의원",
@@ -2971,11 +2970,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "90"
   },
   {
     "patientId": "11013986054",
-    "medicationNumber": "91",
     "receiptDateRaw": "20250716",
     "patientName": "한계순",
     "hospitalName": "성광용내과의원",
@@ -2995,11 +2994,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "91"
   },
   {
     "patientId": "11013994513",
-    "medicationNumber": "92",
     "receiptDateRaw": "20250716",
     "patientName": "홍지현",
     "hospitalName": "성광용내과의원",
@@ -3040,6 +3039,7 @@
         "dailyDose": "3",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "92"
   }
 ]

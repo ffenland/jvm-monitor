@@ -230,6 +230,21 @@ app.whenReady().then(async () => {
     // 설정 파일 로드
     loadConfig();
     
+    // 오늘 날짜의 result 파일 초기화
+    const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const todayResultPath = path.join(dataDirPath, `result_${today}.json`);
+    if (!fs.existsSync(todayResultPath)) {
+        try {
+            if (!fs.existsSync(dataDirPath)) {
+                fs.mkdirSync(dataDirPath, { recursive: true });
+            }
+            fs.writeFileSync(todayResultPath, '[]', 'utf8');
+            console.log(`Created today's result file: result_${today}.json`);
+        } catch (error) {
+            console.error(`Error creating today's result file: ${error.message}`);
+        }
+    }
+    
     // Send initial log message to renderer
     mainWindow.webContents.on('did-finish-load', () => {
         mainWindow.webContents.send('log-message', `Monitoring directory: ${monitorPath}`);
@@ -267,35 +282,34 @@ app.whenReady().then(async () => {
 
             try {
                 const match = fileName.match(/Copy\d+-(\d{8})(\d{6})\.txt/);
-                const preparationDate = match ? match[1] : null;
+                const fileDate = match ? match[1] : null;
+                const todayDate = new Date().toISOString().slice(0, 10).replace(/-/g, '');
 
                 parsedContent = parseFileContent(buffer); // Pass buffer to parser
 
-                // Add timestamp and preparationDate to parsedContent for renderer
+                // Add timestamp and todayDate to parsedContent for renderer
                 const timestamp = Date.now();
-                const dataToSend = { ...parsedContent, fileName, preparationDate, timestamp };
+                const dataToSend = { ...parsedContent, fileName, preparationDate: todayDate, timestamp };
 
-                // --- Copy original file to preparation date-specific folder ---
-                if (preparationDate) {
-                    const dailyOriginPath = path.join(originFilesPath, `origin_${preparationDate}`);
-                    if (!fs.existsSync(dailyOriginPath)) {
-                        fs.mkdirSync(dailyOriginPath, { recursive: true });
-                    }
-                    const destPath = path.join(dailyOriginPath, fileName);
-                    fs.copyFile(filePath, destPath, (err) => {
-                        if (err) {
-                            console.error(`Error copying original file: ${err.message}`);
-                            mainWindow.webContents.send('log-message', `Error copying original file: ${err.message}`);
-                        } else {
-                            mainWindow.webContents.send('log-message', `Original file saved to ${path.basename(dailyOriginPath)}.`);
-                        }
-                    });
+                // --- Copy original file to today's date-specific folder ---
+                const dailyOriginPath = path.join(originFilesPath, `origin_${todayDate}`);
+                if (!fs.existsSync(dailyOriginPath)) {
+                    fs.mkdirSync(dailyOriginPath, { recursive: true });
                 }
+                const destPath = path.join(dailyOriginPath, fileName);
+                fs.copyFile(filePath, destPath, (err) => {
+                    if (err) {
+                        console.error(`Error copying original file: ${err.message}`);
+                        mainWindow.webContents.send('log-message', `Error copying original file: ${err.message}`);
+                    } else {
+                        mainWindow.webContents.send('log-message', `Original file saved to ${path.basename(dailyOriginPath)}.`);
+                    }
+                });
                 // --- End of copy ---
 
                 mainWindow.webContents.send('log-message', `Content of ${fileName} parsed and stored.`);
                 mainWindow.webContents.send('parsed-data', dataToSend); // Send parsed data with fileName, preparationDate, and timestamp
-                saveDataToFile(parsedContent, preparationDate); // Save the new data to the appropriate files
+                saveDataToFile(parsedContent, todayDate); // Save the new data to the appropriate files
             } catch (parseError) {
                 const errorMessage = `Error parsing ${fileName}: ${parseError.message}. Moving to error folder.`;
                 console.error(errorMessage); // Added console.error
@@ -330,7 +344,7 @@ app.whenReady().then(async () => {
 
     ipcMain.on('get-initial-data', (event) => {
         const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-        const todayFilePath = path.join(dataDirPath, `prepare_${today}.json`);
+        const todayFilePath = path.join(dataDirPath, `result_${today}.json`);
         let todayData = [];
         if (fs.existsSync(todayFilePath)) {
             try {
@@ -339,8 +353,8 @@ app.whenReady().then(async () => {
         }
 
         const availableDates = fs.readdirSync(dataDirPath)
-            .filter(file => file.startsWith('prepare_') && file.endsWith('.json'))
-            .map(file => file.substring(8, 16)) // 'prepare_'.length, 'prepare_YYYYMMDD'.length
+            .filter(file => file.startsWith('result_') && file.endsWith('.json'))
+            .map(file => file.substring(7, 15)) // 'result_'.length, 'result_YYYYMMDD'.length
             .sort((a, b) => b.localeCompare(a)); // Sort descending
         
         currentAvailableDates = new Set(availableDates); // Initialize the set of available dates
@@ -349,7 +363,7 @@ app.whenReady().then(async () => {
     });
 
     ipcMain.on('get-data-for-date', (event, date) => {
-        const filePath = path.join(dataDirPath, `prepare_${date}.json`);
+        const filePath = path.join(dataDirPath, `result_${date}.json`);
         let data = [];
         if (fs.existsSync(filePath)) {
             try {
@@ -432,31 +446,30 @@ app.on('window-all-closed', () => {
     }
 });
 
-function saveDataToFile(newData, preparationDate) {
-    // Save to result_{receiptDate}.json
-    if (newData && newData.receiptDateRaw) {
-        const receiptDate = newData.receiptDateRaw;
-        const resultFilePath = path.join(dataDirPath, `result_${receiptDate}.json`);
+function saveDataToFile(newData, todayDate) {
+    // 1. 오늘날짜의 result_YYYYMMDD.json에 추가
+    if (newData && todayDate) {
+        const resultFilePath = path.join(dataDirPath, `result_${todayDate}.json`);
         writeDataToDailyFile(resultFilePath, newData);
-    } else {
-        mainWindow.webContents.send('log-message', 'Error: Cannot save result data without a receipt date.');
-    }
-
-    // Save to prepare_{preparationDate}.json
-    if (newData && preparationDate) {
-        const prepareFilePath = path.join(dataDirPath, `prepare_${preparationDate}.json`);
-        const isNewDate = !currentAvailableDates.has(preparationDate); // Check if it's a new date
         
-        writeDataToDailyFile(prepareFilePath, newData);
-
+        // 날짜 목록 업데이트 확인
+        const isNewDate = !currentAvailableDates.has(todayDate);
         if (isNewDate) {
-            currentAvailableDates.add(preparationDate);
+            currentAvailableDates.add(todayDate);
             const updatedDates = Array.from(currentAvailableDates).sort((a, b) => b.localeCompare(a));
             mainWindow.webContents.send('update-date-list', updatedDates);
-            mainWindow.webContents.send('log-message', `New date ${preparationDate} added. Updating date list.`);
+            mainWindow.webContents.send('log-message', `New date ${todayDate} added. Updating date list.`);
         }
     } else {
-        mainWindow.webContents.send('log-message', 'Error: Cannot save prepare data without a preparation date.');
+        mainWindow.webContents.send('log-message', 'Error: Cannot save result data without today date.');
+    }
+    
+    // 2. 접수일자의 receipt_YYYYMMDD.json에 조건부 추가
+    if (newData && newData.receiptDateRaw) {
+        const receiptFilePath = path.join(dataDirPath, `receipt_${newData.receiptDateRaw}.json`);
+        writeDataToReceiptFile(receiptFilePath, newData);
+    } else {
+        mainWindow.webContents.send('log-message', 'Error: Cannot save receipt data without a receipt date.');
     }
 }
 
@@ -486,5 +499,43 @@ function writeDataToDailyFile(filePath, newData) {
         mainWindow.webContents.send('log-message', `Data saved successfully to ${path.basename(filePath)}.`);
     } catch (err) {
         mainWindow.webContents.send('log-message', `Error saving data to ${path.basename(filePath)}: ${err.message}`);
+    }
+}
+
+function writeDataToReceiptFile(filePath, newData) {
+    try {
+        // Ensure the directory exists
+        if (!fs.existsSync(dataDirPath)) {
+            fs.mkdirSync(dataDirPath, { recursive: true });
+        }
+
+        let receiptData = [];
+        if (fs.existsSync(filePath)) {
+            try {
+                const fileContent = fs.readFileSync(filePath, 'utf8');
+                receiptData = JSON.parse(fileContent);
+                if (!Array.isArray(receiptData)) {
+                    receiptData = []; // Reset if not an array
+                }
+            } catch (error) {
+                receiptData = []; // Reset on read error
+            }
+        }
+
+        // receiptNum과 patientId가 모두 일치하는 항목이 있는지 확인
+        const exists = receiptData.some(item => 
+            item.receiptNum === newData.receiptNum && 
+            item.patientId === newData.patientId
+        );
+
+        if (!exists) {
+            receiptData.push(newData);
+            fs.writeFileSync(filePath, JSON.stringify(receiptData, null, 2), 'utf8');
+            mainWindow.webContents.send('log-message', `Receipt data saved to ${path.basename(filePath)}.`);
+        } else {
+            mainWindow.webContents.send('log-message', `Duplicate receipt data skipped for ${path.basename(filePath)}.`);
+        }
+    } catch (err) {
+        mainWindow.webContents.send('log-message', `Error saving receipt data to ${path.basename(filePath)}: ${err.message}`);
     }
 }

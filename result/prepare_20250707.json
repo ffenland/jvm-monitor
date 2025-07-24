@@ -1,7 +1,6 @@
 [
   {
     "patientId": "11001831001",
-    "medicationNumber": "32",
     "receiptDateRaw": "20250707",
     "patientName": "김용식",
     "hospitalName": "성광용내과의원",
@@ -28,11 +27,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "32"
   },
   {
     "patientId": "11013960710",
-    "medicationNumber": "35",
     "receiptDateRaw": "20250707",
     "patientName": "이규숙",
     "hospitalName": "성광용내과의원",
@@ -73,11 +72,11 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "35"
   },
   {
     "patientId": "11014002288",
-    "medicationNumber": "97",
     "receiptDateRaw": "20250707",
     "patientName": "김민규",
     "hospitalName": "성광용내과의원",
@@ -90,6 +89,7 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "97"
   }
 ]

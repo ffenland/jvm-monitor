@@ -1,7 +1,6 @@
 [
   {
     "patientId": "11013960672",
-    "medicationNumber": "50",
     "receiptDateRaw": "20250709",
     "patientName": "김금숙",
     "hospitalName": "성광용내과의원",
@@ -35,6 +34,7 @@
         "dailyDose": "1",
         "singleDose": "1"
       }
-    ]
+    ],
+    "receiptNum": "50"
   }
 ]
