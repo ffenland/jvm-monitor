@@ -1,0 +1,71 @@
+[
+  {
+    "patientId": "11013950704",
+    "receiptNum": "3",
+    "receiptDateRaw": "20250806",
+    "patientName": "구본숙",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년08월06일",
+    "medicines": [
+      {
+        "code": "T643100080",
+        "name": "닥스펜정(덱시부프로펜)_(0.3g/1",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T649401610",
+        "name": "에도스캡슐(에르도스테인)_(0.3g/",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T643506740",
+        "name": "코싹엘정(레보세티리진,슈도에페드린)",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "0.5"
+      },
+      {
+        "code": "T640903010",
+        "name": "스트렌정(애엽95%에탄올연조엑스(20",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "E671807171",
+        "name": "코대원에스시럽_(20mL)",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11013989293",
+    "receiptNum": "4",
+    "receiptDateRaw": "20250806",
+    "patientName": "김대훈",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년08월06일",
+    "medicines": [
+      {
+        "code": "T669806280",
+        "name": "테리아엠서방정10/750밀리그램_(1",
+        "prescriptionDays": "30",
+        "dailyDose": "2",
+        "singleDose": "1"
+      },
+      {
+        "code": "T658204710",
+        "name": "다파로진정10밀리그램(다파글리플로진프",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  }
+]

@@ -1,0 +1,40 @@
+{
+  "medicines": {
+    "T643506740": {
+      "customName": "코싹엘정",
+      "category": "감기약",
+      "specialDose": {
+        "0.5": "반알"
+      }
+    },
+    "T641902670": {
+      "customName": "스토가정 10mg",
+      "category": "위장약",
+      "usageInstruction": "매 식전 30분"
+    },
+    "T656000830": {
+      "customName": "아페낙정",
+      "category": "진통제"
+    },
+    "T649401610": {
+      "customName": "에도스캡슐",
+      "category": "거담제"
+    },
+    "E671807171": {
+      "customName": "코대원에스시럽",
+      "category": "감기약",
+      "unit": "mL",
+      "doseUnit": "포"
+    }
+  },
+  "doseTemplates": {
+    "default": "{singleDose}{unit}씩 하루 {dailyDose}번 {prescriptionDays}일분",
+    "liquid": "1회 {singleDose}{doseUnit} 하루 {dailyDose}번 {prescriptionDays}일분",
+    "beforeMeal": "{usageInstruction}에 {singleDose}{unit}씩 하루 {dailyDose}번 {prescriptionDays}일분"
+  },
+  "defaultUnits": {
+    "tablet": "정",
+    "capsule": "캡슐",
+    "liquid": "mL"
+  }
+}

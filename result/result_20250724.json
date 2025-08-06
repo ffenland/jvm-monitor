@@ -508,5 +508,122 @@
         "singleDose": "1"
       }
     ]
+  },
+  {
+    "patientId": "11010630001",
+    "receiptNum": "38",
+    "receiptDateRaw": "20250724",
+    "patientName": "전복돌",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월24일",
+    "medicines": [
+      {
+        "code": "T643104200",
+        "name": "트윈스핀정80/5mg_(1정)",
+        "prescriptionDays": "45",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "T640900430",
+        "name": "베타드렌정(비소프롤롤푸마르산염)_(5",
+        "prescriptionDays": "45",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11013946948",
+    "receiptNum": "39",
+    "receiptDateRaw": "20250724",
+    "patientName": "손순연",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월24일",
+    "medicines": [
+      {
+        "code": "T640903010",
+        "name": "스트렌정(애엽95%에탄올연조엑스(20",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T641700560",
+        "name": "보나링에이정(디멘히드리네이트)_(50",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T649405200",
+        "name": "영일알마게이트정500밀리그램_(0.5",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T641701610",
+        "name": "일양디세텔정(피나베륨브롬화물)_(50",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11005016002",
+    "receiptNum": "40",
+    "receiptDateRaw": "20250724",
+    "patientName": "김정란",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월24일",
+    "medicines": [
+      {
+        "code": "E643501052",
+        "name": "무조날크림(테르비나핀염산염)_(0.1",
+        "prescriptionDays": "3",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11014004855",
+    "receiptNum": "41",
+    "receiptDateRaw": "20250724",
+    "patientName": "채정숙",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년07월24일",
+    "medicines": [
+      {
+        "code": "T656000260",
+        "name": "록사펜정(록소프로펜나트륨수화물)_(6",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T640903010",
+        "name": "스트렌정(애엽95%에탄올연조엑스(20",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T641700560",
+        "name": "보나링에이정(디멘히드리네이트)_(50",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "T649405200",
+        "name": "영일알마게이트정500밀리그램_(0.5",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      }
+    ]
   }
 ]
