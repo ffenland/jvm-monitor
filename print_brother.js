@@ -227,14 +227,23 @@ async function printWithBrother(data) {
         
         if (!result.error) {
             // b-PAC 출력 성공
-            return result.message;
+            return { 
+                success: true, 
+                message: result.message 
+            };
         } else {
             // b-PAC 출력 실패 - 에러 발생
-            throw new Error(`라벨 출력 실패: ${result.message}`);
+            return { 
+                success: false, 
+                error: result.message 
+            };
         }
     } catch (error) {
         console.error('Error in printWithBrother:', error);
-        throw error;
+        return { 
+            success: false, 
+            error: error.message 
+        };
     }
 }
 

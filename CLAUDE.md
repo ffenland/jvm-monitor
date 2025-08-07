@@ -1,7 +1,15 @@
 # Electron File Monitor - Brother 라벨 프린터 출력 시스템
 
 ## 프로젝트 개요
-이 프로젝트는 약국에서 사용하는 Brother QL-700 라벨 프린터를 통해 약품 라벨을 출력하는 Electron 애플리케이션입니다. Brother b-PAC SDK를 사용하여 .lbx 템플릿 파일에 데이터를 매핑하고 출력합니다.
+이 프로젝트는 약국에서 사용하는 Brother QL-700 라벨 프린터를 통해 약품 라벨을 출력하는 Electron 애플리케이션입니다. 
+
+### 주요 기능
+1. **파일 모니터링**: C:\atc 디렉토리의 TXT 파일을 실시간 모니터링
+2. **데이터 파싱**: EUC-KR 인코딩된 처방전 데이터를 파싱 (JVPHEAD, JVMHEAD 섹션)
+3. **데이터 저장**: 날짜별 JSON 파일로 데이터 저장 (2종류)
+   - receipt_YYYYMMDD.json: 저장용 (receiptDateRaw 기준)
+   - result_YYYYMMDD.json: 조회용 (파싱 시점 날짜 기준)
+4. **라벨 출력**: Brother b-PAC SDK를 사용하여 .lbx 템플릿 파일에 데이터를 매핑하고 출력
 
 ## 시스템 요구사항
 - Windows OS (32비트 또는 64비트)
@@ -208,12 +216,67 @@ const result = await printWithBrother({
 3. **한글 데이터는 가공 모듈에서 처리**: 직접 전달하지 않음
 4. **임시 파일 자동 정리**: 메모리 누수 방지
 
+## 파일 모니터링 및 데이터 파싱
+
+### 모니터링 대상
+- 경로: `C:\atc` 디렉토리
+- 파일 형식: `Copy\d+-(\d{8})(\d{6})\.txt` 패턴의 TXT 파일
+- 인코딩: EUC-KR
+
+### 파싱 모듈 (parser.js)
+TXT 파일에서 처방전 데이터를 추출합니다.
+
+#### JVPHEAD 섹션 파싱
+```javascript
+{
+    patientId: "환자ID (11자리)",
+    receiptNum: "접수번호",
+    receiptDateRaw: "접수일자 (YYYYMMDD)",
+    receiptDate: "접수일자 (YYYY년MM월DD일 형식)",
+    patientName: "환자명",
+    hospitalName: "병원명"
+}
+```
+
+#### JVMHEAD 섹션 파싱
+약품 정보 배열을 추출합니다:
+```javascript
+{
+    code: "약품코드 (T 또는 E로 시작하는 10자리)",
+    name: "약품명",
+    prescriptionDays: "처방일수",
+    dailyDose: "일일투여횟수",
+    singleDose: "1회투여량"
+}
+```
+
+## 데이터 저장 시스템
+
+### JSON 파일 구조
+1. **receipt_YYYYMMDD.json (저장용)**
+   - 경로: `result/receipt_YYYYMMDD.json`
+   - 파일명 날짜: parsedData.receiptDateRaw 값 기준
+   - 중복 처리: receiptNum과 patientId가 모두 일치하면 중복으로 판단
+   - 현재 구현: 중복 시 스킵 (요구사항: receiptNum만 확인하고 값이 다르면 -1, -2 접미어 추가)
+
+2. **result_YYYYMMDD.json (조회용)**
+   - 경로: `result/result_YYYYMMDD.json`
+   - 파일명 날짜: 파싱 시점의 날짜
+   - 중복 처리: 없음 (단순 추가)
+   - 용도: 최근 파싱 순서대로 조회
+
+### 원본 파일 백업
+- 경로: `originFiles/origin_YYYYMMDD/` 
+- 파싱된 원본 TXT 파일을 날짜별 폴더에 복사 보관
+- 파싱 오류 발생 시: `originFiles/error/` 폴더로 이동
+
 ## 향후 개선 사항
+- [ ] receipt_YYYYMMDD.json의 중복 처리 로직 수정 (receiptNum 기준, 접미어 추가)
 - [ ] 다양한 템플릿 지원 확대
 - [ ] 출력 미리보기 기능
 - [ ] 배치 출력 기능
 - [ ] 출력 이력 관리
 
 ---
-*최종 업데이트: 2025-07-23*
+*최종 업데이트: 2025-08-06*
 *작성자: Claude Assistant*

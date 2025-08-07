@@ -1,0 +1,37 @@
+[
+  {
+    "code": "642000030",
+    "name": "노레보원정(레보노르게스트렐)",
+    "apiUrl": "http://apis.data.go.kr/B551182/dgamtCrtrInfoService1.2/getDgamtList?mdsCd=642000030",
+    "failedAt": "2025-08-07T00:06:24.778Z",
+    "reason": "No price info found"
+  },
+  {
+    "code": "643307660",
+    "name": "제니칼캡슐120밀리그램",
+    "apiUrl": "http://apis.data.go.kr/B551182/dgamtCrtrInfoService1.2/getDgamtList?mdsCd=643307660",
+    "failedAt": "2025-08-07T00:06:26.463Z",
+    "reason": "No price info found"
+  },
+  {
+    "code": "643506250",
+    "name": "팔팔정50밀리그램",
+    "apiUrl": "http://apis.data.go.kr/B551182/dgamtCrtrInfoService1.2/getDgamtList?mdsCd=643506250",
+    "failedAt": "2025-08-07T00:06:26.471Z",
+    "reason": "No price info found"
+  },
+  {
+    "code": "655605380",
+    "name": "바이오탑하이포르테캡슐",
+    "apiUrl": "http://apis.data.go.kr/B551182/dgamtCrtrInfoService1.2/getDgamtList?mdsCd=655605380",
+    "failedAt": "2025-08-06T23:54:29.887Z",
+    "reason": "No price info found"
+  },
+  {
+    "code": "652903313",
+    "name": "비아그라엘구강붕해필름50밀리그램",
+    "apiUrl": "http://apis.data.go.kr/B551182/dgamtCrtrInfoService1.2/getDgamtList?mdsCd=652903313",
+    "failedAt": "2025-08-07T00:06:27.803Z",
+    "reason": "No price info found"
+  }
+]

@@ -1,0 +1,1427 @@
+{
+  "621802320": {
+    "title": "암로비스정",
+    "mfdsCode": "214",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "107601ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "기타의 순환계용약"
+    ],
+    "price": "341",
+    "mfg": "(주)한국파비스제약",
+    "formulation": "정제,저작정"
+  },
+  "621802670": {
+    "title": "록스바정",
+    "mfdsCode": "218",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "454001ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "동맥경화용제"
+    ],
+    "price": "612",
+    "mfg": "(주)한국파비스제약",
+    "formulation": "정제,저작정"
+  },
+  "621802880": {
+    "title": "탐스프로서방정0.2밀리그램",
+    "mfdsCode": "259",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "234601ATR",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "기타의 비뇨생식기관 및 항문용약"
+    ],
+    "price": "465",
+    "mfg": "(주)한국파비스제약",
+    "formulation": "서방형정제"
+  },
+  "622803730": {
+    "title": "모사프리엠정",
+    "mfdsCode": "239",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "421001ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "기타의 소화기관용약"
+    ],
+    "price": "103",
+    "mfg": "(주)마더스제약",
+    "formulation": "정제,저작정"
+  },
+  "640003910": {
+    "title": "헤르벤서방정90밀리그램",
+    "mfdsCode": "217",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "145707ATR",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "혈관확장제"
+    ],
+    "price": "183",
+    "mfg": "에이치케이이노엔(주)",
+    "formulation": "서방형정제"
+  },
+  "640003920": {
+    "title": "헤르벤서방캡슐180밀리그램",
+    "mfdsCode": "217",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "캡슐",
+    "gnlNmCd": "145703ACR",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "혈관확장제"
+    ],
+    "price": "271",
+    "mfg": "에이치케이이노엔(주)",
+    "formulation": "서방캡슐제"
+  },
+  "640900430": {
+    "title": "베타드렌정",
+    "mfdsCode": "219",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "117902ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "기타의 순환계용약"
+    ],
+    "price": "189",
+    "mfg": "(주)일화",
+    "formulation": "정제,저작정"
+  },
+  "640900520": {
+    "title": "아라스틴정",
+    "mfdsCode": "149",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "112501ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "기타의 알레르기용약"
+    ],
+    "price": "176",
+    "mfg": "(주)일화",
+    "formulation": "정제,저작정"
+  },
+  "640902780": {
+    "title": "판터롤정20밀리그램",
+    "mfdsCode": "232",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "208802ATE",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "소화성궤양용제"
+    ],
+    "price": "434",
+    "mfg": "(주)일화",
+    "formulation": "장용정제"
+  },
+  "640903010": {
+    "title": "스트렌정",
+    "mfdsCode": "232",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "430101ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "소화성궤양용제"
+    ],
+    "price": "105",
+    "mfg": "(주)일화",
+    "formulation": "정제,저작정"
+  },
+  "641100270": {
+    "title": "아스피린프로텍트정100밀리그람",
+    "mfdsCode": "219",
+    "payType": "급여",
+    "isETC": false,
+    "unit": "정",
+    "gnlNmCd": "111001ATE",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "혈전방지약"
+    ],
+    "price": "77",
+    "mfg": "바이엘코리아(주)",
+    "formulation": "장용정제"
+  },
+  "641600370": {
+    "title": "다이아벡스정1000밀리그램",
+    "mfdsCode": "396",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "191504ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "당뇨병용제"
+    ],
+    "price": "112",
+    "mfg": "(주)대웅제약",
+    "formulation": "정제,저작정"
+  },
+  "641700560": {
+    "title": "보나링에이정",
+    "mfdsCode": "235",
+    "payType": "급여",
+    "isETC": false,
+    "unit": "정",
+    "gnlNmCd": "145901ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "항히스타민제"
+    ],
+    "price": "30",
+    "mfg": "일양약품(주)",
+    "formulation": "정제,저작정"
+  },
+  "641701101": {
+    "title": "알드린현탁액",
+    "mfdsCode": "234",
+    "payType": "급여",
+    "isETC": false,
+    "unit": "mL/포",
+    "gnlNmCd": "105201ASS",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "제산제"
+    ],
+    "price": "106",
+    "mfg": "일양약품(주)",
+    "formulation": "현탁액제,현탁액용정제,현탁액용산제"
+  },
+  "641701610": {
+    "title": "일양디세텔정",
+    "mfdsCode": "239",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "212501ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "기타의 소화기관용약"
+    ],
+    "price": "100",
+    "mfg": "일양약품(주)",
+    "formulation": "정제,저작정"
+  },
+  "641702010": {
+    "title": "일양하이트린정2밀리그람",
+    "mfdsCode": "259",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "235502ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "기타의 비뇨생식기관 및 항문용약"
+    ],
+    "price": "335",
+    "mfg": "일양약품(주)",
+    "formulation": "정제,저작정"
+  },
+  "641905681": {
+    "title": "메게이스내복현탁액",
+    "mfdsCode": "421",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "mL/포",
+    "gnlNmCd": "189330ASS",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "항악성종양제"
+    ],
+    "price": "1643",
+    "mfg": "(주)보령",
+    "formulation": "현탁액제,현탁액용정제,현탁액용산제"
+  },
+  "642102570": {
+    "title": "페니라민정",
+    "mfdsCode": "141",
+    "payType": "급여",
+    "isETC": false,
+    "unit": "정",
+    "gnlNmCd": "131801ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "항히스타민제"
+    ],
+    "price": "15",
+    "mfg": "(주)유한양행",
+    "formulation": "정제,저작정"
+  },
+  "642507360": {
+    "title": "슈가메트서방정5/1000밀리그램",
+    "mfdsCode": "396",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "649900ATR",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "당뇨병용제"
+    ],
+    "price": "693",
+    "mfg": "동아에스티(주)",
+    "formulation": "서방형정제"
+  },
+  "643100080": {
+    "title": "닥스펜정",
+    "mfdsCode": "114",
+    "payType": "급여",
+    "isETC": false,
+    "unit": "정",
+    "gnlNmCd": "142301ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "해열·진통·소염제"
+    ],
+    "price": "115",
+    "mfg": "(주)바이넥스",
+    "formulation": "정제,저작정"
+  },
+  "643100170": {
+    "title": "레프정",
+    "mfdsCode": "239",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "183501ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "기타의 소화기관용약"
+    ],
+    "price": "119",
+    "mfg": "(주)바이넥스",
+    "formulation": "정제,저작정"
+  },
+  "643100480": {
+    "title": "라베넥스정10밀리그램",
+    "mfdsCode": "232",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "222201ATE",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "소화성궤양용제"
+    ],
+    "price": "454",
+    "mfg": "(주)바이넥스",
+    "formulation": "장용정제"
+  },
+  "643100720": {
+    "title": "바이넥스카르베딜롤정25밀리그람",
+    "mfdsCode": "214",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "125002ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "혈압강하제"
+    ],
+    "price": "360",
+    "mfg": "(주)바이넥스",
+    "formulation": "정제,저작정"
+  },
+  "643103730": {
+    "title": "로수넥스정10mg",
+    "mfdsCode": "218",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "454001ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "동맥경화용제"
+    ],
+    "price": "612",
+    "mfg": "(주)바이넥스",
+    "formulation": "정제,저작정"
+  },
+  "643104190": {
+    "title": "바이넥스카르베딜롤정12.5mg",
+    "mfdsCode": "214",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "125001ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "혈압강하제"
+    ],
+    "price": "302",
+    "mfg": "(주)바이넥스",
+    "formulation": "정제,저작정"
+  },
+  "643104200": {
+    "title": "트윈스핀정80/5mg",
+    "mfdsCode": "214",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "511500ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "혈압강하제"
+    ],
+    "price": "725",
+    "mfg": "(주)바이넥스",
+    "formulation": "정제,저작정"
+  },
+  "643104220": {
+    "title": "트윈스핀정40/5mg",
+    "mfdsCode": "214",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "511600ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "혈압강하제"
+    ],
+    "price": "600",
+    "mfg": "(주)바이넥스",
+    "formulation": "정제,저작정"
+  },
+  "643301190": {
+    "title": "살로탄플러스에프정",
+    "mfdsCode": "214",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "378900ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "혈압강하제"
+    ],
+    "price": "579",
+    "mfg": "(주)종근당",
+    "formulation": "정제,저작정"
+  },
+  "643500261": {
+    "title": "데옥손겔0.05%",
+    "mfdsCode": "264",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "g/개",
+    "gnlNmCd": "141631CCM",
+    "injectPath": "외용",
+    "mdfsCodeName": [
+      "진통·진양·수렴·소염제"
+    ],
+    "price": "1530",
+    "mfg": "한미약품(주)",
+    "formulation": "크림제,겔제,젤리"
+  },
+  "643501052": {
+    "title": "무조날크림",
+    "mfdsCode": "265",
+    "payType": "급여",
+    "isETC": false,
+    "unit": "g/개",
+    "gnlNmCd": "235731CCM",
+    "injectPath": "외용",
+    "mdfsCodeName": [
+      "기생성 피부질환용제"
+    ],
+    "price": "1898",
+    "mfg": "한미약품(주)",
+    "formulation": "크림제,겔제,젤리"
+  },
+  "643506740": {
+    "title": "코싹엘정",
+    "mfdsCode": "141",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "524800ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "항히스타민제"
+    ],
+    "price": "177",
+    "mfg": "한미약품(주)",
+    "formulation": "정제,저작정"
+  },
+  "643605800": {
+    "title": "칸데디핀정16/5밀리그램",
+    "mfdsCode": "214",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "653000ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "혈압강하제"
+    ],
+    "price": "707",
+    "mfg": "(주)녹십자",
+    "formulation": "정제,저작정"
+  },
+  "644000980": {
+    "title": "세자르플러스정",
+    "mfdsCode": "214",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "262500ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "혈압강하제"
+    ],
+    "price": "488",
+    "mfg": "삼익제약(주)",
+    "formulation": "정제,저작정"
+  },
+  "644309630": {
+    "title": "아트맥콤비젤연질캡슐",
+    "mfdsCode": "218",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "캡슐",
+    "gnlNmCd": "694000ACS",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "동맥경화용제"
+    ],
+    "price": "960",
+    "mfg": "한국유나이티드제약(주)",
+    "formulation": "연질캡슐제"
+  },
+  "644801160": {
+    "title": "아디팜정",
+    "mfdsCode": "117",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "172101ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "정신신경용제"
+    ],
+    "price": "16",
+    "mfg": "태극제약(주)",
+    "formulation": "정제,저작정"
+  },
+  "645405820": {
+    "title": "리피토플러스정10/10밀리그램",
+    "mfdsCode": "218",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "633800ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "동맥경화용제"
+    ],
+    "price": "637",
+    "mfg": "제일약품(주)",
+    "formulation": "정제,저작정"
+  },
+  "645700870": {
+    "title": "세토펜정325밀리그램",
+    "mfdsCode": "114",
+    "payType": "급여",
+    "isETC": false,
+    "unit": "정",
+    "gnlNmCd": "101404ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "해열·진통·소염제"
+    ],
+    "price": "29",
+    "mfg": "삼아제약(주)",
+    "formulation": "정제,저작정"
+  },
+  "645901910": {
+    "title": "시크렌캡슐",
+    "mfdsCode": "618",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "캡슐",
+    "gnlNmCd": "125201ACH",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "주로 그람양성,음성균에 작용하는 것"
+    ],
+    "price": "376",
+    "mfg": "동광제약(주)",
+    "formulation": "경질캡슐제"
+  },
+  "645906160": {
+    "title": "텔미스타정40밀리그램",
+    "mfdsCode": "214",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "378801ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "혈압강하제"
+    ],
+    "price": "362",
+    "mfg": "동광제약(주)",
+    "formulation": "정제,저작정"
+  },
+  "645906320": {
+    "title": "포텍플러스캡슐",
+    "mfdsCode": "391",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "캡슐",
+    "gnlNmCd": "448000ACH",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "간장질환용제"
+    ],
+    "price": "221",
+    "mfg": "동광제약(주)",
+    "formulation": "경질캡슐제"
+  },
+  "645907030": {
+    "title": "알제트정10/10밀리그램",
+    "mfdsCode": "218",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "640800ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "동맥경화용제"
+    ],
+    "price": "768",
+    "mfg": "동광제약(주)",
+    "formulation": "정제,저작정"
+  },
+  "646004140": {
+    "title": "메디핀정",
+    "mfdsCode": "214",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "107601ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "기타의 순환계용약"
+    ],
+    "price": "312",
+    "mfg": "(주)메디카코리아",
+    "formulation": "정제,저작정"
+  },
+  "646203700": {
+    "title": "로스타젠정20밀리그램",
+    "mfdsCode": "218",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "454002ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "동맥경화용제"
+    ],
+    "price": "583",
+    "mfg": "(주)셀릭스",
+    "formulation": "정제,저작정"
+  },
+  "646801120": {
+    "title": "웰콘정",
+    "mfdsCode": "239",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "122301ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "기타의 소화기관용약"
+    ],
+    "price": "84",
+    "mfg": "건일제약(주)",
+    "formulation": "정제,저작정"
+  },
+  "648204690": {
+    "title": "프라바페닉스캡슐",
+    "mfdsCode": "218",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "캡슐",
+    "gnlNmCd": "519300ACH",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "동맥경화용제"
+    ],
+    "price": "933",
+    "mfg": "(주)유영제약",
+    "formulation": "경질캡슐제"
+  },
+  "649100800": {
+    "title": "옥티로늄정",
+    "mfdsCode": "123",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "203801ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "자율신경제"
+    ],
+    "price": "87",
+    "mfg": "한국휴텍스제약(주)",
+    "formulation": "정제,저작정"
+  },
+  "649400510": {
+    "title": "로프민캡슐",
+    "mfdsCode": "237",
+    "payType": "급여",
+    "isETC": false,
+    "unit": "캡슐",
+    "gnlNmCd": "185102ACH",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "정장제"
+    ],
+    "price": "25",
+    "mfg": "영일제약(주)",
+    "formulation": "경질캡슐제"
+  },
+  "649401610": {
+    "title": "에도스캡슐",
+    "mfdsCode": "222",
+    "payType": "급여",
+    "isETC": false,
+    "unit": "캡슐",
+    "gnlNmCd": "153101ACH",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "진해거담제"
+    ],
+    "price": "196",
+    "mfg": "영일제약(주)",
+    "formulation": "경질캡슐제"
+  },
+  "649402580": {
+    "title": "티로프란정",
+    "mfdsCode": "124",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "240301ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "진경제"
+    ],
+    "price": "135",
+    "mfg": "영일제약(주)",
+    "formulation": "정제,저작정"
+  },
+  "649404540": {
+    "title": "팜비드정250mg",
+    "mfdsCode": "629",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "157201ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "기타의 화학요법제"
+    ],
+    "price": "3847",
+    "mfg": "영일제약(주)",
+    "formulation": "정제,저작정"
+  },
+  "649404550": {
+    "title": "글리피론정2밀리그램",
+    "mfdsCode": "396",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "165702ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "당뇨병용제"
+    ],
+    "price": "157",
+    "mfg": "영일제약(주)",
+    "formulation": "정제,저작정"
+  },
+  "649404560": {
+    "title": "뮤코렌정",
+    "mfdsCode": "232",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "222901ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "소화성궤양용제"
+    ],
+    "price": "88",
+    "mfg": "영일제약(주)",
+    "formulation": "정제,저작정"
+  },
+  "649404690": {
+    "title": "엠피디정",
+    "mfdsCode": "245",
+    "payType": "임의불가",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "193302ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "부신호르몬제"
+    ],
+    "price": "83",
+    "mfg": "영일제약(주)",
+    "formulation": "정제,저작정"
+  },
+  "649405110": {
+    "title": "디로칸캡슐150밀리그램",
+    "mfdsCode": "629",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "캡슐",
+    "gnlNmCd": "159905ACH",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "기타의 화학요법제"
+    ],
+    "price": "2866",
+    "mfg": "영일제약(주)",
+    "formulation": "경질캡슐제"
+  },
+  "649405200": {
+    "title": "영일알마게이트정500밀리그램",
+    "mfdsCode": "234",
+    "payType": "급여",
+    "isETC": false,
+    "unit": "정",
+    "gnlNmCd": "105203ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "제산제"
+    ],
+    "price": "55",
+    "mfg": "영일제약(주)",
+    "formulation": "정제,저작정"
+  },
+  "650000122": {
+    "title": "더모베이트액",
+    "mfdsCode": "264",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "mL/통",
+    "gnlNmCd": "135838CLQ",
+    "injectPath": "외용",
+    "mdfsCodeName": [
+      "진통·진양·수렴·소염제"
+    ],
+    "price": "2750",
+    "mfg": "(주)글락소스미스클라인",
+    "formulation": "액제"
+  },
+  "650002960": {
+    "title": "아노로62.5엘립타",
+    "mfdsCode": "229",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "회/통",
+    "gnlNmCd": "631200CSI",
+    "injectPath": "외용",
+    "mdfsCodeName": [
+      "기타의 호흡기관용약"
+    ],
+    "price": "45563",
+    "mfg": "(주)글락소스미스클라인",
+    "formulation": "분무제 및 흡입제"
+  },
+  "650205820": {
+    "title": "에이브스정50밀리그램",
+    "mfdsCode": "396",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "500801ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "당뇨병용제"
+    ],
+    "price": "240",
+    "mfg": "안국약품(주)",
+    "formulation": "정제,저작정"
+  },
+  "650700070": {
+    "title": "넥시움정20밀리그람",
+    "mfdsCode": "232",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "367201ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "소화성궤양용제"
+    ],
+    "price": "721",
+    "mfg": "한국아스트라제네카(주)",
+    "formulation": "정제,저작정"
+  },
+  "652105050": {
+    "title": "테넬리아정20밀리그램",
+    "mfdsCode": "396",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "627301ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "당뇨병용제"
+    ],
+    "price": "732",
+    "mfg": "(주)한독",
+    "formulation": "정제,저작정"
+  },
+  "653500290": {
+    "title": "미라펙스정0.25밀리그램",
+    "mfdsCode": "119",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "402502ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "기타의 중추신경용약"
+    ],
+    "price": "400",
+    "mfg": "한국베링거인겔하임(주)",
+    "formulation": "정제,저작정"
+  },
+  "653700240": {
+    "title": "마그밀정",
+    "mfdsCode": "234",
+    "payType": "급여",
+    "isETC": false,
+    "unit": "정",
+    "gnlNmCd": "187402ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "제산제"
+    ],
+    "price": "23",
+    "mfg": "삼남제약(주)",
+    "formulation": "정제,저작정"
+  },
+  "654003750": {
+    "title": "로스틴정10밀리그램",
+    "mfdsCode": "218",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "454001ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "동맥경화용제"
+    ],
+    "price": "612",
+    "mfg": "아주약품(주)",
+    "formulation": "정제,저작정"
+  },
+  "654004800": {
+    "title": "아주스타정80/5밀리그램",
+    "mfdsCode": "214",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "511500ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "혈압강하제"
+    ],
+    "price": "725",
+    "mfg": "아주약품(주)",
+    "formulation": "정제,저작정"
+  },
+  "654004850": {
+    "title": "아주스타정40/5밀리그램",
+    "mfdsCode": "214",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "511600ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "혈압강하제"
+    ],
+    "price": "600",
+    "mfg": "아주약품(주)",
+    "formulation": "정제,저작정"
+  },
+  "655600080": {
+    "title": "글루코프리서방정500밀리그램",
+    "mfdsCode": "396",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "191502ATR",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "당뇨병용제"
+    ],
+    "price": "86",
+    "mfg": "한올바이오파마(주)",
+    "formulation": "서방형정제"
+  },
+  "655605230": {
+    "title": "알카본정",
+    "mfdsCode": "321",
+    "payType": "급여",
+    "isETC": false,
+    "unit": "정",
+    "gnlNmCd": "498200ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "칼슘제"
+    ],
+    "price": "85",
+    "mfg": "한올바이오파마(주)",
+    "formulation": "정제,저작정"
+  },
+  "656000260": {
+    "title": "록사펜정",
+    "mfdsCode": "114",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "186101ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "해열·진통·소염제"
+    ],
+    "price": "118",
+    "mfg": "알리코제약(주)",
+    "formulation": "정제,저작정"
+  },
+  "656003670": {
+    "title": "아르바정20mg",
+    "mfdsCode": "218",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "111502ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "동맥경화용제"
+    ],
+    "price": "712",
+    "mfg": "알리코제약(주)",
+    "formulation": "정제,저작정"
+  },
+  "656004100": {
+    "title": "디오디핀정5/160밀리그램",
+    "mfdsCode": "214",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "492800ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "혈압강하제"
+    ],
+    "price": "840",
+    "mfg": "알리코제약(주)",
+    "formulation": "정제,저작정"
+  },
+  "656004660": {
+    "title": "디오르반정160mg",
+    "mfdsCode": "214",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "247102ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "혈압강하제"
+    ],
+    "price": "830",
+    "mfg": "알리코제약(주)",
+    "formulation": "정제,저작정"
+  },
+  "656005360": {
+    "title": "시타글민정100밀리그램",
+    "mfdsCode": "396",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "694203ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "당뇨병용제"
+    ],
+    "price": "453",
+    "mfg": "알리코제약(주)",
+    "formulation": "정제,저작정"
+  },
+  "656005390": {
+    "title": "시타글민듀오서방정 50/500밀리그램",
+    "mfdsCode": "396",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "709300ATR",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "당뇨병용제"
+    ],
+    "price": "381",
+    "mfg": "알리코제약(주)",
+    "formulation": "서방형정제"
+  },
+  "657308500": {
+    "title": "미라베가서방정50밀리그램",
+    "mfdsCode": "259",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "625701ATR",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "기타의 비뇨생식기관 및 항문용약"
+    ],
+    "price": "324",
+    "mfg": "(주)동구바이오제약",
+    "formulation": "서방형정제"
+  },
+  "658204710": {
+    "title": "다파로진정10밀리그램",
+    "mfdsCode": "396",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "527302ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "당뇨병용제"
+    ],
+    "price": "393",
+    "mfg": "(주)비보존제약",
+    "formulation": "정제,저작정"
+  },
+  "660703690": {
+    "title": "위마코연질캡슐",
+    "mfdsCode": "218",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "캡슐",
+    "gnlNmCd": "679402ACS",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "동맥경화용제"
+    ],
+    "price": "252",
+    "mfg": "위더스제약(주)",
+    "formulation": "연질캡슐제"
+  },
+  "664600690": {
+    "title": "씬지록신정100마이크로그램",
+    "mfdsCode": "243",
+    "payType": "임의불가",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "183601ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "갑상선,부갑상선호르몬제"
+    ],
+    "price": "35",
+    "mfg": "(주)다림바이오텍",
+    "formulation": "정제,저작정"
+  },
+  "664600700": {
+    "title": "씬지록신정50마이크로그램",
+    "mfdsCode": "243",
+    "payType": "임의불가",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "183608ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "갑상선,부갑상선호르몬제"
+    ],
+    "price": "33",
+    "mfg": "(주)다림바이오텍",
+    "formulation": "정제,저작정"
+  },
+  "664602690": {
+    "title": "메티졸정5밀리그램",
+    "mfdsCode": "243",
+    "payType": "임의불가",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "191801ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "갑상선,부갑상선호르몬제"
+    ],
+    "price": "39",
+    "mfg": "(주)다림바이오텍",
+    "formulation": "정제,저작정"
+  },
+  "669806230": {
+    "title": "테리아정20밀리그램",
+    "mfdsCode": "396",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "695401ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "당뇨병용제"
+    ],
+    "price": "665",
+    "mfg": "구주제약(주)",
+    "formulation": "정제,저작정"
+  },
+  "669806280": {
+    "title": "테리아엠서방정10/750밀리그램",
+    "mfdsCode": "396",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "711000ATR",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "당뇨병용제"
+    ],
+    "price": "334",
+    "mfg": "구주제약(주)",
+    "formulation": "서방형정제"
+  },
+  "669806290": {
+    "title": "테리아엠서방정10/500밀리그램",
+    "mfdsCode": "396",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "711100ATR",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "당뇨병용제"
+    ],
+    "price": "334",
+    "mfg": "구주제약(주)",
+    "formulation": "서방형정제"
+  },
+  "670301150": {
+    "title": "이소트릴지속정60밀리그람",
+    "mfdsCode": "217",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "178504ATR",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "혈관확장제"
+    ],
+    "price": "312",
+    "mfg": "코오롱제약(주)",
+    "formulation": "서방형정제"
+  },
+  "670500540": {
+    "title": "보령바이오아스트릭스캡슐100밀리그램",
+    "mfdsCode": "219",
+    "payType": "급여",
+    "isETC": false,
+    "unit": "캡슐",
+    "gnlNmCd": "111001ACE",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "기타의 순환계용약"
+    ],
+    "price": "77",
+    "mfg": "(주)보령바이오파마",
+    "formulation": "장용캡슐제"
+  },
+  "671803431": {
+    "title": "포타겔현탁액",
+    "mfdsCode": "237",
+    "payType": "급여",
+    "isETC": false,
+    "unit": "mL/포",
+    "gnlNmCd": "146431ASS",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "정장제"
+    ],
+    "price": "246",
+    "mfg": "대원제약(주)",
+    "formulation": "현탁액제,현탁액용정제,현탁액용산제"
+  },
+  "671803580": {
+    "title": "핀카정",
+    "mfdsCode": "259",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "159001ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "기타의 비뇨생식기관 및 항문용약"
+    ],
+    "price": "732",
+    "mfg": "대원제약(주)",
+    "formulation": "정제,저작정"
+  },
+  "671805260": {
+    "title": "알포콜린연질캡슐",
+    "mfdsCode": "119",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "캡슐",
+    "gnlNmCd": "138101ACS",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "기타의 중추신경용약"
+    ],
+    "price": "445",
+    "mfg": "대원제약(주)",
+    "formulation": "연질캡슐제"
+  },
+  "671805622": {
+    "title": "코대원포르테시럽",
+    "mfdsCode": "222",
+    "payType": "임의불가",
+    "isETC": true,
+    "unit": "mL/포",
+    "gnlNmCd": "532500ASY",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "진해거담제"
+    ],
+    "price": "198",
+    "mfg": "대원제약(주)",
+    "formulation": "시럽제,건조시럽"
+  },
+  "671806480": {
+    "title": "베포스타비정",
+    "mfdsCode": "141",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "453902ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "항히스타민제"
+    ],
+    "price": "148",
+    "mfg": "대원제약(주)",
+    "formulation": "정제,저작정"
+  },
+  "671807171": {
+    "title": "코대원에스시럽",
+    "mfdsCode": "222",
+    "payType": "임의불가",
+    "isETC": true,
+    "unit": "mL/포",
+    "gnlNmCd": "690300ASY",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "진해거담제"
+    ],
+    "price": "490",
+    "mfg": "대원제약(주)",
+    "formulation": "시럽제,건조시럽"
+  },
+  "678600230": {
+    "title": "디스포지정5/80mg",
+    "mfdsCode": "214",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "492900ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "혈압강하제"
+    ],
+    "price": "805",
+    "mfg": "(주)다산제약",
+    "formulation": "정제,저작정"
+  },
+  "680900190": {
+    "title": "릭시아나정15밀리그램",
+    "mfdsCode": "333",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "643601ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "혈액응고저지제"
+    ],
+    "price": "812",
+    "mfg": "한국다이이찌산쿄(주)",
+    "formulation": "정제,저작정"
+  },
+  "693901790": {
+    "title": "셀레비카정5/20밀리그램",
+    "mfdsCode": "214",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "500500ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "혈압강하제"
+    ],
+    "price": "592",
+    "mfg": "(주)셀트리온제약",
+    "formulation": "정제,저작정"
+  },
+  "693901850": {
+    "title": "칸타칸정8밀리그램",
+    "mfdsCode": "214",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "122601ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "혈압강하제"
+    ],
+    "price": "452",
+    "mfg": "(주)셀트리온제약",
+    "formulation": "정제,저작정"
+  },
+  "693901860": {
+    "title": "칸타칸정16밀리그램",
+    "mfdsCode": "214",
+    "payType": "급여",
+    "isETC": true,
+    "unit": "정",
+    "gnlNmCd": "122602ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "혈압강하제"
+    ],
+    "price": "762",
+    "mfg": "(주)셀트리온제약",
+    "formulation": "정제,저작정"
+  }
+}

@@ -30,13 +30,13 @@ function processLabel1Data(rawData) {
         dose: `${rawData.singleDose || ''}알씩 하루 ${rawData.dailyDose || ''}번 복용`,
         
         // 처방일수 가공: "7일분"
-        prescriptonDays: `${rawData.prescriptionDays || ''}일분`,  // 템플릿 필드명 오타 그대로 사용
+        prescriptionDays: `${rawData.prescriptionDays || ''}일분`,
         
         // 조제일 가공: "조제일 2025.07.23"
         madeDate: `조제일 ${formattedDate}`,
         
         // 약국명 (config에서 전달받음)
-        phamacy: rawData.pharmacyName || ''  // 템플릿 필드명 오타 그대로 사용
+        pharmacy: rawData.pharmacyName || ''
     };
     
     return processedData;

@@ -75,8 +75,13 @@ window.addEventListener('DOMContentLoaded', () => {
             }
             itemDiv.dataset.index = index; // Store index for click handling
 
-            let html = `<span><strong>환자: ${data.patientName}</strong> (${data.patientId}) / 접수번호: ${data.receiptNum} / 병원: ${data.hospitalName} / 처방일: ${data.receiptDate}</span>`;
-            itemDiv.innerHTML = html;
+            if (data.isLoading) {
+                itemDiv.classList.add('loading');
+                itemDiv.innerHTML = '<div class="loading-overlay">약품 정보 조회 중...</div>';
+            } else {
+                let html = `<span><strong>환자: ${data.patientName}</strong> (${data.patientId}) / 접수번호: ${data.receiptNum} / 병원: ${data.hospitalName} / 처방일: ${data.receiptDate}</span>`;
+                itemDiv.innerHTML = html;
+            }
             prescriptionListContainer.prepend(itemDiv); // Prepend to display newest at top
         });
     }
@@ -98,47 +103,6 @@ window.addEventListener('DOMContentLoaded', () => {
         detailPatientName.textContent = data.patientName;
         detailPatientId.textContent = data.patientId;
 
-        // Add Print Button
-        const printButton = document.createElement('button');
-        printButton.id = 'print-btn';
-        printButton.textContent = '라벨 출력';
-        printButton.addEventListener('click', async () => {
-            const selectedPrinter = printerSelect.value;
-            if (!selectedPrinter) {
-                alert('프린터를 선택해주세요.');
-                return;
-            }
-            
-            if (selectedPrescriptionIndex > -1) {
-                const prescriptionToPrint = prescriptions[selectedPrescriptionIndex];
-                
-                try {
-                    // 상태 표시
-                    printButton.disabled = true;
-                    printButton.textContent = '출력 중...';
-                    
-                    // 새로운 API 사용
-                    const result = await window.electronAPI.printPrescription(prescriptionToPrint, selectedPrinter);
-                    
-                    if (result.success) {
-                        alert('라벨이 성공적으로 출력되었습니다.');
-                    } else {
-                        alert(`출력 실패: ${result.error}`);
-                    }
-                } catch (error) {
-                    console.error('출력 오류:', error);
-                    alert('출력 중 오류가 발생했습니다.');
-                } finally {
-                    printButton.disabled = false;
-                    printButton.textContent = '라벨 출력';
-                }
-            } else {
-                alert('출력할 처방전을 선택해주세요.');
-            }
-        });
-        detailView.insertBefore(printButton, detailView.firstChild);
-
-
         detailMedicineListTableBody.innerHTML = ''; // Clear existing medicine list
         data.medicines.forEach((med, index) => {
             const row = detailMedicineListTableBody.insertRow();
@@ -149,40 +113,32 @@ window.addEventListener('DOMContentLoaded', () => {
             labelButton.textContent = '라벨출력';
             labelButton.style.cssText = 'padding: 3px 8px; font-size: 12px; background-color: #4CAF50; color: white; border: none; border-radius: 3px; cursor: pointer;';
             labelButton.onclick = async () => {
-                const selectedPrinter = printerSelect.value;
-                if (!selectedPrinter) {
-                    alert('프린터를 선택해주세요.');
-                    return;
-                }
-                
-                // 오늘 날짜
-                const today = new Date();
-                const dateStr = `${today.getFullYear()}년${String(today.getMonth() + 1).padStart(2, '0')}월${String(today.getDate()).padStart(2, '0')}일`;
-                
-                // 라벨 데이터 준비
-                const labelData = {
-                    medicineName: med.name,
-                    dailyDose: med.dailyDose,
-                    singleDose: med.singleDose,
-                    prescriptionDays: med.prescriptionDays,
+                // 라벨 편집 창 열기
+                const prescriptionData = {
                     patientName: data.patientName,
-                    date: dateStr
+                    patientId: data.patientId,
+                    receiptNum: data.receiptNum,
+                    receiptDate: data.receiptDate,
+                    hospitalName: data.hospitalName,
+                    name: med.name,
+                    code: med.code,
+                    prescriptionDays: med.prescriptionDays,
+                    dailyDose: med.dailyDose,
+                    singleDose: med.singleDose
                 };
                 
                 try {
                     labelButton.disabled = true;
-                    labelButton.textContent = '출력 중...';
+                    labelButton.textContent = '열기 중...';
                     
-                    const result = await window.electronAPI.printMedicineLabel(labelData, selectedPrinter);
+                    const result = await window.electronAPI.openLabelEditor(prescriptionData, med.code);
                     
-                    if (result.success) {
-                        alert('라벨이 성공적으로 출력되었습니다.');
-                    } else {
-                        alert(`라벨 출력 실패: ${result.error}`);
+                    if (!result.success) {
+                        alert(`편집 창을 열 수 없습니다: ${result.error}`);
                     }
                 } catch (error) {
-                    console.error('라벨 출력 오류:', error);
-                    alert('라벨 출력 중 오류가 발생했습니다.');
+                    console.error('편집 창 오류:', error);
+                    alert('편집 창을 여는 중 오류가 발생했습니다.');
                 } finally {
                     labelButton.disabled = false;
                     labelButton.textContent = '라벨출력';
@@ -190,8 +146,22 @@ window.addEventListener('DOMContentLoaded', () => {
             };
             buttonCell.appendChild(labelButton);
             
+            // 약품코드 - 이미 9자리로 저장됨
             row.insertCell().textContent = med.code;
-            row.insertCell().textContent = med.name;
+            
+            // 약품명 - medicine.json의 title 우선 사용 (medicineInfo가 있으면 사용, 없으면 name 사용)
+            row.insertCell().textContent = med.medicineInfo?.title || med.name || '-';
+            
+            // 전문/일반 구분
+            const etcCell = row.insertCell();
+            if (med.medicineInfo) {
+                etcCell.textContent = med.medicineInfo.isETC ? '전문' : '일반';
+                etcCell.style.color = med.medicineInfo.isETC ? '#d32f2f' : '#388e3c';
+                etcCell.style.fontWeight = 'bold';
+            } else {
+                etcCell.textContent = '-';
+            }
+            
             row.insertCell().textContent = med.prescriptionDays;
             row.insertCell().textContent = med.singleDose;
             row.insertCell().textContent = med.dailyDose;
@@ -256,13 +226,40 @@ window.addEventListener('DOMContentLoaded', () => {
         updatePrescriptionsAndDisplay(data);
     });
 
+    // 로딩 상태 처리
+    window.electronAPI.onParsedDataLoading((data) => {
+        const preparationDate = data.preparationDate;
+        if (preparationDate === dateSelect.value) {
+            // 임시 로딩 항목 추가
+            const loadingData = {
+                ...data,
+                patientName: '약품 정보 조회 중...',
+                patientId: '',
+                receiptNum: '',
+                hospitalName: '',
+                receiptDate: '',
+                medicines: [],
+                isLoading: true
+            };
+            prescriptions.push(loadingData);
+            updatePrescriptionsAndDisplay(prescriptions);
+        }
+    });
+
     window.electronAPI.onParsedData((data) => {
         const preparationDate = data.preparationDate; // Assuming preparationDate is now part of data
         if (preparationDate === dateSelect.value) {
-             // Check if this data already exists (e.g., if the file was re-processed)
-             // Add new entry, allowing duplicates as requested
-             prescriptions.push(data);
-             updatePrescriptionsAndDisplay(prescriptions);
+            // 로딩 항목 찾아서 교체
+            const loadingIndex = prescriptions.findIndex(p => 
+                p.isLoading && p.timestamp === data.timestamp
+            );
+            
+            if (loadingIndex !== -1) {
+                prescriptions[loadingIndex] = data;
+            } else {
+                prescriptions.push(data);
+            }
+            updatePrescriptionsAndDisplay(prescriptions);
         }
     });
 

@@ -11,7 +11,8 @@ function parseFileContent(buffer) {
 
         // Use regex to extract fields based on patterns of non-space characters and spaces
         // This regex is carefully crafted based on the sample to capture specific fields
-        const headRegex = /^(\d{11})\s+(\d+)\s+(\d+)\s+(\d{8})\s+(\d{13})\s+(\d{8})\s+(.*?)(?:\s+(\d))?\s+(.*?)\s+.*$/;
+        // Updated to handle time info (HH:MM) after date for prescriptions received before 9am
+        const headRegex = /^(\d{11})\s+(\d+)\s+(\d+)\s+(\d{8})(?:\s{5}|\d{2}:\d{2})(\d{13})\s+(\d{8})\s+(.*?)(?:\s+(\d))?\s+(.*?)\s+.*$/;
         const headFields = jvpHeadContent.match(headRegex);
 
         if (headFields) {
@@ -47,35 +48,26 @@ function parseFileContent(buffer) {
         const medicineEntries = jvmHeadContent.trim().split(/(?=[TE]\d{9})/).filter(entry => entry.trim().length > 0);
 
         medicineEntries.forEach(entry => {
-            // First try the pattern with usage instructions (e.g., "매식전 30")
-            const medicineWithInstructionsRegex = /^([TE]\d{9})\s+(.*?)\s+([가-힣]+\s*\d+)\s+(\d+)\s+(\d+)(\d+(?:\.\d+)?)\s*.*$/;
-            let match = entry.match(medicineWithInstructionsRegex);
+            // 패턴: 약품코드(T/E+9자리) 약품명 처방일수 하루투여횟수 1회투여량
+            // 예: T643100080 약품명 5 3 1 -> 5일분, 하루3번, 1회1알
+            // 예: T649404690 약품명 5 3 0.5 -> 5일분, 하루3번, 1회0.5알
+            
+            // 숫자들을 개별적으로 캡처하도록 수정
+            const medicineRegex = /^([TE]\d{9})\s+(.*?)\s+(\d+)\s+(\d)(\d+(?:\.\d+)?)\s*.*$/;
+            const match = entry.match(medicineRegex);
             
             if (match) {
-                // Pattern with usage instructions found
                 const medicine = {
-                    code: match[1].trim(), // Now includes 'T' or 'E' prefix
+                    code: match[1].trim().substring(1), // Remove 'T' or 'E' prefix, use only 9-digit code
                     name: match[2].trim().replace(/_$/, ''), // Clean trailing underscores
-                    prescriptionDays: match[4].trim(), // Skip the usage instruction
-                    dailyDose: match[5].trim(),
-                    singleDose: match[6].trim()
+                    prescriptionDays: match[3].trim(),  // 처방일수 (예: 5)
+                    dailyDose: match[4].trim(),         // 하루투여횟수 (예: 3)
+                    singleDose: match[5].trim()         // 1회투여량 (예: 1 또는 0.5)
                 };
                 parsedData.medicines.push(medicine);
             } else {
-                // Try the original pattern without usage instructions
-                const medicineRegex = /^([TE]\d{9})\s+(.*?)\s+(\d+)\s+(\d+)(\d+(?:\.\d+)?)\s*.*$/;
-                match = entry.match(medicineRegex);
-                
-                if (match) {
-                    const medicine = {
-                        code: match[1].trim(), // Now includes 'T' or 'E' prefix
-                        name: match[2].trim().replace(/_$/, ''), // Clean trailing underscores
-                        prescriptionDays: match[3].trim(),
-                        dailyDose: match[4].trim(),
-                        singleDose: match[5].trim()
-                    };
-                    parsedData.medicines.push(medicine);
-                }
+                // 매치 실패 시 로그
+                console.log('Failed to parse medicine entry:', entry);
             }
         });
 

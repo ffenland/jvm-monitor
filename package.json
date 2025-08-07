@@ -13,6 +13,7 @@
   "dependencies": {
     "chokidar": "^4.0.3",
     "electron": "^37.2.0",
-    "iconv-lite": "^0.6.3"
+    "iconv-lite": "^0.6.3",
+    "xml2js": "^0.6.2"
   }
 }
