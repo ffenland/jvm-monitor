@@ -276,7 +276,71 @@ TXT 파일에서 처방전 데이터를 추출합니다.
 - [ ] 출력 미리보기 기능
 - [ ] 배치 출력 기능
 - [ ] 출력 이력 관리
+- [ ] **SQLite 데이터베이스 마이그레이션**
+  - JSON 파일 기반에서 SQLite로 전환
+  - better-sqlite3 패키지 사용
+  - 처방전, 약품정보, 처방약품 테이블 구조화
+  - 기존 JSON 데이터 마이그레이션 스크립트 제공
+  - 검색, 통계, 백업 기능 개선
+
+## 라벨 템플릿 필드 가이드
+
+Brother 라벨 프린터 템플릿(.lbx)에서 사용 가능한 필드명과 설명입니다.
+
+### 기본 필드
+- `patientName` - 환자명 (예: 홍길동)
+- `medicineName` - 약품명 (예: 시크렌캡슐)
+- `medicineType` - 약품 종류 (예: 먹는약, 바르는약)
+- `dose` - 복용법 (예: 2알씩 하루 3번 복용)
+- `prescriptionDays` - 처방일수 (예: 7일분)
+- `madeDate` - 조제일 (예: 조제일 2025.08.11)
+- `pharmacy` - 약국명 (설정에서 지정)
+
+### 처방전 필드
+- `hospitalName` - 병원명
+- `receiptDate` - 접수일자
+- `receiptNum` - 접수번호
+- `doctorName` - 의사명
+- `medicines` - 약품 목록 (JSON 문자열)
+
+### 약품 상세 필드
+- `dailyDose` - 일일 투여 횟수
+- `singleDose` - 1회 투여량
+- `dailyDoseText` - 일일 투여 텍스트 (예: 하루 3회)
+- `singleDoseText` - 1회 투여 텍스트 (예: 1회 2정)
+- `prescriptionDaysText` - 처방일수 텍스트 (예: 7일분)
+- `fullDescription` - 전체 설명
+- `endDate` - 복용 종료일
+
+## 약품 상세정보 API
+
+### getDrugPrdtPrmsnDtlInq05 API
+공공데이터 포털의 의약품 제품허가 상세정보 API를 사용하여 약품의 보관방법과 효능효과를 조회합니다.
+
+- **엔드포인트**: `https://apis.data.go.kr/1471000/DrugPrdtPrmsnInfoService06/getDrugPrdtPrmsnDtlInq05`
+- **약품코드 검색 파라미터**: `edi_code` (medicine.json의 code 값 사용)
+- **약품명 검색 파라미터**: `item_name`
+- **응답 형식**: JSON (`type=json`)
+
+#### 주요 파라미터
+```javascript
+{
+    serviceKey: API_KEY,
+    pageNo: '1',
+    numOfRows: '10',
+    type: 'json',
+    edi_code: '621802320'  // medicine.json의 code 값 (EDI 코드)
+}
+```
+
+#### 파싱 필드
+- **STORAGE_METHOD**: 보관방법 (용기와 온도로 분리)
+  - storageContainer: 보관 용기 (예: 기밀용기, 차광기밀용기)
+  - storageTemp: 보관 온도 (예: 실온, 20℃이하)
+- **EE_DOC_DATA**: 효능효과 (XML 형식으로 제공, 파싱 필요)
+- **ITEM_NAME**: 약품명
+- **ENTP_NAME**: 제조사
 
 ---
-*최종 업데이트: 2025-08-06*
+*최종 업데이트: 2025-08-11*
 *작성자: Claude Assistant*

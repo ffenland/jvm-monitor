@@ -33,5 +33,12 @@
     "apiUrl": "http://apis.data.go.kr/B551182/dgamtCrtrInfoService1.2/getDgamtList?mdsCd=652903313",
     "failedAt": "2025-08-07T00:06:27.803Z",
     "reason": "No price info found"
+  },
+  {
+    "code": "693901660",
+    "name": "칸타칸플러스정16/12.5mg",
+    "apiUrl": "http://apis.data.go.kr/B551182/dgamtCrtrInfoService1.2/getDgamtList?mdsCd=693901660",
+    "failedAt": "2025-08-08T03:08:56.163Z",
+    "reason": "No price info found"
   }
 ]

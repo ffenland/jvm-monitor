@@ -332,7 +332,180 @@ try {
     });
 }
 
+/**
+ * Preview template as BMP image
+ * @param {object} params Parameters for preview
+ * @returns {Promise<object>} A promise that resolves with the preview result
+ */
+async function previewTemplate(params = {}) {
+    return new Promise((resolve, reject) => {
+        // PowerShell 실행 경로 - 항상 32비트 버전 사용
+        const powershellPath = 'C:\\WINDOWS\\SysWOW64\\WindowsPowerShell\\v1.0\\powershell.exe';
+        
+        // 임시 BMP 파일 경로
+        const tempDir = path.join(__dirname, 'temp');
+        if (!fs.existsSync(tempDir)) {
+            fs.mkdirSync(tempDir, { recursive: true });
+        }
+        const tempBmpPath = path.join(tempDir, `preview_${Date.now()}.bmp`);
+        
+        // PowerShell 스크립트 생성
+        const scriptContent = `
+# Preview template as BMP
+$OutputEncoding = [System.Text.Encoding]::UTF8
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
+try {
+    # Create b-PAC COM object
+    $bpac = New-Object -ComObject "bpac.Document"
+    
+    # Open template
+    $templatePath = "${params.templatePath.replace(/\\/g, '\\\\')}"
+    $openResult = $bpac.Open($templatePath)
+    if (-not $openResult) {
+        throw "Failed to open template file: $templatePath"
+    }
+    
+    # Set sample text data for preview
+    ${Object.entries(params).map(([key, value]) => {
+        if (key !== 'templatePath' && value) {
+            return `
+    try {
+        $obj = $bpac.GetObject("${key}")
+        if ($obj -ne $null) {
+            $obj.Text = "${value.toString().replace(/"/g, '`"')}"
+            [System.Runtime.Interopservices.Marshal]::ReleaseComObject($obj) | Out-Null
+        }
+    } catch {}`;
+        }
+        return '';
+    }).join('')}
+    
+    # Export as BMP (FileType=4: color BMP, DPI=180)
+    $bmpPath = "${tempBmpPath.replace(/\\/g, '\\\\')}"
+    $exportResult = $bpac.Export(4, $bmpPath, 180)
+    
+    if ($exportResult) {
+        # Read BMP file and convert to Base64
+        $bytes = [System.IO.File]::ReadAllBytes($bmpPath)
+        $base64 = [System.Convert]::ToBase64String($bytes)
+        
+        $result = @{
+            error = $false
+            message = "Preview generated successfully"
+            data = $base64
+        }
+    } else {
+        $result = @{
+            error = $true
+            message = "Failed to export preview"
+            data = ""
+        }
+    }
+    
+    # Clean up COM object
+    $bpac.Close()
+    [System.Runtime.Interopservices.Marshal]::ReleaseComObject($bpac) | Out-Null
+    
+    Write-Output ($result | ConvertTo-Json -Compress)
+    
+} catch {
+    $result = @{
+        error = $true
+        message = "Error: $_"
+        data = ""
+    }
+    Write-Output ($result | ConvertTo-Json -Compress)
+}`;
+
+        // UTF-8 BOM 추가
+        const BOM = '\ufeff';
+        const tempScriptPath = path.join(__dirname, `temp_preview_${Date.now()}.ps1`);
+        fs.writeFileSync(tempScriptPath, BOM + scriptContent, 'utf8');
+
+        // PowerShell 실행
+        const ps = spawn(powershellPath, [
+            '-ExecutionPolicy', 'Bypass',
+            '-NoProfile',
+            '-File', tempScriptPath
+        ], {
+            cwd: __dirname,
+            windowsHide: true
+        });
+
+        let stdout = '';
+        let stderr = '';
+
+        ps.stdout.on('data', (data) => {
+            stdout += data.toString();
+        });
+
+        ps.stderr.on('data', (data) => {
+            stderr += data.toString();
+        });
+
+        ps.on('close', (code) => {
+            // Clean up temp files
+            try {
+                fs.unlinkSync(tempScriptPath);
+                if (fs.existsSync(tempBmpPath)) {
+                    fs.unlinkSync(tempBmpPath);
+                }
+            } catch (e) {
+                // Ignore cleanup errors
+            }
+
+            if (code !== 0) {
+                reject(new Error(`PowerShell exited with code ${code}: ${stderr}`));
+                return;
+            }
+
+            try {
+                const jsonMatch = stdout.match(/\{.*\}/);
+                if (jsonMatch) {
+                    const result = JSON.parse(jsonMatch[0]);
+                    if (!result.error && result.data) {
+                        resolve({
+                            success: true,
+                            data: result.data
+                        });
+                    } else {
+                        resolve({
+                            success: false,
+                            error: result.message || 'Preview generation failed'
+                        });
+                    }
+                } else {
+                    resolve({
+                        success: false,
+                        error: 'Invalid response from PowerShell'
+                    });
+                }
+            } catch (e) {
+                resolve({
+                    success: false,
+                    error: e.message
+                });
+            }
+        });
+
+        ps.on('error', (error) => {
+            // Clean up temp files
+            try {
+                fs.unlinkSync(tempScriptPath);
+                if (fs.existsSync(tempBmpPath)) {
+                    fs.unlinkSync(tempBmpPath);
+                }
+            } catch (e) {
+                // Ignore cleanup errors
+            }
+            reject(error);
+        });
+    });
+}
+
 module.exports = { 
     printWithBrother, 
-    getBrotherPrinters
+    getBrotherPrinters,
+    previewTemplate
 };

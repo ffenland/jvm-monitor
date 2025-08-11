@@ -257,6 +257,7 @@
 </head>
 <body>
     <button id="settings-btn">설정</button>
+    <button id="label-info-btn" style="position: absolute; top: 10px; right: 90px; padding: 5px 10px; font-size: 13px; background-color: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer;">라벨정보</button>
     
     <!-- 설정 모달 -->
     <div id="settings-modal" class="modal">
@@ -270,15 +271,161 @@
                 </div>
                 <div class="form-group">
                     <label for="template-path">인쇄 템플릿 파일:</label>
-                    <select id="template-path" name="templatePath">
-                        <option value="">템플릿을 선택하세요</option>
-                    </select>
+                    <div style="display: flex; gap: 10px;">
+                        <select id="template-path" name="templatePath" style="flex: 1;">
+                            <option value="">템플릿을 선택하세요</option>
+                        </select>
+                        <button type="button" id="preview-template-btn" style="padding: 8px 16px; background-color: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer;">미리보기</button>
+                    </div>
+                    <div id="template-preview" style="margin-top: 10px; text-align: center; display: none;">
+                        <img id="preview-image" style="max-width: 100%; border: 1px solid #ddd; border-radius: 4px;" />
+                    </div>
                 </div>
                 <div class="modal-buttons">
                     <button type="button" class="cancel-btn" id="cancel-btn">취소</button>
                     <button type="submit" class="save-btn">저장</button>
                 </div>
             </form>
+        </div>
+    </div>
+    
+    <!-- 라벨정보 모달 -->
+    <div id="label-info-modal" class="modal">
+        <div class="modal-content" style="max-width: 700px; max-height: 80vh; overflow-y: auto;">
+            <span class="close" id="label-info-close">&times;</span>
+            <h2>라벨 템플릿 필드 가이드</h2>
+            <p style="color: #666; font-size: 13px;">Brother P-touch Editor에서 템플릿 생성 시 아래 필드명을 사용하세요.</p>
+            
+            <div style="margin-top: 20px;">
+                <h3 style="color: #0056b3; font-size: 16px; border-bottom: 2px solid #0056b3; padding-bottom: 5px;">기본 필드</h3>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                    <thead>
+                        <tr style="background-color: #f0f2f5;">
+                            <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">필드명</th>
+                            <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">설명</th>
+                            <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">예시</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-family: monospace; background-color: #f9f9f9;">patientName</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">환자명</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #666;">홍길동</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-family: monospace; background-color: #f9f9f9;">medicineName</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">약품명</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #666;">시크렌캡슐</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-family: monospace; background-color: #f9f9f9;">medicineType</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">약품 종류</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #666;">먹는약, 바르는약</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-family: monospace; background-color: #f9f9f9;">dose</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">복용법</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #666;">2알씩 하루 3번 복용</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-family: monospace; background-color: #f9f9f9;">prescriptionDays</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">처방일수</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #666;">7일분</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-family: monospace; background-color: #f9f9f9;">madeDate</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">조제일</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #666;">조제일 2025.08.11</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-family: monospace; background-color: #f9f9f9;">pharmacy</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">약국명 (설정에서 지정)</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #666;">행복약국</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <h3 style="color: #0056b3; font-size: 16px; border-bottom: 2px solid #0056b3; padding-bottom: 5px;">약품 상세 필드</h3>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                    <thead>
+                        <tr style="background-color: #f0f2f5;">
+                            <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">필드명</th>
+                            <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">설명</th>
+                            <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">예시</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-family: monospace; background-color: #f9f9f9;">dailyDose</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">일일 투여 횟수</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #666;">3</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-family: monospace; background-color: #f9f9f9;">singleDose</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">1회 투여량</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #666;">2</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-family: monospace; background-color: #f9f9f9;">dailyDoseText</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">일일 투여 텍스트</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #666;">하루 3회</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-family: monospace; background-color: #f9f9f9;">singleDoseText</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">1회 투여 텍스트</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #666;">1회 2정</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-family: monospace; background-color: #f9f9f9;">prescriptionDaysText</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">처방일수 텍스트</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #666;">7일분</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <h3 style="color: #0056b3; font-size: 16px; border-bottom: 2px solid #0056b3; padding-bottom: 5px;">처방전 필드</h3>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                    <thead>
+                        <tr style="background-color: #f0f2f5;">
+                            <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">필드명</th>
+                            <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">설명</th>
+                            <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">예시</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-family: monospace; background-color: #f9f9f9;">hospitalName</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">병원명</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #666;">서울대학교병원</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-family: monospace; background-color: #f9f9f9;">receiptDate</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">접수일자</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #666;">2025년08월11일</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; border: 1px solid #ddd; font-family: monospace; background-color: #f9f9f9;">receiptNum</td>
+                            <td style="padding: 8px; border: 1px solid #ddd;">접수번호</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; color: #666;">12345</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div style="margin-top: 20px; padding: 10px; background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 4px;">
+                <p style="margin: 0; color: #856404; font-size: 13px;">
+                    <strong>참고:</strong> 템플릿 필드명은 대소문자를 정확히 구분해야 합니다. 
+                    Brother P-touch Editor에서 텍스트 객체의 이름을 위 필드명과 동일하게 설정하세요.
+                </p>
+            </div>
+            
+            <div class="modal-buttons">
+                <button type="button" class="save-btn" id="label-info-ok">확인</button>
+            </div>
         </div>
     </div>
     

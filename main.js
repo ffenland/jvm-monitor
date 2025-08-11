@@ -3,8 +3,8 @@ const path = require('path');
 const fs = require('fs');
 const chokidar = require('chokidar');
 const { parseFileContent } = require('./parser');
-const { printWithBrother, getBrotherPrinters } = require('./print_brother');
-const { processLabel1Data, processMedicineLabel, processPrescriptionData } = require('./dataProcessor');
+const { printWithBrother, getBrotherPrinters, previewTemplate } = require('./print_brother');
+const { processLabel1Data, processMedicineLabel, processPrescriptionData, fetchAndParseDrugDetail } = require('./dataProcessor');
 const simpleSecureConfig = require('./simpleSecureConfig');
 const drugInfoManager = require('./druginfo');
 const monitorPath = 'C:\\atc'; // Directory to monitor
@@ -147,6 +147,38 @@ ipcMain.handle('get-brother-printers', async () => {
     } catch (error) {
         console.error('Error getting printers:', error);
         return { success: false, error: error.message, printers: [] };
+    }
+});
+
+// 템플릿 미리보기
+ipcMain.handle('preview-template', async (event, templatePath) => {
+    try {
+        // 상대 경로를 절대 경로로 변환
+        let fullPath = templatePath;
+        if (templatePath.startsWith('./')) {
+            fullPath = path.join(__dirname, templatePath.substring(2));
+        } else if (!path.isAbsolute(templatePath)) {
+            fullPath = path.join(__dirname, templatePath);
+        }
+        
+        // 샘플 데이터로 미리보기 생성
+        const config = loadConfig();
+        const sampleData = {
+            templatePath: fullPath,
+            patientName: '홍길동',
+            medicineName: '시크렌캡슐',
+            medicineType: '먹는약',
+            dose: '2알씩 하루 3번 복용',
+            prescriptionDays: '7일분',
+            madeDate: `조제일 ${new Date().toLocaleDateString('ko-KR')}`,
+            pharmacy: config.pharmacyName || '약국명'
+        };
+        
+        const result = await previewTemplate(sampleData);
+        return result;
+    } catch (error) {
+        console.error('Error previewing template:', error);
+        return { success: false, error: error.message };
     }
 });
 
@@ -344,6 +376,152 @@ ipcMain.handle('print-from-editor', async (event, printData) => {
         console.error('Error in print-from-editor:', error);
         return { success: false, error: error.message };
     }
+});
+
+// medicine.json 목록 조회
+ipcMain.handle('get-medicine-list', async () => {
+    try {
+        const medicineJsonPath = path.join(__dirname, 'db', 'medicine.json');
+        if (fs.existsSync(medicineJsonPath)) {
+            const content = fs.readFileSync(medicineJsonPath, 'utf8');
+            return JSON.parse(content);
+        }
+        return [];
+    } catch (error) {
+        console.error('medicine.json 읽기 실패:', error);
+        return [];
+    }
+});
+
+// 약품 상세정보 조회 및 medicine.json 업데이트
+ipcMain.handle('fetch-drug-detail', async (event, drugCode) => {
+    try {
+        console.log('약품 상세정보 조회 - 코드:', drugCode);
+        
+        // API에서 약품 정보 조회 (약품코드 사용)
+        const drugDetail = await fetchAndParseDrugDetail(drugCode);
+        
+        if (!drugDetail) {
+            return { success: false, message: '약품 정보를 찾을 수 없습니다.' };
+        }
+        
+        // medicine.json 파일 경로
+        const medicineJsonPath = path.join(__dirname, 'db', 'medicine.json');
+        
+        // 기존 데이터 읽기
+        let medicines = [];
+        if (fs.existsSync(medicineJsonPath)) {
+            const content = fs.readFileSync(medicineJsonPath, 'utf8');
+            medicines = JSON.parse(content);
+        }
+        
+        // 기존 데이터에서 같은 약품 찾기 (code 또는 title로)
+        const existingIndex = medicines.findIndex(m => 
+            m.code === drugDetail.code || 
+            m.title === drugDetail.title
+        );
+        
+        if (existingIndex >= 0) {
+            // 기존 데이터 업데이트 (기존 필드 유지하면서 새 필드 추가)
+            medicines[existingIndex] = {
+                ...medicines[existingIndex],
+                storageContainer: drugDetail.storageContainer,
+                storageTemp: drugDetail.storageTemp,
+                effects: drugDetail.effects,
+                rawStorageMethod: drugDetail.rawStorageMethod,
+                updateDate: drugDetail.updateDate
+            };
+            console.log('기존 약품 정보 업데이트:', drugDetail.title);
+        } else {
+            // 새 데이터 추가
+            medicines.push(drugDetail);
+            console.log('새 약품 정보 추가:', drugDetail.title);
+        }
+        
+        // 파일 저장
+        fs.writeFileSync(medicineJsonPath, JSON.stringify(medicines, null, 2), 'utf8');
+        
+        return { 
+            success: true, 
+            data: drugDetail,
+            message: existingIndex >= 0 ? '약품 정보가 업데이트되었습니다.' : '새 약품 정보가 추가되었습니다.'
+        };
+        
+    } catch (error) {
+        console.error('약품 상세정보 조회 실패:', error);
+        return { success: false, error: error.message };
+    }
+});
+
+// 다수의 약품 상세정보 일괄 업데이트
+ipcMain.handle('batch-update-drug-details', async (event, drugCodes) => {
+    const results = [];
+    const totalCount = drugCodes.length;
+    let successCount = 0;
+    let failCount = 0;
+    
+    for (const drugCode of drugCodes) {
+        try {
+            const result = await fetchAndParseDrugDetail(drugCode);
+            if (result) {
+                results.push(result);
+                successCount++;
+            } else {
+                failCount++;
+            }
+            
+            // 진행 상황 전송
+            mainWindow.webContents.send('batch-update-progress', {
+                current: successCount + failCount,
+                total: totalCount,
+                currentDrug: drugCode
+            });
+            
+            // API 부하 방지를 위한 대기
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+        } catch (error) {
+            console.error(`${drugCode} 조회 실패:`, error);
+            failCount++;
+        }
+    }
+    
+    // medicine.json 업데이트
+    if (results.length > 0) {
+        const medicineJsonPath = path.join(__dirname, 'db', 'medicine.json');
+        let medicines = [];
+        
+        if (fs.existsSync(medicineJsonPath)) {
+            const content = fs.readFileSync(medicineJsonPath, 'utf8');
+            medicines = JSON.parse(content);
+        }
+        
+        // 결과 병합
+        results.forEach(drugDetail => {
+            const existingIndex = medicines.findIndex(m => 
+                m.code === drugDetail.code || m.title === drugDetail.title
+            );
+            
+            if (existingIndex >= 0) {
+                medicines[existingIndex] = {
+                    ...medicines[existingIndex],
+                    ...drugDetail
+                };
+            } else {
+                medicines.push(drugDetail);
+            }
+        });
+        
+        fs.writeFileSync(medicineJsonPath, JSON.stringify(medicines, null, 2), 'utf8');
+    }
+    
+    return {
+        success: true,
+        totalCount,
+        successCount,
+        failCount,
+        message: `총 ${totalCount}개 중 ${successCount}개 성공, ${failCount}개 실패`
+    };
 });
 
 ipcMain.handle('print-medicine-label', async (event, labelData, printerName) => {

@@ -15,6 +15,17 @@ window.addEventListener('DOMContentLoaded', () => {
     const settingsForm = document.getElementById('settings-form');
     const pharmacyNameInput = document.getElementById('pharmacy-name');
     const templatePathSelect = document.getElementById('template-path');
+    
+    // 라벨정보 관련 요소
+    const labelInfoBtn = document.getElementById('label-info-btn');
+    const labelInfoModal = document.getElementById('label-info-modal');
+    const labelInfoClose = document.getElementById('label-info-close');
+    const labelInfoOk = document.getElementById('label-info-ok');
+    
+    // 템플릿 미리보기 관련 요소
+    const previewTemplateBtn = document.getElementById('preview-template-btn');
+    const templatePreviewDiv = document.getElementById('template-preview');
+    const previewImage = document.getElementById('preview-image');
 
     let prescriptions = []; // This will hold the list of prescriptions for the selected date
     let selectedPrescriptionIndex = -1;
@@ -384,6 +395,9 @@ window.addEventListener('DOMContentLoaded', () => {
         if (event.target === settingsModal) {
             settingsModal.style.display = 'none';
         }
+        if (event.target === labelInfoModal) {
+            labelInfoModal.style.display = 'none';
+        }
     });
     
     // 설정 저장
@@ -407,6 +421,51 @@ window.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('설정 저장 오류:', error);
             alert('설정 저장 중 오류가 발생했습니다.');
+        }
+    });
+    
+    // 라벨정보 버튼 이벤트
+    labelInfoBtn.addEventListener('click', () => {
+        labelInfoModal.style.display = 'block';
+    });
+    
+    labelInfoClose.addEventListener('click', () => {
+        labelInfoModal.style.display = 'none';
+    });
+    
+    labelInfoOk.addEventListener('click', () => {
+        labelInfoModal.style.display = 'none';
+    });
+    
+    // 템플릿 미리보기 버튼 이벤트
+    previewTemplateBtn.addEventListener('click', async () => {
+        const templatePath = templatePathSelect.value;
+        if (!templatePath) {
+            alert('템플릿을 먼저 선택해주세요.');
+            return;
+        }
+        
+        // 로딩 표시
+        previewTemplateBtn.disabled = true;
+        previewTemplateBtn.textContent = '로딩...';
+        templatePreviewDiv.style.display = 'none';
+        
+        try {
+            const result = await window.electronAPI.previewTemplate(templatePath);
+            if (result.success && result.data) {
+                // Base64 이미지 표시
+                previewImage.src = `data:image/bmp;base64,${result.data}`;
+                templatePreviewDiv.style.display = 'block';
+            } else {
+                alert(`미리보기 생성 실패: ${result.error || '알 수 없는 오류'}`);
+            }
+        } catch (error) {
+            console.error('미리보기 오류:', error);
+            alert('미리보기 생성 중 오류가 발생했습니다.');
+        } finally {
+            // 버튼 복원
+            previewTemplateBtn.disabled = false;
+            previewTemplateBtn.textContent = '미리보기';
         }
     });
 
