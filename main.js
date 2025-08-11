@@ -4,7 +4,7 @@ const fs = require('fs');
 const chokidar = require('chokidar');
 const { parseFileContent } = require('./parser');
 const { printWithBrother, getBrotherPrinters, previewTemplate } = require('./print_brother');
-const { processLabel1Data, processMedicineLabel, processPrescriptionData, fetchAndParseDrugDetail } = require('./dataProcessor');
+const { processPrescriptionData, fetchAndParseDrugDetail } = require('./dataProcessor');
 const simpleSecureConfig = require('./simpleSecureConfig');
 const drugInfoManager = require('./druginfo');
 const monitorPath = 'C:\\atc'; // Directory to monitor
@@ -121,7 +121,7 @@ ipcMain.handle('get-templates', async () => {
 // 템플릿 필드 확인
 ipcMain.handle('check-template-fields', async (event, templatePath) => {
     try {
-        const { executePowerShell } = require('./print_brother');
+        const { spawn } = require('child_process');
         let fullPath = templatePath;
         
         // 상대 경로를 절대 경로로 변환
@@ -131,8 +131,54 @@ ipcMain.handle('check-template-fields', async (event, templatePath) => {
             fullPath = path.join(__dirname, templatePath);
         }
         
-        const result = await executePowerShell('check_template_fields.ps1', { templatePath: fullPath });
-        return result;
+        // PowerShell 스크립트 경로
+        const scriptPath = path.join(__dirname, 'scripts', 'check_template_fields.ps1');
+        const powershellPath = 'C:\\WINDOWS\\SysWOW64\\WindowsPowerShell\\v1.0\\powershell.exe';
+        
+        return new Promise((resolve, reject) => {
+            const ps = spawn(powershellPath, [
+                '-ExecutionPolicy', 'Bypass',
+                '-NoProfile',
+                '-File', scriptPath,
+                '-templatePath', fullPath
+            ]);
+            
+            let stdout = '';
+            let stderr = '';
+            
+            ps.stdout.on('data', (data) => {
+                stdout += data.toString();
+            });
+            
+            ps.stderr.on('data', (data) => {
+                stderr += data.toString();
+            });
+            
+            ps.on('close', (code) => {
+                if (code !== 0) {
+                    console.error('PowerShell error:', stderr);
+                    resolve({ error: true, message: 'Failed to check template fields', fields: [] });
+                } else {
+                    try {
+                        const jsonMatch = stdout.match(/\{.*\}/);
+                        if (jsonMatch) {
+                            const result = JSON.parse(jsonMatch[0]);
+                            resolve(result);
+                        } else {
+                            resolve({ error: true, message: 'No output from script', fields: [] });
+                        }
+                    } catch (e) {
+                        console.error('Failed to parse output:', e);
+                        resolve({ error: true, message: 'Failed to parse output', fields: [] });
+                    }
+                }
+            });
+            
+            ps.on('error', (error) => {
+                console.error('Failed to start PowerShell:', error);
+                resolve({ error: true, message: error.message, fields: [] });
+            });
+        });
     } catch (error) {
         console.error('Error checking template fields:', error);
         return { error: true, message: error.message, fields: [] };
@@ -345,14 +391,23 @@ ipcMain.handle('print-from-editor', async (event, printData) => {
         }
         
         // 라벨 데이터 가공
+        // 필요한 값들 추출
+        const singleDose = parseInt(printData.singleDose) || 0;
+        const dailyDose = parseInt(printData.dailyDose) || 0;
+        const prescriptionDays = parseInt(printData.prescriptionDays) || 0;
+        const unit = printData.medicineInfo?.unit || '정';
+        const storageTemp = printData.medicineInfo?.storageTemp || '';
+        
         const processedData = {
             patientName: printData.patientName,
-            medicineName: printData.medicineInfo?.title || printData.name,
+            medicineName: `[${printData.medicineInfo?.title || printData.name}]`,
             medicineType: printData.medicineType,
             dose: printData.dosageText,
             prescriptionDays: printData.prescriptionDays + '일분',
             madeDate: `조제일 ${new Date().toLocaleDateString('ko-KR')}`,
-            pharmacy: config.pharmacyName
+            pharmacy: config.pharmacyName,
+            totalCount: `총${singleDose * dailyDose * prescriptionDays}${unit}`,
+            storageTemp: storageTemp
         };
         
         console.log('Processed data for printing:', JSON.stringify(processedData, null, 2));
@@ -409,33 +464,33 @@ ipcMain.handle('fetch-drug-detail', async (event, drugCode) => {
         const medicineJsonPath = path.join(__dirname, 'db', 'medicine.json');
         
         // 기존 데이터 읽기
-        let medicines = [];
+        let medicines = {};
         if (fs.existsSync(medicineJsonPath)) {
             const content = fs.readFileSync(medicineJsonPath, 'utf8');
             medicines = JSON.parse(content);
         }
         
-        // 기존 데이터에서 같은 약품 찾기 (code 또는 title로)
-        const existingIndex = medicines.findIndex(m => 
-            m.code === drugDetail.code || 
-            m.title === drugDetail.title
-        );
+        // drugDetail에서 code 추출하고 나머지 데이터 분리
+        const { code, ...medicineData } = drugDetail;
         
-        if (existingIndex >= 0) {
+        // 기존 데이터 체크
+        const existingData = medicines[code];
+        
+        if (existingData) {
             // 기존 데이터 업데이트 (기존 필드 유지하면서 새 필드 추가)
-            medicines[existingIndex] = {
-                ...medicines[existingIndex],
-                storageContainer: drugDetail.storageContainer,
-                storageTemp: drugDetail.storageTemp,
-                effects: drugDetail.effects,
-                rawStorageMethod: drugDetail.rawStorageMethod,
-                updateDate: drugDetail.updateDate
+            medicines[code] = {
+                ...existingData,
+                storageContainer: medicineData.storageContainer,
+                storageTemp: medicineData.storageTemp,
+                effects: medicineData.effects,
+                rawStorageMethod: medicineData.rawStorageMethod,
+                updateDate: medicineData.updateDate
             };
-            console.log('기존 약품 정보 업데이트:', drugDetail.title);
+            console.log('기존 약품 정보 업데이트:', medicineData.title);
         } else {
-            // 새 데이터 추가
-            medicines.push(drugDetail);
-            console.log('새 약품 정보 추가:', drugDetail.title);
+            // 새 데이터 추가 (code를 제외한 데이터)
+            medicines[code] = medicineData;
+            console.log('새 약품 정보 추가:', medicineData.title);
         }
         
         // 파일 저장
@@ -489,7 +544,7 @@ ipcMain.handle('batch-update-drug-details', async (event, drugCodes) => {
     // medicine.json 업데이트
     if (results.length > 0) {
         const medicineJsonPath = path.join(__dirname, 'db', 'medicine.json');
-        let medicines = [];
+        let medicines = {};
         
         if (fs.existsSync(medicineJsonPath)) {
             const content = fs.readFileSync(medicineJsonPath, 'utf8');
@@ -498,17 +553,17 @@ ipcMain.handle('batch-update-drug-details', async (event, drugCodes) => {
         
         // 결과 병합
         results.forEach(drugDetail => {
-            const existingIndex = medicines.findIndex(m => 
-                m.code === drugDetail.code || m.title === drugDetail.title
-            );
+            const { code, ...medicineData } = drugDetail;
             
-            if (existingIndex >= 0) {
-                medicines[existingIndex] = {
-                    ...medicines[existingIndex],
-                    ...drugDetail
+            if (medicines[code]) {
+                // 기존 데이터와 병합
+                medicines[code] = {
+                    ...medicines[code],
+                    ...medicineData
                 };
             } else {
-                medicines.push(drugDetail);
+                // 새 데이터 추가
+                medicines[code] = medicineData;
             }
         });
         
@@ -524,54 +579,6 @@ ipcMain.handle('batch-update-drug-details', async (event, drugCodes) => {
     };
 });
 
-ipcMain.handle('print-medicine-label', async (event, labelData, printerName) => {
-    try {
-        // 설정에서 템플릿 경로 가져오기
-        const config = loadConfig();
-        
-        let templatePath = config.templatePath || './templates/testTemplate.lbx';
-        
-        // 상대 경로를 절대 경로로 변환
-        if (templatePath.startsWith('./')) {
-            templatePath = path.join(__dirname, templatePath.substring(2));
-        } else if (!path.isAbsolute(templatePath)) {
-            templatePath = path.join(__dirname, templatePath);
-        }
-        
-        // 템플릿 파일명에 따라 다른 가공 함수 사용
-        let processedData;
-        const templateFileName = path.basename(templatePath);
-        
-        if (templateFileName === 'label1.lbx') {
-            // label1.lbx용 가공
-            processedData = processLabel1Data({
-                ...labelData,
-                pharmacyName: config.pharmacyName
-            });
-        } else {
-            // 기본 가공
-            processedData = processMedicineLabel({
-                ...labelData,
-                pharmacyName: config.pharmacyName
-            });
-        }
-        
-        const printData = {
-            templatePath,
-            printerName,
-            ...processedData  // 가공된 데이터 사용
-        };
-        
-        console.log('Template:', templateFileName);
-        console.log('Processed print data:', printData); // 디버깅용
-        
-        const result = await printWithBrother(printData);
-        return { success: true, message: result };
-    } catch (error) {
-        console.error('Error printing medicine label:', error);
-        return { success: false, error: error.message };
-    }
-});
 
 app.whenReady().then(async () => {
     createWindow();

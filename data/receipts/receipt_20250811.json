@@ -3480,5 +3480,575 @@
         "singleDose": "1"
       }
     ]
+  },
+  {
+    "patientId": "11013955712",
+    "receiptDateRaw": "20250811",
+    "patientName": "이막동",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년08월11일",
+    "receiptNum": "114",
+    "medicines": [
+      {
+        "code": "693901850",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11014001560",
+    "receiptDateRaw": "20250811",
+    "patientName": "장천태",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년08월11일",
+    "receiptNum": "115",
+    "medicines": [
+      {
+        "code": "643104220",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11010707002",
+    "receiptDateRaw": "20250811",
+    "patientName": "민영자",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년08월11일",
+    "receiptNum": "116",
+    "medicines": [
+      {
+        "code": "693901850",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "621802320",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "654003750",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "645906320",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11014001509",
+    "receiptDateRaw": "20250811",
+    "patientName": "김건혜",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년08월11일",
+    "receiptNum": "117",
+    "medicines": [
+      {
+        "code": "649405110",
+        "prescriptionDays": "5",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11014004766",
+    "receiptDateRaw": "20250811",
+    "patientName": "최성용",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년08월11일",
+    "receiptNum": "118",
+    "medicines": [
+      {
+        "code": "654004800",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11013947944",
+    "receiptDateRaw": "20250811",
+    "patientName": "강현희",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년08월11일",
+    "receiptNum": "119",
+    "medicines": [
+      {
+        "code": "656000830",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "649405200",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "640903010",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11005595001",
+    "receiptDateRaw": "20250811",
+    "patientName": "이종순",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년08월11일",
+    "receiptNum": "120",
+    "medicines": [
+      {
+        "code": "693901850",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "646004140",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "621802670",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "655605230",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11002529001",
+    "receiptDateRaw": "20250811",
+    "patientName": "이선수",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년08월11일",
+    "receiptNum": "121",
+    "medicines": [
+      {
+        "code": "693901850",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "656003670",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "671805260",
+        "prescriptionDays": "30",
+        "dailyDose": "2",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11014004917",
+    "receiptDateRaw": "20250811",
+    "patientName": "유영춘",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년08월11일",
+    "receiptNum": "122",
+    "medicines": [
+      {
+        "code": "650000471",
+        "prescriptionDays": "1",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "640903010",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "649404690",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "0.5"
+      },
+      {
+        "code": "642102570",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "649401610",
+        "prescriptionDays": "5",
+        "dailyDose": "3",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11013954784",
+    "receiptDateRaw": "20250811",
+    "patientName": "공윤정",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년08월11일",
+    "receiptNum": "123",
+    "medicines": [
+      {
+        "code": "643100080",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "649401610",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "640903010",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "649405200",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "671807171",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11013950728",
+    "receiptDateRaw": "20250811",
+    "patientName": "박선자",
+    "hospitalName": "한림정형외과",
+    "receiptDate": "2025년08월11일",
+    "receiptNum": "124",
+    "medicines": [
+      {
+        "code": "643103340",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "643702570",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "642101080",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11014004302",
+    "receiptDateRaw": "20250811",
+    "patientName": "이수정",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년08월11일",
+    "receiptNum": "125",
+    "medicines": [
+      {
+        "code": "656000830",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "649401610",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "640903010",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "649405200",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11014000877",
+    "receiptDateRaw": "20250811",
+    "patientName": "심명섭",
+    "hospitalName": "김치과의원",
+    "receiptDate": "2025년08월11일",
+    "receiptNum": "126",
+    "medicines": [
+      {
+        "code": "643303130",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "643301620",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "660402340",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11014002627",
+    "receiptDateRaw": "20250811",
+    "patientName": "최서연",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년08월11일",
+    "receiptNum": "127",
+    "medicines": [
+      {
+        "code": "643100080",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "649401610",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "642102570",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "640903010",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "671803511",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11010401002",
+    "receiptDateRaw": "20250811",
+    "patientName": "이미숙",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년08월11일",
+    "receiptNum": "128",
+    "medicines": [
+      {
+        "code": "643104220",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "640900430",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "643103730",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11013951129",
+    "receiptDateRaw": "20250811",
+    "patientName": "최영옥",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년08월11일",
+    "receiptNum": "129",
+    "medicines": [
+      {
+        "code": "654004850",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "654003750",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11012110002",
+    "receiptDateRaw": "20250811",
+    "patientName": "이정녀",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년08월11일",
+    "receiptNum": "130",
+    "medicines": [
+      {
+        "code": "693901860",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "645203761",
+        "prescriptionDays": "1",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11014004918",
+    "receiptDateRaw": "20250811",
+    "patientName": "박영길",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년08월11일",
+    "receiptNum": "131",
+    "medicines": [
+      {
+        "code": "621802880",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "657308500",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11013994141",
+    "receiptDateRaw": "20250811",
+    "patientName": "김인수",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년08월11일",
+    "receiptNum": "132",
+    "medicines": [
+      {
+        "code": "645906320",
+        "prescriptionDays": "30",
+        "dailyDose": "2",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11009907002",
+    "receiptDateRaw": "20250811",
+    "patientName": "최순덕",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년08월11일",
+    "receiptNum": "133",
+    "medicines": [
+      {
+        "code": "693901860",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "643103760",
+        "prescriptionDays": "30",
+        "dailyDose": "1",
+        "singleDose": "1"
+      }
+    ]
+  },
+  {
+    "patientId": "11014004919",
+    "receiptDateRaw": "20250811",
+    "patientName": "김성은",
+    "hospitalName": "성광용내과의원",
+    "receiptDate": "2025년08월11일",
+    "receiptNum": "134",
+    "medicines": [
+      {
+        "code": "649400510",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "671803431",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "649402580",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "655605380",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      },
+      {
+        "code": "649404560",
+        "prescriptionDays": "3",
+        "dailyDose": "3",
+        "singleDose": "1"
+      }
+    ]
   }
 ]

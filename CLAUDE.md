@@ -42,8 +42,6 @@ const powershellPath = 'C:\\WINDOWS\\SysWOW64\\WindowsPowerShell\\v1.0\\powershe
 템플릿별로 다른 데이터 가공 로직을 제공합니다.
 
 #### 템플릿별 가공 함수:
-- `processLabel1Data()`: label1.lbx 템플릿용
-- `processMedicineLabel()`: 기본 약품 라벨용
 - `processPrescriptionData()`: 처방전 라벨용
 
 ## 한글 출력 문제 해결
@@ -73,23 +71,6 @@ const tempScriptPath = path.join(__dirname, `temp_print_${Date.now()}.ps1`);
 fs.unlinkSync(tempScriptPath);
 ```
 
-## 템플릿 데이터 가공 예제
-
-### label1.lbx 템플릿 가공
-```javascript
-function processLabel1Data(rawData) {
-    return {
-        patientName: rawData.patientName,                    // 환자명 그대로
-        medicineType: '먹는약',                              // 고정값
-        medicineName: rawData.medicineName,                  // 약품명 그대로
-        dose: `${rawData.singleDose}알씩 하루 ${rawData.dailyDose}번 복용`,
-        prescriptonDays: `${rawData.prescriptionDays}일분`,
-        madeDate: `조제일 ${formattedDate}`,                // 오늘 날짜
-        phamacy: rawData.pharmacyName                        // config에서 가져옴
-    };
-}
-```
-
 ## Brother b-PAC SDK 설정
 
 ### COM 객체 등록 (관리자 권한 필요)
@@ -115,13 +96,7 @@ const comNames = @(
 
 ## 주요 IPC 핸들러
 
-### 1. print-medicine-label
-약품별 라벨 출력 핸들러
-- 템플릿 파일명에 따라 다른 가공 함수 사용
-- label1.lbx: `processLabel1Data()` 사용
-- 기타: `processMedicineLabel()` 사용
-
-### 2. print-prescription
+### 1. print-prescription
 처방전 출력 핸들러
 - `processPrescriptionData()` 사용
 - medicines 배열을 JSON 문자열로 변환

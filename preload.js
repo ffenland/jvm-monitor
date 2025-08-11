@@ -17,7 +17,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getBrotherPrinters: () => ipcRenderer.invoke('get-brother-printers'),
     printPrescription: (prescriptionData, printerName) => ipcRenderer.invoke('print-prescription', prescriptionData, printerName),
     diagnoseBPac: () => ipcRenderer.invoke('diagnose-bpac'),
-    printMedicineLabel: (labelData, printerName) => ipcRenderer.invoke('print-medicine-label', labelData, printerName),
     // 설정 관련 API
     getConfig: () => ipcRenderer.invoke('get-config'),
     saveConfig: (config) => ipcRenderer.invoke('save-config', config),
