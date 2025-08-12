@@ -309,25 +309,29 @@ async function printLabel() {
     
     try {
         // input 필드에서 수정된 값 가져오기
+        const medicineNameValue = document.getElementById('medicineName').value;
         const medicineTypeValue = document.getElementById('medicineType').value;
+        const shouldUpdateMedicineName = document.getElementById('updateMedicineName').checked;
         const shouldUpdateMedicineType = document.getElementById('updateMedicineType').checked;
         
         const updatedData = {
             ...prescriptionData,
             patientName: document.getElementById('patientName').value,
-            name: document.getElementById('medicineName').value,
+            name: medicineNameValue,
             receiptDate: document.getElementById('receiptDate').value, // 수정된 처방일 포함
             prescriptionDays: document.getElementById('prescriptionDays').value,
             singleDose: document.getElementById('singleDose').value,
             medicineInfo: {
                 ...medicineInfo,
-                title: document.getElementById('medicineName').value,
+                title: medicineNameValue,
                 mdfsCodeName: [medicineTypeValue]
             },
             dosageText: dosageText,
             medicineType: medicineTypeValue,
             // 약품 유형 업데이트 플래그 추가
             updateMedicineType: shouldUpdateMedicineType,
+            // 약품명 업데이트 플래그 추가
+            updateMedicineName: shouldUpdateMedicineName,
             medicineCode: prescriptionData.code
         };
         

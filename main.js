@@ -369,23 +369,39 @@ ipcMain.handle('print-from-editor', async (event, printData) => {
             templatePath = path.join(__dirname, templatePath);
         }
         
-        // 약품 유형 업데이트 체크
-        if (printData.updateMedicineType && printData.medicineCode) {
+        // 약품 정보 업데이트 체크
+        if ((printData.updateMedicineType || printData.updateMedicineName) && printData.medicineCode) {
             try {
                 // medicine.json 업데이트
                 const medicineData = drugInfoManager.loadMedicineData();
                 if (medicineData[printData.medicineCode]) {
-                    medicineData[printData.medicineCode].mdfsCodeName = [printData.medicineType];
+                    let updated = false;
+                    
+                    // 약품 유형 업데이트
+                    if (printData.updateMedicineType) {
+                        medicineData[printData.medicineCode].mdfsCodeName = [printData.medicineType];
+                        console.log(`Updated medicine type for ${printData.medicineCode}: ${printData.medicineType}`);
+                        updated = true;
+                    }
+                    
+                    // 약품명 업데이트
+                    if (printData.updateMedicineName && printData.name) {
+                        medicineData[printData.medicineCode].title = printData.name;
+                        console.log(`Updated medicine name for ${printData.medicineCode}: ${printData.name}`);
+                        updated = true;
+                    }
+                    
                     // 파일 저장
-                    fs.writeFileSync(
-                        path.join(__dirname, 'db', 'medicine.json'),
-                        JSON.stringify(medicineData, null, 2),
-                        'utf8'
-                    );
-                    console.log(`Updated medicine type for ${printData.medicineCode}: ${printData.medicineType}`);
+                    if (updated) {
+                        fs.writeFileSync(
+                            path.join(__dirname, 'db', 'medicine.json'),
+                            JSON.stringify(medicineData, null, 2),
+                            'utf8'
+                        );
+                    }
                 }
             } catch (updateError) {
-                console.error('Error updating medicine type:', updateError);
+                console.error('Error updating medicine info:', updateError);
                 // 업데이트 실패해도 출력은 계속 진행
             }
         }
@@ -717,7 +733,7 @@ app.whenReady().then(async () => {
                             // medicine.json 정보를 포함한 enriched data 생성
                             const enrichedMedicines = parsedContent.medicines.map(med => {
                                 const medicineInfo = drugInfoManager.getMedicineInfo(med.code);
-                                console.log(`Medicine code: ${med.code}, Info found: ${medicineInfo ? 'Yes' : 'No'}`);
+                                // console.log(`Medicine code: ${med.code}, Info found: ${medicineInfo ? 'Yes' : 'No'}`);
                                 return {
                                     ...med,
                                     medicineInfo: medicineInfo || null

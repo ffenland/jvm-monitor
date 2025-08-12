@@ -1,0 +1,30 @@
+[
+  {
+    "patientId": "11014004921",
+    "receiptDateRaw": "20250812",
+    "patientName": "홍성란",
+    "hospitalName": "블리비의원춘천점",
+    "receiptDate": "2025년08월12일",
+    "receiptNum": "40",
+    "medicines": [
+      {
+        "code": "649404690",
+        "prescriptionDays": "2",
+        "dailyDose": "2",
+        "singleDose": "1"
+      },
+      {
+        "code": "647301360",
+        "prescriptionDays": "2",
+        "dailyDose": "1",
+        "singleDose": "1"
+      },
+      {
+        "code": "647300350",
+        "prescriptionDays": "2",
+        "dailyDose": "2",
+        "singleDose": "1"
+      }
+    ]
+  }
+]
