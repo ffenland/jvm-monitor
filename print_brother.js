@@ -136,7 +136,6 @@ catch {
         const tempScriptPath = path.join(__dirname, `temp_print_${Date.now()}.ps1`);
         fs.writeFileSync(tempScriptPath, BOM + scriptContent, 'utf8');
 
-        console.log(`Executing PowerShell with Korean support...`);
 
         const ps = spawn(powershellPath, [
             '-ExecutionPolicy', 'Bypass',
@@ -169,7 +168,6 @@ catch {
                 // Ignore cleanup errors
             }
 
-            console.log(`PowerShell process exited with code: ${code}`);
             
             if (code !== 0) {
                 const fullError = `PowerShell process exited with code ${code}. Stderr: ${stderr} Stdout: ${stdout}`;

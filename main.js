@@ -308,7 +308,6 @@ ipcMain.handle('print-prescription', async (event, prescriptionData, printerName
             medicines: processedData.medicines ? JSON.stringify(processedData.medicines) : ''
         };
         
-        console.log('Processed prescription data:', printData); // 디버깅용
         
         const result = await printWithBrother(printData);
         return { success: true, message: result };
@@ -325,10 +324,10 @@ ipcMain.handle('open-label-editor', async (event, prescriptionData, medicineCode
         // medicine.json에서 약품 정보 가져오기
         const medicineInfo = drugInfoManager.getMedicineInfo(medicineCode);
         
-        // 편집 창 생성 - 컴팩트한 크기로 조정
+        // 편집 창 생성 - 스크롤 없이 볼 수 있도록 높이 조정
         const editorWindow = new BrowserWindow({
             width: 420,
-            height: 550,
+            height: 750,
             parent: mainWindow,
             modal: true,
             webPreferences: {
@@ -380,14 +379,12 @@ ipcMain.handle('print-from-editor', async (event, printData) => {
                     // 약품 유형 업데이트
                     if (printData.updateMedicineType) {
                         medicineData[printData.medicineCode].mdfsCodeName = [printData.medicineType];
-                        console.log(`Updated medicine type for ${printData.medicineCode}: ${printData.medicineType}`);
                         updated = true;
                     }
                     
                     // 약품명 업데이트
                     if (printData.updateMedicineName && printData.name) {
                         medicineData[printData.medicineCode].title = printData.name;
-                        console.log(`Updated medicine name for ${printData.medicineCode}: ${printData.name}`);
                         updated = true;
                     }
                     
@@ -426,7 +423,6 @@ ipcMain.handle('print-from-editor', async (event, printData) => {
             storageTemp: storageTemp
         };
         
-        console.log('Processed data for printing:', JSON.stringify(processedData, null, 2));
         
         // Brother 프린터 목록 가져오기
         const printers = await getBrotherPrinters();
@@ -467,7 +463,6 @@ ipcMain.handle('get-medicine-list', async () => {
 // 약품 상세정보 조회 및 medicine.json 업데이트
 ipcMain.handle('fetch-drug-detail', async (event, drugCode) => {
     try {
-        console.log('약품 상세정보 조회 - 코드:', drugCode);
         
         // API에서 약품 정보 조회 (약품코드 사용)
         const drugDetail = await fetchAndParseDrugDetail(drugCode);
@@ -502,11 +497,9 @@ ipcMain.handle('fetch-drug-detail', async (event, drugCode) => {
                 rawStorageMethod: medicineData.rawStorageMethod,
                 updateDate: medicineData.updateDate
             };
-            console.log('기존 약품 정보 업데이트:', medicineData.title);
         } else {
             // 새 데이터 추가 (code를 제외한 데이터)
             medicines[code] = medicineData;
-            console.log('새 약품 정보 추가:', medicineData.title);
         }
         
         // 파일 저장
@@ -626,7 +619,6 @@ app.whenReady().then(async () => {
                 fs.mkdirSync(receiptsDirPath, { recursive: true });
             }
             fs.writeFileSync(todayResultPath, '[]', 'utf8');
-            console.log(`Created today's result file: result_${today}.json`);
         } catch (error) {
             console.error(`Error creating today's result file: ${error.message}`);
         }
@@ -733,7 +725,6 @@ app.whenReady().then(async () => {
                             // medicine.json 정보를 포함한 enriched data 생성
                             const enrichedMedicines = parsedContent.medicines.map(med => {
                                 const medicineInfo = drugInfoManager.getMedicineInfo(med.code);
-                                // console.log(`Medicine code: ${med.code}, Info found: ${medicineInfo ? 'Yes' : 'No'}`);
                                 return {
                                     ...med,
                                     medicineInfo: medicineInfo || null

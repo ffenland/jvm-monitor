@@ -146,7 +146,6 @@ class DrugInfoManager {
         }
 
         const url = this.drugDetailApiUrl + queryParams;
-        console.log(`Fetching drug detail info - ${searchType}: ${searchValue}`);
         
         return new Promise((resolve, reject) => {
             https.get(url, (res) => {
@@ -172,7 +171,6 @@ class DrugInfoManager {
                                 resolve({ multipleItems: true, count: items.length });
                             }
                         } else {
-                            console.log(`API returned error: ${result.header?.resultMsg || 'Unknown error'}`);
                             resolve(null);
                         }
                     } catch (error) {
@@ -286,58 +284,88 @@ class DrugInfoManager {
         const effects = [];
         
         try {
+            // 1. ARTICLE title 추출 (메인 효능효과 항목)
             const articleTitlePattern = /<ARTICLE\s+title="([^"]+)"/gi;
             const titleMatches = eeDocData.matchAll(articleTitlePattern);
+            
             for (const match of titleMatches) {
                 let title = match[1].trim();
+                
+                // 별표(*)로 시작하는 항목 제외 (제품 정보)
+                if (title.startsWith('*')) {
+                    continue;
+                }
                 
                 // 괄호로 둘러싸인 항목 제외
                 if (title.startsWith('(') && title.endsWith(')')) {
                     continue;
                 }
                 
-                // 별표(*)로 시작하는 항목 제외
-                if (title.startsWith('*')) {
+                // 하위 번호 패턴 제외
+                if (/^\d+\)/.test(title) || /^\(\d+\)/.test(title) || 
+                    /^[가-하]\./.test(title) || /^[a-z]\)/.test(title)) {
                     continue;
                 }
                 
-                // 숫자 리스트 제거 (예: "1. ", "10. " 등)
-                title = title.replace(/^\d+\.\s+/, '');
+                // 숫자 및 문자 순번 제거 (1., 2., a., b. 등)
+                title = title.replace(/^[0-9a-zA-Z]+\.\s+/, '');
                 
-                if (title) {
+                // 콜론이 있으면 앞부분만 추출
+                if (title.includes(':')) {
+                    title = title.split(':')[0].trim();
+                }
+                
+                // 너무 긴 텍스트는 간략화 (80자 제한)
+                if (title.length > 80) {
+                    // 주요 부분만 남김
+                    const cutIndex = title.lastIndexOf(')', 80);
+                    if (cutIndex > 40) {
+                        title = title.substring(0, cutIndex + 1);
+                    } else {
+                        title = title.substring(0, 77) + '...';
+                    }
+                }
+                
+                if (title && !effects.includes(title)) {
                     effects.push(title);
                 }
             }
             
-            const paragraphPattern = /<PARAGRAPH>([^<]+)<\/PARAGRAPH>/gi;
-            const paragraphMatches = eeDocData.matchAll(paragraphPattern);
-            for (const match of paragraphMatches) {
-                let text = match[1].trim();
+            // 2. ARTICLE이 없는 경우만 CDATA 확인 (폴백)
+            if (effects.length === 0) {
+                const cdataPattern = /<!\[CDATA\[([\s\S]*?)\]\]>/gi;
+                const cdataMatches = eeDocData.matchAll(cdataPattern);
                 
-                // HTML 엔티티 디코딩
-                text = text.replace(/&lt;/g, '<')
-                          .replace(/&gt;/g, '>')
-                          .replace(/&amp;/g, '&')
-                          .replace(/&quot;/g, '"')
-                          .replace(/&#x[0-9a-fA-F]+;/g, '');
-                
-                // 괄호로 둘러싸인 항목 제외
-                if (text.match(/^\(.*\)$/)) {
-                    continue;
-                }
-                
-                // 별표(*)로 시작하는 항목 제외
-                if (text.startsWith('*')) {
-                    continue;
-                }
-                
-                // 숫자 리스트 제거
-                text = text.replace(/^\d+\.\s+/, '');
-                
-                if (text) {
-                    effects.push(text);
+                for (const match of cdataMatches) {
+                    let text = match[1].trim();
+                    text = text.replace(/\s+/g, ' ').trim();
+                    
+                    // 하위 항목 표시로 시작하는 경우 제외
+                    if (/^[\-•◦]/.test(text) || /^\d+\)/.test(text) || 
+                        /^\(\d+\)/.test(text) || text.includes('&#x')) {
+                        continue;
+                    }
+                    
+                    // 효능효과가 아닌 다른 섹션 제외
+                    if (text.includes('다음 환자') || text.includes('이상반응')) {
+                        continue;
+                    }
+                    
+                    // 숫자 및 문자 순번 제거
+                    text = text.replace(/^[0-9a-zA-Z]+\.\s+/, '');
+                    
+                    // 콜론이 있으면 앞부분만 추출
+                    if (text.includes(':')) {
+                        text = text.split(':')[0].trim();
+                    }
+                    
+                    if (text && text.length > 0 && !effects.includes(text)) {
+                        effects.push(text);
+                        break; // 첫 번째 유효한 항목만 사용
+                    }
                 }
             }
+            
         } catch (error) {
             console.error('효능효과 파싱 중 오류:', error);
         }
@@ -384,7 +412,6 @@ class DrugInfoManager {
                             const item = result.response.body?.items?.item;
                             resolve(item || null);
                         } else {
-                            console.log(`API returned error for ${mdsCd}: ${result.response?.header?.resultCode || 'Unknown error'}`);
                             resolve(null);
                         }
                     } catch (error) {
@@ -468,18 +495,15 @@ class DrugInfoManager {
             
             // 이미 존재하는지 확인
             if (this.medicineData[medicineKey]) {
-                // console.log(`Medicine ${medicineKey} already exists in database`);
                 continue;
             }
             
             // 이미 실패 목록에 있는지 확인
             const existingFail = this.failData.find(item => item.code === medicineKey);
             if (existingFail) {
-                console.log(`Medicine ${medicineKey} already marked as failed`);
                 continue;
             }
             
-            console.log(`Processing new medicine: ${medicineKey} - ${medicine.name}`)
             
             try {
                 // 1단계: getDrugPrdtPrmsnDtlInq05 API로 약품 상세정보 조회
@@ -487,7 +511,6 @@ class DrugInfoManager {
                 
                 // 코드로 조회 실패 시 약품명으로 재시도
                 if (!detailInfo && medicine.name) {
-                    console.log(`Code search failed, trying with name: ${medicine.name}`);
                     detailInfo = await this.fetchDrugDetailInfo('name', medicine.name);
                 }
                 
@@ -500,7 +523,6 @@ class DrugInfoManager {
                         reason: '코드 또는 약품명으로 조회되지 않음'
                     };
                     this.failData.push(failEntry);
-                    console.log(`Failed to find medicine: ${medicineKey}`);
                     continue;
                 }
                 
@@ -512,7 +534,6 @@ class DrugInfoManager {
                         reason: `해당 약품명으로 복수의 약품이 존재합니다 (${detailInfo.count}개). 사용자 확인이 필요`
                     };
                     this.failData.push(failEntry);
-                    console.log(`Multiple items found for: ${medicine.name}`);
                     continue;
                 }
                 
@@ -557,13 +578,12 @@ class DrugInfoManager {
                             formulation = efficacyInfoList[0]?.fomnTpCdNm || '';
                             
                             // mfdsCode가 없고 efficacyInfoList에서 찾을 수 있다면 추출
-                            if (!mfdsCode && efficacyInfoList[0]?.mfdsCd) {
-                                mfdsCode = efficacyInfoList[0].mfdsCd;
+                            if (!mfdsCode && efficacyInfoList[0]?.meftDivNo) {
+                                mfdsCode = efficacyInfoList[0].meftDivNo;
                             }
                         }
                     }
                 } else {
-                    console.log(`Price info not found for ${medicineKey}, but continuing with detail info`);
                 }
                 
                 // 최종 약품 정보 구성
@@ -588,9 +608,7 @@ class DrugInfoManager {
                 };
                 
                 this.medicineData[medicineKey] = drugInfo;
-                console.log(`Successfully saved medicine ${medicineKey}: ${drugInfo.title}`);
                 updateCount++;
-                // console.log(`Successfully saved medicine ${medicineKey}: ${drugInfo.title}`);
                 
                 // API 호출 간격을 두어 과부하 방지 (0.5초)
                 await new Promise(resolve => setTimeout(resolve, 500));
@@ -617,16 +635,12 @@ class DrugInfoManager {
         
         // 업데이트된 내용이 있으면 저장
         if (updateCount > 0) {
-            // console.log(`Saving ${updateCount} new medicines to medicine.json`);
             const saved = this.saveMedicineData();
-            // console.log(`Save result: ${saved ? 'Success' : 'Failed'}`);
         }
         
         // fail 데이터가 있으면 저장
         if (this.failData.length > 0) {
-            // console.log(`Saving ${this.failData.length} failed medicines to medicineFail.json`);
             const saved = this.saveFailData();
-            // console.log(`Fail save result: ${saved ? 'Success' : 'Failed'}`);
         }
     }
 
@@ -644,7 +658,6 @@ class DrugInfoManager {
         // 실패 목록에 있는지 확인
         const failedMedicine = this.failData.find(item => item.code === medicineKey);
         if (failedMedicine) {
-            console.log(`Medicine ${medicineKey} is in failed list: ${failedMedicine.reason}`);
         }
         
         return this.medicineData[medicineKey] || null;

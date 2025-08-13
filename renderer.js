@@ -44,7 +44,6 @@ window.addEventListener('DOMContentLoaded', () => {
                     option.textContent = printer;
                     printerSelect.appendChild(option);
                 });
-                console.log(`${result.printers.length}개의 Brother 프린터를 찾았습니다.`);
             } else {
                 const option = document.createElement('option');
                 option.value = '';
@@ -55,7 +54,6 @@ window.addEventListener('DOMContentLoaded', () => {
                 try {
                     const diagnosis = await window.electronAPI.diagnoseBPac();
                     if (diagnosis.success) {
-                        console.log('b-PAC 진단 결과:', diagnosis.diagnosis);
                     }
                 } catch (diagError) {
                     console.error('진단 실행 실패:', diagError);
@@ -275,7 +273,6 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 
     window.electronAPI.onPrintLabelResult((result) => {
-        console.log('Print result:', result);
         // You can add user feedback here, e.g., an alert or a status message
         alert(result.success ? `인쇄 성공: ${result.message}` : `인쇄 실패: ${result.message}`);
     });
@@ -370,8 +367,6 @@ window.addEventListener('DOMContentLoaded', () => {
             try {
                 const result = await window.electronAPI.checkTemplateFields(selectedTemplate);
                 if (!result.error && result.fields) {
-                    console.log('Template fields:', result.fields);
-                    console.log('Available fields in template:', result.fields.map(f => f.name).join(', '));
                 } else {
                     console.error('Failed to check template fields:', result.message);
                 }

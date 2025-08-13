@@ -273,11 +273,19 @@
             </label>
         </div>
         
+        <div class="form-group">
+            <label>약품유형</label>
+            <input type="text" id="medicineType" value="">
+        </div>
+        
+        <div style="margin-top: 5px; margin-bottom: 10px;">
+            <label style="font-size: 11px; display: flex; align-items: center;">
+                <input type="checkbox" id="updateMedicineType" style="margin-right: 5px;">
+                <span>수정한 약품 유형을 다음번에도 사용</span>
+            </label>
+        </div>
+        
         <div class="form-row">
-            <div class="form-group">
-                <label>약품유형</label>
-                <input type="text" id="medicineType" value="">
-            </div>
             <div class="form-group">
                 <label>처방일수</label>
                 <input type="number" id="prescriptionDays" value="" min="1" max="365">
@@ -286,13 +294,6 @@
                 <label>1회 투여량</label>
                 <input type="number" id="singleDose" value="" min="0.1" max="100" step="0.1">
             </div>
-        </div>
-        
-        <div style="margin-top: 5px;">
-            <label style="font-size: 11px; display: flex; align-items: center;">
-                <input type="checkbox" id="updateMedicineType" style="margin-right: 5px;">
-                <span>수정한 약품 유형을 다음번에도 사용</span>
-            </label>
         </div>
         
         <div class="section-divider"></div>

@@ -19,48 +19,35 @@
     ],
     "price": "341",
     "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:51.110Z"
+    "mfdsCode": "219",
+    "updateDate": "2025-08-13T01:03:21.421Z"
   },
-  "621802880": {
-    "title": "탐스프로서방정0.2mg",
+  "621802670": {
+    "title": "록스바정",
     "mfg": "(주)한국파비스제약",
     "isETC": true,
     "storageContainer": "기밀용기",
-    "storageTemp": "실온(1-30℃)",
-    "effects": [],
-    "rawStorageMethod": "기밀용기, 실온보관(1-30℃)",
+    "storageTemp": "실온(1∼30℃)",
+    "effects": [
+      "원발성 고콜레스테롤혈증(이형접합 가족성 고콜레스테롤혈증을 포함하는 type IIa), 복합형 고지혈증(type IIb)",
+      "동형접합 가족성 고콜레스테롤혈증에 식이요법이나 다른 지질저하요법(예",
+      "고콜레스테롤혈증 환자에서 총콜레스테롤과 LDL-콜레스테롤을 목표 수준으로 낮추어 죽상동맥경화증의 진행을 지연",
+      "식이요법에도 불구하고 여전히 아래의 기준에 해당되는, 이형 가족형 고콜레스테롤혈증을 가진 만10세-만17세의 소아환자(여성의 경우 초경 이...",
+      "원발성 이상베타리포프로테인혈증(type III) 환자의 식이요법 보조제",
+      "심혈관 질환에 대한 위험성 감소"
+    ],
+    "rawStorageMethod": "기밀용기, 실온(1∼30℃)보관",
     "payType": "급여",
     "unit": "정",
-    "gnlNmCd": "234601ATR",
+    "gnlNmCd": "454001ATB",
     "injectPath": "내복",
     "mdfsCodeName": [
-      "기타의 비뇨생식기관 및 항문용약"
+      "동맥경화용제"
     ],
-    "price": "465",
-    "formulation": "서방형정제",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:53.426Z"
-  },
-  "622803730": {
-    "title": "모사프리엠정",
-    "mfg": "(주)마더스제약",
-    "isETC": true,
-    "storageContainer": "기밀용기",
-    "storageTemp": "실온(1～30℃)",
-    "effects": [],
-    "rawStorageMethod": "기밀용기, 실온보관(1～30℃)",
-    "payType": "급여",
-    "unit": "정",
-    "gnlNmCd": "421001ATB",
-    "injectPath": "내복",
-    "mdfsCodeName": [
-      "기타의 소화기관용약"
-    ],
-    "price": "103",
+    "price": "612",
     "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:36:03.892Z"
+    "mfdsCode": "218",
+    "updateDate": "2025-08-13T01:03:53.012Z"
   },
   "640900430": {
     "title": "베타드렌정",
@@ -70,7 +57,7 @@
     "storageTemp": "실온(1-30℃)",
     "effects": [
       "고혈압, 협심증",
-      "좌심실 수축기능이 저하된 안정형 만성 심부전의 치료 : 이 약은 ACE저해제 및 이뇨제, 그리고 필요에 따라 강심배당체와 병용한다."
+      "좌심실 수축기능이 저하된 안정형 만성 심부전의 치료"
     ],
     "rawStorageMethod": "기밀용기, 실온(1-30℃)보관",
     "payType": "급여",
@@ -82,28 +69,8 @@
     ],
     "price": "189",
     "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:36:15.660Z"
-  },
-  "640900520": {
-    "title": "아라스틴정",
-    "mfg": "(주)일화",
-    "isETC": true,
-    "storageContainer": "차광기밀용기",
-    "storageTemp": "실온(1~30℃)",
-    "effects": [],
-    "rawStorageMethod": "차광기밀용기, 실온(1~30℃)보관",
-    "payType": "급여",
-    "unit": "정",
-    "gnlNmCd": "112501ATB",
-    "injectPath": "내복",
-    "mdfsCodeName": [
-      "기타의 알레르기용약"
-    ],
-    "price": "176",
-    "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:56.819Z"
+    "mfdsCode": "219",
+    "updateDate": "2025-08-13T01:03:51.919Z"
   },
   "640903010": {
     "title": "스트렌정",
@@ -112,7 +79,7 @@
     "storageContainer": "기밀용기",
     "storageTemp": "실온(1~30℃)",
     "effects": [
-      "다음 질환의 위점막 병변(미란(짓무름), 출혈, 발적, 부종)개선 : 급성위염, 만성위염",
+      "다음 질환의 위점막 병변(미란(짓무름), 출혈, 발적, 부종)개선",
       "비스테로이드소염진통제(NSAID) 투여로 인한 위염의 예방"
     ],
     "rawStorageMethod": "기밀용기, 실온(1~30℃)보관",
@@ -125,28 +92,8 @@
     ],
     "price": "105",
     "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:36:15.371Z"
-  },
-  "640903020": {
-    "title": "판터롤정40mg",
-    "mfg": "(주)일화",
-    "isETC": true,
-    "storageContainer": "차광기밀용기",
-    "storageTemp": "실온(1~30℃)",
-    "effects": [],
-    "rawStorageMethod": "차광기밀용기, 실온(1~30℃)",
-    "payType": "급여",
-    "unit": "정",
-    "gnlNmCd": "208801ATE",
-    "injectPath": "내복",
-    "mdfsCodeName": [
-      "소화성궤양용제"
-    ],
-    "price": "655",
-    "formulation": "장용정제",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:53.436Z"
+    "mfdsCode": "232",
+    "updateDate": "2025-08-13T01:03:08.143Z"
   },
   "641100270": {
     "title": "아스피린프로텍트정100mg",
@@ -169,28 +116,8 @@
     ],
     "price": "77",
     "formulation": "장용정제",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:54.468Z"
-  },
-  "641701101": {
-    "title": "알드린현탁액",
-    "mfg": "일양약품(주)",
-    "isETC": false,
-    "storageContainer": "기밀용기",
-    "storageTemp": "실온(1～30℃)",
-    "effects": [],
-    "rawStorageMethod": "기밀용기, 실온보관(1～30℃)",
-    "payType": "급여",
-    "unit": "mL/포",
-    "gnlNmCd": "105201ASS",
-    "injectPath": "내복",
-    "mdfsCodeName": [
-      "제산제"
-    ],
-    "price": "106",
-    "formulation": "현탁액제,현탁액용정제,현탁액용산제",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:37:31.132Z"
+    "mfdsCode": "219",
+    "updateDate": "2025-08-13T01:04:27.976Z"
   },
   "641701610": {
     "title": "일양디세텔정",
@@ -211,68 +138,74 @@
     ],
     "price": "100",
     "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:57.999Z"
+    "mfdsCode": "239",
+    "updateDate": "2025-08-13T01:03:09.753Z"
   },
-  "641702750": {
-    "title": "후릭스정",
-    "mfg": "일양약품(주)",
+  "642100160": {
+    "title": "다이크로짇정",
+    "mfg": "(주)유한양행",
     "isETC": true,
-    "storageContainer": "차광기밀용기",
-    "storageTemp": "실온(1-30℃)",
-    "effects": [],
-    "rawStorageMethod": "차광기밀용기, 실온(1-30℃)보관",
-    "payType": "임의불가",
+    "storageContainer": "밀폐용기",
+    "storageTemp": "실온, 건소",
+    "effects": [
+      "&nbsp;"
+    ],
+    "rawStorageMethod": "실온, 건소, 밀폐용기",
+    "payType": "급여",
     "unit": "정",
-    "gnlNmCd": "163801ATB",
+    "gnlNmCd": "170801ATB",
     "injectPath": "내복",
     "mdfsCodeName": [
       "이뇨제"
     ],
-    "price": "30",
+    "price": "10",
     "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:37:36.982Z"
+    "mfdsCode": "213",
+    "updateDate": "2025-08-13T01:03:50.912Z"
   },
-  "642201340": {
-    "title": "씬지로이드정0.1mg",
+  "642204180": {
+    "title": "씬지로이드정0.075mg",
     "mfg": "부광약품(주)",
     "isETC": true,
-    "storageContainer": "차광한 기밀용기",
-    "storageTemp": null,
-    "effects": [],
-    "rawStorageMethod": "차광한 기밀용기",
+    "storageContainer": "차광기밀용기",
+    "storageTemp": "실온(1~30℃)",
+    "effects": [
+      "갑상선기능저하증, 점액부종, 크레틴병"
+    ],
+    "rawStorageMethod": "차광기밀용기, 실온(1~30℃)보관",
     "payType": "임의불가",
     "unit": "정",
-    "gnlNmCd": "183601ATB",
+    "gnlNmCd": "183602ATB",
     "injectPath": "내복",
     "mdfsCodeName": [
       "갑상선,부갑상선호르몬제"
     ],
-    "price": "35",
+    "price": "33",
     "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:54.280Z"
+    "mfdsCode": "243",
+    "updateDate": "2025-08-13T01:03:55.413Z"
   },
-  "642507340": {
-    "title": "슈가메트서방정2.5/500mg",
+  "642507280": {
+    "title": "슈가논정5mg",
     "mfg": "동아에스티(주)",
     "isETC": true,
     "storageContainer": "기밀용기",
-    "storageTemp": "실온(1~30℃)",
-    "effects": [],
-    "rawStorageMethod": "기밀용기, 실온(1~30℃) 보관",
+    "storageTemp": "실온(1-30℃).",
+    "effects": [
+      "이 약은 제2형 당뇨병 환자의 혈당조절을 향상시키기 위해 식사요법 및 운동요법의 보조제로 투여한다."
+    ],
+    "rawStorageMethod": "기밀용기, 실온(1-30℃)보관.\n\n",
     "payType": "급여",
     "unit": "정",
-    "gnlNmCd": "650100ATR",
+    "gnlNmCd": "645301ATB",
     "injectPath": "내복",
     "mdfsCodeName": [
       "당뇨병용제"
     ],
-    "price": "347",
-    "formulation": "서방형정제",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:55.489Z"
+    "price": "730",
+    "formulation": "정제,저작정",
+    "mfdsCode": "396",
+    "updateDate": "2025-08-13T01:03:47.680Z"
   },
   "643100080": {
     "title": "닥스펜정",
@@ -297,8 +230,8 @@
     ],
     "price": "115",
     "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:54.503Z"
+    "mfdsCode": "114",
+    "updateDate": "2025-08-13T01:06:11.036Z"
   },
   "643100170": {
     "title": "레프정",
@@ -306,7 +239,9 @@
     "isETC": true,
     "storageContainer": "기밀용기",
     "storageTemp": "실온(1-30℃).",
-    "effects": [],
+    "effects": [
+      "기능성소화불량으로 인한 다음 증상의 완화"
+    ],
     "rawStorageMethod": "기밀용기, 실온보관(1-30℃).",
     "payType": "급여",
     "unit": "정",
@@ -317,8 +252,8 @@
     ],
     "price": "119",
     "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:36:17.479Z"
+    "mfdsCode": "239",
+    "updateDate": "2025-08-13T01:03:58.912Z"
   },
   "643100480": {
     "title": "라베넥스정10mg",
@@ -337,32 +272,8 @@
     ],
     "price": "454",
     "formulation": "장용정제",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:36:15.699Z"
-  },
-  "643100720": {
-    "title": "바이넥스카르베딜롤정25mg",
-    "mfg": "(주)바이넥스",
-    "isETC": true,
-    "storageContainer": "차광기밀용기",
-    "storageTemp": "실온(1-30℃)",
-    "effects": [
-      "본태고혈압",
-      "만성 안정협심증",
-      "울혈심부전"
-    ],
-    "rawStorageMethod": "차광기밀용기, 실온보관(1-30℃)",
-    "payType": "급여",
-    "unit": "정",
-    "gnlNmCd": "125002ATB",
-    "injectPath": "내복",
-    "mdfsCodeName": [
-      "혈압강하제"
-    ],
-    "price": "360",
-    "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:55.786Z"
+    "mfdsCode": "232",
+    "updateDate": "2025-08-13T01:03:55.041Z"
   },
   "643103730": {
     "title": "로수넥스정10mg",
@@ -371,12 +282,12 @@
     "storageContainer": "기밀용기",
     "storageTemp": "실온(1∼30℃)",
     "effects": [
-      "원발성 고콜레스테롤혈증(이형접합 가족성 고콜레스테롤혈증을 포함하는 type IIa), 복합형 고지혈증(type IIb) : 식이 및 운동으로 조절이 안 될 경우 식이요법의 보조제",
-      "동형접합 가족성 고콜레스테롤혈증에 식이요법이나 다른 지질저하요법(예 : LDL 분리반출법)의 보조제",
+      "원발성 고콜레스테롤혈증(이형접합 가족성 고콜레스테롤혈증을 포함하는 type IIa), 복합형 고지혈증(type IIb)",
+      "동형접합 가족성 고콜레스테롤혈증에 식이요법이나 다른 지질저하요법(예",
       "고콜레스테롤혈증 환자에서 총콜레스테롤과 LDL-콜레스테롤을 목표 수준으로 낮추어 죽상동맥경화증의 진행을 지연",
-      "식이요법에도 불구하고 여전히 아래의 기준에 해당되는, 이형 가족형 고콜레스테롤혈증을 가진 만 10세 - 만 17세의 소아환자(여성의 경우 초경 이후 적어도 1년이 지난 환자)의 총콜레스테롤, LDL-콜레스테롤, 아포-B 단백 수치를 감소시키기 위한 식이요법의 보조제",
+      "식이요법에도 불구하고 여전히 아래의 기준에 해당되는, 이형 가족형 고콜레스테롤혈증을 가진 만 10세 - 만 17세의 소아환자(여성의 경우 ...",
       "원발성 이상베타리포프로테인혈증(type III) 환자의 식이요법 보조제",
-      "심혈관 질환에 대한 위험성 감소 : 관상동맥 심질환에 대한 임상적 증거는 없으나, 만 50세 이상의 남성 및 만 60세 이상의 여성으로 고감도 C-반응단백(high sensitive C-reactive protein, hsCRP)이 2 mg/L 이상이며, 적어도 하나 이상의 추가적인 심혈관질환 위험 인자(예 : 고혈압, 낮은 HDL-콜레스테롤치, 흡연 또는 조기 관상동맥 심질환의 가족력 등)를 가진 환자의"
+      "심혈관 질환에 대한 위험성 감소"
     ],
     "rawStorageMethod": "기밀용기, 실온(1∼30℃)보관",
     "payType": "급여",
@@ -388,28 +299,32 @@
     ],
     "price": "612",
     "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:36:15.277Z"
+    "mfdsCode": "218",
+    "updateDate": "2025-08-13T01:03:08.597Z"
   },
-  "643104200": {
-    "title": "트윈스핀정80/5mg",
+  "643104190": {
+    "title": "바이넥스카르베딜롤정12.5mg",
     "mfg": "(주)바이넥스",
     "isETC": true,
     "storageContainer": "차광기밀용기",
-    "storageTemp": "실온(1 ~ 30 ℃)",
-    "effects": [],
-    "rawStorageMethod": "차광기밀용기, 실온보관(1 ~ 30 ℃)\n",
+    "storageTemp": "실온(1-30℃)",
+    "effects": [
+      "본태고혈압",
+      "만성 안정협심증",
+      "울혈심부전"
+    ],
+    "rawStorageMethod": "차광기밀용기, 실온(1-30℃)보관",
     "payType": "급여",
     "unit": "정",
-    "gnlNmCd": "511500ATB",
+    "gnlNmCd": "125001ATB",
     "injectPath": "내복",
     "mdfsCodeName": [
       "혈압강하제"
     ],
-    "price": "725",
+    "price": "302",
     "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:51.080Z"
+    "mfdsCode": "214",
+    "updateDate": "2025-08-13T01:03:50.832Z"
   },
   "643104220": {
     "title": "트윈스핀정40/5mg",
@@ -417,7 +332,9 @@
     "isETC": true,
     "storageContainer": "차광기밀용기",
     "storageTemp": "실온(1 ~ 30℃)",
-    "effects": [],
+    "effects": [
+      "암로디핀 또는 텔미사르탄 단독요법으로 혈압이 적절하게 조절되지 않는 본태성 고혈압"
+    ],
     "rawStorageMethod": "차광기밀용기, 실온보관(1 ~ 30℃)\n",
     "payType": "급여",
     "unit": "정",
@@ -428,48 +345,77 @@
     ],
     "price": "600",
     "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:54.384Z"
+    "mfdsCode": "214",
+    "updateDate": "2025-08-13T01:03:50.342Z"
   },
-  "643500261": {
-    "title": "데옥손겔0.05%",
-    "mfg": "한미약품(주)",
-    "isETC": true,
-    "storageContainer": "기밀용기",
-    "storageTemp": "실온(1-30℃)",
-    "effects": [],
-    "rawStorageMethod": "기밀용기, 실온(1-30℃)보관",
-    "payType": "급여",
-    "unit": "g/개",
-    "gnlNmCd": "141631CCM",
-    "injectPath": "외용",
-    "mdfsCodeName": [
-      "진통·진양·수렴·소염제"
-    ],
-    "price": "1530",
-    "formulation": "크림제,겔제,젤리",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:57.888Z"
-  },
-  "643506740": {
-    "title": "코싹엘정",
-    "mfg": "한미약품(주)",
+  "643300660": {
+    "title": "리피로우정20mg",
+    "mfg": "(주)종근당",
     "isETC": true,
     "storageContainer": "기밀용기",
     "storageTemp": "실온(1~30℃)",
-    "effects": [],
+    "effects": [
+      "다음의 심장혈관 질환에 대한 위험성감소",
+      "고지혈증",
+      "식이요법에도 불구하고 여전히 아래의 기준에 해당되는 이형접합 가족형 고콜레스테롤혈증을 가진 10 ～ 17세의 소아환자(여성의 경우 초경 이..."
+    ],
     "rawStorageMethod": "기밀용기, 실온(1~30℃)보관",
     "payType": "급여",
     "unit": "정",
-    "gnlNmCd": "524800ATB",
+    "gnlNmCd": "111502ATB",
     "injectPath": "내복",
     "mdfsCodeName": [
-      "항히스타민제"
+      "동맥경화용제"
     ],
-    "price": "177",
+    "price": "708",
     "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:59.979Z"
+    "mfdsCode": "218",
+    "updateDate": "2025-08-13T01:03:51.909Z"
+  },
+  "643301620": {
+    "title": "아나프록스정",
+    "mfg": "(주)종근당",
+    "isETC": false,
+    "storageContainer": "기밀용기",
+    "storageTemp": "실온(1～30℃)",
+    "effects": [
+      "주효능 효과",
+      "다음 질환에도 사용할 수 있다."
+    ],
+    "rawStorageMethod": "기밀용기, 실온(1～30℃) 보관",
+    "payType": "급여",
+    "unit": "정",
+    "gnlNmCd": "199501ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "해열·진통·소염제"
+    ],
+    "price": "115",
+    "formulation": "정제,저작정",
+    "mfdsCode": "114",
+    "updateDate": "2025-08-13T01:03:08.098Z"
+  },
+  "643303130": {
+    "title": "종근당아목시실린캡슐500mg",
+    "mfg": "(주)종근당",
+    "isETC": true,
+    "storageContainer": "기밀용기",
+    "storageTemp": "실온(1~30℃)",
+    "effects": [
+      "○ 유효균종"
+    ],
+    "rawStorageMethod": "기밀용기, 실온보관(1~30℃)",
+    "payType": "급여",
+    "unit": "캡슐",
+    "gnlNmCd": "108103ACH",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "주로 그람양성,음성균에 작용하는 것"
+    ],
+    "price": "95",
+    "formulation": "경질캡슐제",
+    "mfdsCode": "618",
+    "updateDate": "2025-08-13T01:03:06.516Z"
   },
   "644309630": {
     "title": "아트맥콤비젤연질캡슐10/1000mg",
@@ -477,7 +423,9 @@
     "isETC": true,
     "storageContainer": "기밀용기, 얼리지말 것.",
     "storageTemp": "25℃이하",
-    "effects": [],
+    "effects": [
+      "관상동맥심질환(CHD) 고위험이 있는 성인 환자에서 아토르바스타틴 단일치료요법 시 LDL-콜레스테롤 수치는 적절히 조절되지만 트리글리세라이드 수치가 적절히 조절되지 않는 복합형(IIb) 이상지질혈증의 치료"
+    ],
     "rawStorageMethod": "기밀용기, 25℃이하 보관, 얼리지말 것.",
     "payType": "급여",
     "unit": "캡슐",
@@ -488,97 +436,8 @@
     ],
     "price": "960",
     "formulation": "연질캡슐제",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:36:15.744Z"
-  },
-  "644309680": {
-    "title": "라베듀오정20/800mg",
-    "mfg": "한국유나이티드제약(주)",
-    "isETC": true,
-    "storageContainer": "기밀용기",
-    "storageTemp": "실온(1~30℃)",
-    "effects": [],
-    "rawStorageMethod": "기밀용기 실온(1~30℃) 보관",
-    "payType": "급여",
-    "unit": "정",
-    "gnlNmCd": "706000ATB",
-    "injectPath": "내복",
-    "mdfsCodeName": [
-      "소화성궤양용제"
-    ],
-    "price": "1069",
-    "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:39:23.860Z"
-  },
-  "644801160": {
-    "title": "아디팜정",
-    "mfg": "태극제약(주)",
-    "isETC": true,
-    "storageContainer": "밀폐용기",
-    "storageTemp": "실온(1～30℃)",
-    "effects": [
-      "수술 후, 신경증에서의 불안, 긴장, 초조",
-      "두드러기, 피부질환에 수반하는 가려움(습진, 피부염, 피부가려움증)"
-    ],
-    "rawStorageMethod": "밀폐용기, 실온(1～30℃)보관\r\n",
-    "payType": "급여",
-    "unit": "정",
-    "gnlNmCd": "172101ATB",
-    "injectPath": "내복",
-    "mdfsCodeName": [
-      "정신신경용제"
-    ],
-    "price": "16",
-    "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:51.123Z"
-  },
-  "645901910": {
-    "title": "시크렌캡슐",
-    "mfg": "동광제약(주)",
-    "isETC": true,
-    "storageContainer": "기밀용기",
-    "storageTemp": "실온(1-30℃)",
-    "effects": [
-      "○ 유효균종",
-      "○ 적응증"
-    ],
-    "rawStorageMethod": "기밀용기, 실온(1-30℃)보관",
-    "payType": "급여",
-    "unit": "캡슐",
-    "gnlNmCd": "125201ACH",
-    "injectPath": "내복",
-    "mdfsCodeName": [
-      "주로 그람양성,음성균에 작용하는 것"
-    ],
-    "price": "376",
-    "formulation": "경질캡슐제",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:57.167Z"
-  },
-  "645906160": {
-    "title": "텔미스타정40mg",
-    "mfg": "동광제약(주)",
-    "isETC": true,
-    "storageContainer": "기밀용기",
-    "storageTemp": "실온(1~30℃)",
-    "effects": [
-      "본태성 고혈압",
-      "심혈관 질환의 위험성 감소"
-    ],
-    "rawStorageMethod": "기밀용기, 실온(1~30℃) 보관",
-    "payType": "급여",
-    "unit": "정",
-    "gnlNmCd": "378801ATB",
-    "injectPath": "내복",
-    "mdfsCodeName": [
-      "혈압강하제"
-    ],
-    "price": "362",
-    "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:53.612Z"
+    "mfdsCode": "218",
+    "updateDate": "2025-08-13T01:06:51.715Z"
   },
   "645906320": {
     "title": "포텍플러스캡슐",
@@ -586,7 +445,9 @@
     "isETC": true,
     "storageContainer": "밀폐용기",
     "storageTemp": "실온(1~30℃)",
-    "effects": [],
+    "effects": [
+      "지속적으로 SGPT가 상승되어 있는 만성지속성 간염"
+    ],
     "rawStorageMethod": "밀폐용기,실온(1~30℃)보관",
     "payType": "급여",
     "unit": "캡슐",
@@ -597,28 +458,8 @@
     ],
     "price": "221",
     "formulation": "경질캡슐제",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:36:00.790Z"
-  },
-  "645907030": {
-    "title": "알제트정10/10mg",
-    "mfg": "동광제약(주)",
-    "isETC": true,
-    "storageContainer": "기밀용기",
-    "storageTemp": "실온(1~30℃)",
-    "effects": [],
-    "rawStorageMethod": "기밀용기, 실온(1~30℃) 보관",
-    "payType": "급여",
-    "unit": "정",
-    "gnlNmCd": "640800ATB",
-    "injectPath": "내복",
-    "mdfsCodeName": [
-      "동맥경화용제"
-    ],
-    "price": "768",
-    "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:54.377Z"
+    "mfdsCode": "391",
+    "updateDate": "2025-08-13T01:03:55.417Z"
   },
   "646004140": {
     "title": "메디핀정",
@@ -640,8 +481,35 @@
     ],
     "price": "312",
     "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:36:15.833Z"
+    "mfdsCode": "219",
+    "updateDate": "2025-08-13T01:04:29.784Z"
+  },
+  "646203700": {
+    "title": "로스타젠정20mg",
+    "mfg": "(주)셀릭스",
+    "isETC": true,
+    "storageContainer": "기밀용기",
+    "storageTemp": "실온(1~30℃)",
+    "effects": [
+      "원발성 고콜레스테롤혈증(이형접합 가족성 고콜레스테롤혈증을 포함하는 type IIa), 복합형 고지혈증(type IIb)",
+      "동형접합 가족성 고콜레스테롤혈증에 식이요법이나 다른 지질저하요법(예",
+      "고콜레스테롤혈증 환자에서 총콜레스테롤과 LDL-콜레스테롤을 목표 수준으로 낮추어 죽상동맥경화증의 진행을 지연",
+      "식이요법에도 불구하고 여전히 아래의 기준에 해당되는, 이형 가족형 고콜레스테롤혈증을 가진 만10세-만17세의 소아환자(여성의 경우 초경 이...",
+      "원발성 이상베타리포프로테인혈증(type III) 환자의 식이요법 보조제",
+      "심혈관 질환에 대한 위험성 감소"
+    ],
+    "rawStorageMethod": "기밀용기, 실온(1~30℃)보관",
+    "payType": "급여",
+    "unit": "정",
+    "gnlNmCd": "454002ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "동맥경화용제"
+    ],
+    "price": "583",
+    "formulation": "정제,저작정",
+    "mfdsCode": "218",
+    "updateDate": "2025-08-13T01:03:08.621Z"
   },
   "646801120": {
     "title": "웰콘정",
@@ -649,7 +517,9 @@
     "isETC": true,
     "storageContainer": "밀폐용기",
     "storageTemp": "실온(1-30℃)",
-    "effects": [],
+    "effects": [
+      "만성변비, 비특이성 설사, 과민대장증후군에서의 변비 보조요법 및 설사"
+    ],
     "rawStorageMethod": "밀폐용기, 실온(1-30℃)보관",
     "payType": "급여",
     "unit": "정",
@@ -660,95 +530,8 @@
     ],
     "price": "84",
     "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:59.365Z"
-  },
-  "647300350": {
-    "title": "모사피아정",
-    "mfg": "에이치엘비제약(주)",
-    "isETC": true,
-    "storageContainer": "밀폐용기",
-    "storageTemp": "실온(1-30℃)",
-    "effects": [],
-    "rawStorageMethod": "밀폐용기, 실온(1-30℃)보관",
-    "payType": "급여",
-    "unit": "정",
-    "gnlNmCd": "421001ATB",
-    "injectPath": "내복",
-    "mdfsCodeName": [
-      "기타의 소화기관용약"
-    ],
-    "price": "93",
-    "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:59.122Z"
-  },
-  "647301360": {
-    "title": "레티린정",
-    "mfg": "에이치엘비제약(주)",
-    "isETC": true,
-    "storageContainer": "차광기밀용기",
-    "storageTemp": "실온(1-30℃)",
-    "effects": [
-      "계절성 알레르기성 비염 또는 다년성 알레르기성 비염(지속적 알레르기성 비염 포함)",
-      "만성 특발성 두드러기",
-      "가려움증을 동반한 피부염 및 습진(하이드로코티손 외용제와 병용)"
-    ],
-    "rawStorageMethod": "차광기밀용기, 실온(1-30℃)보관",
-    "payType": "급여",
-    "unit": "정",
-    "gnlNmCd": "463601ATB",
-    "injectPath": "내복",
-    "mdfsCodeName": [
-      "항히스타민제"
-    ],
-    "price": "179",
-    "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:56.862Z"
-  },
-  "648101670": {
-    "title": "유로스칸정",
-    "mfg": "경동제약(주)",
-    "isETC": true,
-    "storageContainer": "차광기밀용기",
-    "storageTemp": "실온(1-30℃)",
-    "effects": [],
-    "rawStorageMethod": "실온(1-30℃)보관, 차광기밀용기",
-    "payType": "급여",
-    "unit": "정",
-    "gnlNmCd": "159001ATB",
-    "injectPath": "내복",
-    "mdfsCodeName": [
-      "기타의 비뇨생식기관 및 항문용약"
-    ],
-    "price": "707",
-    "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:54.198Z"
-  },
-  "649102450": {
-    "title": "클래스로신정500mg",
-    "mfg": "한국휴텍스제약(주)",
-    "isETC": true,
-    "storageContainer": "차광기밀용기",
-    "storageTemp": "상온(15~30℃)",
-    "effects": [
-      "○ 유효균종",
-      "○ 적응증"
-    ],
-    "rawStorageMethod": "차광기밀용기, 상온(15~30℃)보관",
-    "payType": "급여",
-    "unit": "정",
-    "gnlNmCd": "134904ATB",
-    "injectPath": "내복",
-    "mdfsCodeName": [
-      "기타의 항생물질 제제(복합항생물질제제를 포함)"
-    ],
-    "price": "1291",
-    "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:57.112Z"
+    "mfdsCode": "239",
+    "updateDate": "2025-08-13T01:04:56.387Z"
   },
   "649401610": {
     "title": "에도스캡슐",
@@ -756,7 +539,9 @@
     "isETC": false,
     "storageContainer": "기밀용기",
     "storageTemp": "실온(1-30℃)",
-    "effects": [],
+    "effects": [
+      "급ㆍ만성 호흡기질환에서의 점액용해 및 거담"
+    ],
     "rawStorageMethod": "기밀용기, 실온보관(1-30℃)",
     "payType": "급여",
     "unit": "캡슐",
@@ -767,92 +552,8 @@
     ],
     "price": "196",
     "formulation": "경질캡슐제",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:58.188Z"
-  },
-  "649402580": {
-    "title": "티로프란정",
-    "mfg": "영일제약(주)",
-    "isETC": true,
-    "storageContainer": "밀폐용기",
-    "storageTemp": "실온(1~30℃)",
-    "effects": [
-      "다음 질환에서의 급성 경련성 동통 : 간담도산통, 여러 원인에 의한 복부산통, 신장ㆍ요관의 산통",
-      "다음 질환에서의 복부 경련 및 동통 : 위장관 이상운동증, 담석증, 담낭염, 수술 후 유착"
-    ],
-    "rawStorageMethod": "밀폐용기, 실온보관(1~30℃)",
-    "payType": "급여",
-    "unit": "정",
-    "gnlNmCd": "240301ATB",
-    "injectPath": "내복",
-    "mdfsCodeName": [
-      "진경제"
-    ],
-    "price": "135",
-    "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:36:15.506Z"
-  },
-  "649404690": {
-    "title": "엠피디정",
-    "mfg": "영일제약(주)",
-    "isETC": true,
-    "storageContainer": "기밀용기",
-    "storageTemp": "실온(1-30℃)",
-    "effects": [
-      "내분비 장애 : 원발성 및 속발성 부신피질 기능부전증(히드로코르티손이나 코르티손이 1차 선택 약물이며, 필요한 경우 광질코르티코이드와 병용해서 합성 코르티코이드를 사용할 수도 있고, 특히 영아기에는 광질코르티코이드를 병용하는 것이 중요함), 선천성 부신이상 증식, 암에 수반된 고칼슘혈증, 비화농성 갑상선염",
-      "류마티스성 장애",
-      "교원성 질환",
-      "피부 질환 : 천포창, 중증 다형성 홍반(스티븐스-존슨증후군), 박탈성 피부염, 수포성 포진양 피부염, 중증 지루성 피부염, 중증 건선, 균상식 육종",
-      "알레르기성 질환",
-      "안과 질환",
-      "위장관계 질환",
-      "호흡기계 질환 : 증후성 사르코이드증, 베릴륨 중독증, 전격성 또는 파종성인 폐결핵(적절한 항결핵 화학요법제와 병용투여), 다른 방법으로 낫지 않는 뢰플러 증후군, 흡인성 폐염",
-      "혈액 질환 : 후천성(자가면역성) 용혈성 빈혈, 성인의 특발성 혈소판 감소성 자반증, 성인의 속발성 혈소판 감소증, 적아구감소증(적혈구 빈혈), 선천성 적혈구 형성 부전성 빈혈",
-      "악성 종양성 질환",
-      "부종성 질환 : 요독 증상이 없는 특발성 신증후 또는 홍반성 루푸스로 인한 신증후에 있어서 배뇨증가의 유도 및 단백뇨의 완화",
-      "신경계 질환 : 다발성 경화증의 급성악화",
-      "기타 : 결핵성 수막염(지주막하의 차단상태 또는 차단이 우려되는 경우로서, 적절한 항결핵 화학요법제와 병용투여), 선모충증(신경성 또는 심근성 합병증이 수반된 경우)"
-    ],
-    "rawStorageMethod": "기밀용기, 실온보관(1-30℃)",
-    "payType": "임의불가",
-    "unit": "정",
-    "gnlNmCd": "193302ATB",
-    "injectPath": "내복",
-    "mdfsCodeName": [
-      "부신호르몬제"
-    ],
-    "price": "83",
-    "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:52.625Z"
-  },
-  "649405110": {
-    "title": "디로칸캡슐150mg",
-    "mfg": "영일제약(주)",
-    "isETC": true,
-    "storageContainer": "기밀용기",
-    "storageTemp": "실온(1~30℃)",
-    "effects": [
-      "급성 또는 재발성 질칸디다증",
-      "칸디다혈증, 파종성 칸디다증 및 그 외의 다른 침습성 칸디다감염증(복막, 심내막, 폐, 비뇨기계 등)을 포함한 전신 칸디다증",
-      "면역기능이 정상인 환자 및 면역기능저하 환자(에이즈(AIDS), 장기이식 환자 또는 그 밖의 다른 면역억제요법을 받는 환자 등)의 크립토콕쿠스 수막염 및 폐, 피부 등 신체 다른 부위의 크립토콕쿠스증",
-      "AIDS 환자의 크립토콕쿠스증의 재발을 방지하기 위한 유지요법",
-      "세포독성화학요법이나 방사선요법, 골수이식으로 인한 호중구감소증으로 인해 진균감염의 위험이 있는 면역기능저하 환자의 진균감염증 예방",
-      "손·발톱진균증, 무좀(족부백선), 체부백선, 완선(샅백선), 어루러기 및 피부칸디다증을 포함한 피부진균 감염증"
-    ],
-    "rawStorageMethod": "기밀용기, 실온보관(1~30℃)",
-    "payType": "급여",
-    "unit": "캡슐",
-    "gnlNmCd": "159905ACH",
-    "injectPath": "내복",
-    "mdfsCodeName": [
-      "기타의 화학요법제"
-    ],
-    "price": "2866",
-    "formulation": "경질캡슐제",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:57.027Z"
+    "mfdsCode": "222",
+    "updateDate": "2025-08-13T01:03:12.835Z"
   },
   "649405200": {
     "title": "영일알마게이트정500mg",
@@ -860,7 +561,9 @@
     "isETC": false,
     "storageContainer": "밀폐용기",
     "storageTemp": "실온(1~30℃)",
-    "effects": [],
+    "effects": [
+      "다음 질환의 제산작용 및 증상의 개선"
+    ],
     "rawStorageMethod": "밀폐용기, 실온보관(1~30℃)",
     "payType": "급여",
     "unit": "정",
@@ -871,34 +574,8 @@
     ],
     "price": "55",
     "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:59.541Z"
-  },
-  "650205820": {
-    "title": "에이브스정50mg",
-    "mfg": "안국약품(주)",
-    "isETC": true,
-    "storageContainer": "기밀용기",
-    "storageTemp": "30℃이하에서 습기를 피해",
-    "effects": [
-      "이 약은 단독요법으로 투여한다.",
-      "이전 당뇨병 약물치료를 받은 경험이 없으며 단독요법으로 충분한 혈당조절이 어려운 경우 메트포르민과 병용투여한다.",
-      "설포닐우레아 또는 메트포르민 또는 치아졸리딘디온 단독요법으로 충분한 혈당조절을 할 수 없는 경우 이 약과 병용투여한다.",
-      "설포닐우레아 및 메트포르민 병용요법으로 충분한 혈당조절을 할 수 없는 경우, 이 약과 병용투여한다.",
-      "인슐린(인슐린 단독 또는 메트포르민 병용)요법으로 충분한 혈당조절을 할 수 없는 경우, 이 약과 병용투여한다."
-    ],
-    "rawStorageMethod": "기밀용기, 30℃이하에서 습기를 피해 보관",
-    "payType": "급여",
-    "unit": "정",
-    "gnlNmCd": "500801ATB",
-    "injectPath": "내복",
-    "mdfsCodeName": [
-      "당뇨병용제"
-    ],
-    "price": "240",
-    "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:59.216Z"
+    "mfdsCode": "234",
+    "updateDate": "2025-08-13T01:03:11.378Z"
   },
   "653700240": {
     "title": "마그밀정",
@@ -919,48 +596,34 @@
     ],
     "price": "23",
     "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:53.299Z"
+    "mfdsCode": "234",
+    "updateDate": "2025-08-13T01:04:36.211Z"
   },
-  "654003750": {
-    "title": "로스틴정10mg",
+  "654004520": {
+    "title": "아나콕스캡슐200mg",
     "mfg": "아주약품(주)",
     "isETC": true,
-    "storageContainer": "기밀용기",
-    "storageTemp": "실온(1∼30℃)",
-    "effects": [],
-    "rawStorageMethod": "기밀용기, 실온(1∼30℃) 보관",
+    "storageContainer": "밀폐용기",
+    "storageTemp": "15-30℃",
+    "effects": [
+      "골관절염(퇴행관절염)의 증상이나 징후의 완화",
+      "류마티스관절염의 증상이나 징후의 완화",
+      "강직척추염의 증상 및 징후의 완화",
+      "성인의 급성 통증 완화(수술후, 발치후 진통)",
+      "원발월경통"
+    ],
+    "rawStorageMethod": "밀폐용기, 15-30℃ 보관",
     "payType": "급여",
-    "unit": "정",
-    "gnlNmCd": "454001ATB",
+    "unit": "캡슐",
+    "gnlNmCd": "347701ACH",
     "injectPath": "내복",
     "mdfsCodeName": [
-      "동맥경화용제"
+      "해열·진통·소염제"
     ],
-    "price": "612",
-    "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:36:15.752Z"
-  },
-  "654004800": {
-    "title": "아주스타정80/5mg",
-    "mfg": "아주약품(주)",
-    "isETC": true,
-    "storageContainer": "차광기밀용기",
-    "storageTemp": "실온(1~30℃)",
-    "effects": [],
-    "rawStorageMethod": "차광기밀용기, 실온(1~30℃)보관",
-    "payType": "급여",
-    "unit": "정",
-    "gnlNmCd": "511500ATB",
-    "injectPath": "내복",
-    "mdfsCodeName": [
-      "혈압강하제"
-    ],
-    "price": "725",
-    "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:51.581Z"
+    "price": "443",
+    "formulation": "경질캡슐제",
+    "mfdsCode": "114",
+    "updateDate": "2025-08-13T01:03:55.850Z"
   },
   "654004850": {
     "title": "아주스타정40/5mg",
@@ -968,7 +631,9 @@
     "isETC": true,
     "storageContainer": "차광기밀용기",
     "storageTemp": "실온(1~30℃)",
-    "effects": [],
+    "effects": [
+      "암로디핀 또는 텔미사르탄 단독요법으로 혈압이 적절하게 조절되지 않는 본태성 고혈압"
+    ],
     "rawStorageMethod": "차광기밀용기, 실온(1~30℃)보관",
     "payType": "급여",
     "unit": "정",
@@ -979,28 +644,30 @@
     ],
     "price": "600",
     "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:53.452Z"
+    "mfdsCode": "214",
+    "updateDate": "2025-08-13T01:04:27.944Z"
   },
-  "655501790": {
-    "title": "자누메트엑스알서방정50/1000mg",
-    "mfg": "한국엠에스디(주)",
+  "655600080": {
+    "title": "글루코프리서방정500mg",
+    "mfg": "한올바이오파마(주)",
     "isETC": true,
     "storageContainer": "기밀용기",
-    "storageTemp": "습기를 피하여 실온(1-30℃)",
-    "effects": [],
-    "rawStorageMethod": "기밀용기, 습기를 피하여 실온(1-30℃)보관",
+    "storageTemp": "실온(1~30℃)에서",
+    "effects": [
+      "식이요법 및 운동요법을 통해 혈당 조절이 충분치 않은 제2형 당뇨병 성인 환자의 치료. (특히, 과체중인 당뇨병 환자)"
+    ],
+    "rawStorageMethod": "기밀용기, 실온(1~30℃)에서 보관",
     "payType": "급여",
     "unit": "정",
-    "gnlNmCd": "502300ATR",
+    "gnlNmCd": "191502ATR",
     "injectPath": "내복",
     "mdfsCodeName": [
       "당뇨병용제"
     ],
-    "price": "420",
+    "price": "86",
     "formulation": "서방형정제",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:54.087Z"
+    "mfdsCode": "396",
+    "updateDate": "2025-08-13T01:04:28.026Z"
   },
   "655605230": {
     "title": "알카본정",
@@ -1021,31 +688,8 @@
     ],
     "price": "85",
     "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:36:02.689Z"
-  },
-  "655605510": {
-    "title": "앱시토정10mg",
-    "mfg": "한올바이오파마(주)",
-    "isETC": true,
-    "storageContainer": "기밀용기",
-    "storageTemp": "실온(1~30℃)",
-    "effects": [
-      "미란성 위식도역류질환의 치료",
-      "급성위염 및 만성위염의 위점막 병변 개선&amp;lt;10mg에 한함&amp;gt;"
-    ],
-    "rawStorageMethod": "기밀용기, 실온(1~30℃) 보관",
-    "payType": "급여",
-    "unit": "정",
-    "gnlNmCd": "704702ATB",
-    "injectPath": "내복",
-    "mdfsCodeName": [
-      "소화성궤양용제"
-    ],
-    "price": "277",
-    "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:54.288Z"
+    "mfdsCode": "321",
+    "updateDate": "2025-08-13T01:03:53.448Z"
   },
   "656000260": {
     "title": "록사펜정",
@@ -1068,8 +712,8 @@
     ],
     "price": "118",
     "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:54.073Z"
+    "mfdsCode": "114",
+    "updateDate": "2025-08-13T01:03:06.598Z"
   },
   "656000830": {
     "title": "아페낙정",
@@ -1077,7 +721,9 @@
     "isETC": true,
     "storageContainer": "기밀용기",
     "storageTemp": "실온(1-30℃)",
-    "effects": [],
+    "effects": [
+      "류마티스관절염, 강직척추염, 골관절염(퇴행관절염) 및 견갑상완골의 관절주위염, 치통, 외상 후 생기는 염증, 요통, 좌골통, 비관절성 류머티즘으로 인한 통증"
+    ],
     "rawStorageMethod": "기밀용기, 실온(1-30℃)보관",
     "payType": "급여",
     "unit": "정",
@@ -1088,8 +734,100 @@
     ],
     "price": "188",
     "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:53.938Z"
+    "mfdsCode": "114",
+    "updateDate": "2025-08-13T01:03:10.196Z"
+  },
+  "656002670": {
+    "title": "디오르반정80mg",
+    "mfg": "알리코제약(주)",
+    "isETC": true,
+    "storageContainer": "기밀용기",
+    "storageTemp": "열과 습기를 피해 30℃이하에서 저장",
+    "effects": [
+      "본태고혈압"
+    ],
+    "rawStorageMethod": "기밀용기, 열과 습기를 피해 30℃이하에서 저장",
+    "payType": "급여",
+    "unit": "정",
+    "gnlNmCd": "247101ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "혈압강하제"
+    ],
+    "price": "484",
+    "formulation": "정제,저작정",
+    "mfdsCode": "214",
+    "updateDate": "2025-08-13T01:03:50.796Z"
+  },
+  "656003670": {
+    "title": "아르바정20mg",
+    "mfg": "알리코제약(주)",
+    "isETC": true,
+    "storageContainer": "기밀용기",
+    "storageTemp": "실온(1∼30℃)",
+    "effects": [
+      "다음의 심장혈관 질환에 대한 위험성감소",
+      "고지혈증",
+      "식이요법에도 불구하고 여전히 아래의 기준에 해당되는 이형접합 가족형 고콜레스테롤혈증을 가진 10 ∼ 17세의 소아환자(여성의 경우 초경 이..."
+    ],
+    "rawStorageMethod": "기밀용기, 실온(1∼30℃)보관",
+    "payType": "급여",
+    "unit": "정",
+    "gnlNmCd": "111502ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "동맥경화용제"
+    ],
+    "price": "712",
+    "formulation": "정제,저작정",
+    "mfdsCode": "218",
+    "updateDate": "2025-08-13T01:04:32.608Z"
+  },
+  "656004100": {
+    "title": "디오디핀정5/160mg",
+    "mfg": "알리코제약(주)",
+    "isETC": true,
+    "storageContainer": "기밀용기",
+    "storageTemp": "실온(1∼30℃)",
+    "effects": [
+      "암로디핀 또는 발사르탄 단독요법으로 혈압이 적절하게 조절되지 않는 본태성 고혈압"
+    ],
+    "rawStorageMethod": "기밀용기, 실온(1∼30℃)보관",
+    "payType": "급여",
+    "unit": "정",
+    "gnlNmCd": "492800ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "혈압강하제"
+    ],
+    "price": "840",
+    "formulation": "정제,저작정",
+    "mfdsCode": "214",
+    "updateDate": "2025-08-13T01:03:49.327Z"
+  },
+  "656004660": {
+    "title": "디오르반정160mg",
+    "mfg": "알리코제약(주)",
+    "isETC": true,
+    "storageContainer": "기밀용기",
+    "storageTemp": "열과 습기를 피해 30℃이하에서 저장",
+    "effects": [
+      "본태고혈압",
+      "심부전",
+      "심근경색 후의 사망 위험성 감소"
+    ],
+    "rawStorageMethod": "기밀용기, 열과 습기를 피해 30℃이하에서 저장",
+    "payType": "급여",
+    "unit": "정",
+    "gnlNmCd": "247102ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "혈압강하제"
+    ],
+    "price": "830",
+    "formulation": "정제,저작정",
+    "mfdsCode": "214",
+    "updateDate": "2025-08-13T01:03:19.686Z"
   },
   "656005390": {
     "title": "시타글민듀오서방정 50/500mg",
@@ -1097,7 +835,9 @@
     "isETC": true,
     "storageContainer": "기밀용기",
     "storageTemp": "실온(1-30℃)",
-    "effects": [],
+    "effects": [
+      "이 약은 시타글립틴과 메트포르민의 병용투여가 적절한 제2형 당뇨병 환자의 혈당조절을 향상시키기 위해 식사요법 및 운동요법의 보조제로 투여한다."
+    ],
     "rawStorageMethod": "기밀용기, 실온(1-30℃)보관\n",
     "payType": "급여",
     "unit": "정",
@@ -1108,110 +848,53 @@
     ],
     "price": "381",
     "formulation": "서방형정제",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:53.944Z"
+    "mfdsCode": "396",
+    "updateDate": "2025-08-13T01:03:50.800Z"
   },
-  "657308500": {
-    "title": "미라베가서방정50mg",
-    "mfg": "(주)동구바이오제약",
+  "658204710": {
+    "title": "다파로진정10mg",
+    "mfg": "(주)비보존제약",
     "isETC": true,
     "storageContainer": "기밀용기",
-    "storageTemp": "실온(1-30℃)",
-    "effects": [],
-    "rawStorageMethod": "기밀용기, 실온(1-30℃) 보관",
-    "payType": "급여",
-    "unit": "정",
-    "gnlNmCd": "625701ATR",
-    "injectPath": "내복",
-    "mdfsCodeName": [
-      "기타의 비뇨생식기관 및 항문용약"
-    ],
-    "price": "324",
-    "formulation": "서방형정제",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:57.105Z"
-  },
-  "660703690": {
-    "title": "위마코연질캡슐",
-    "mfg": "위더스제약(주)",
-    "isETC": true,
-    "storageContainer": "기밀용기, 얼리지말 것",
-    "storageTemp": "25℃이하",
+    "storageTemp": "실온(1~30℃)",
     "effects": [
-      "다음의 내인성 고트리글리세라이드혈증 환자의 상승된 트리글리세라이드 수치를 감소시키기 위한 식이요법의 보조제"
+      "제 2형 당뇨병"
     ],
-    "rawStorageMethod": "기밀용기, 25℃이하 보관, 얼리지말 것",
-    "payType": "급여",
-    "unit": "캡슐",
-    "gnlNmCd": "679402ACS",
-    "injectPath": "내복",
-    "mdfsCodeName": [
-      "동맥경화용제"
-    ],
-    "price": "252",
-    "formulation": "연질캡슐제",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:59.151Z"
-  },
-  "665001480": {
-    "title": "오르메탄정20mg",
-    "mfg": "(주)경보제약",
-    "isETC": true,
-    "storageContainer": "기밀용기",
-    "storageTemp": "실온(1~25℃)",
-    "effects": [],
-    "rawStorageMethod": "기밀용기, 실온(1~25℃) 보관",
+    "rawStorageMethod": "기밀용기, 실온(1~30℃)보관",
     "payType": "급여",
     "unit": "정",
-    "gnlNmCd": "468501ATB",
-    "injectPath": "내복",
-    "mdfsCodeName": [
-      "혈압강하제"
-    ],
-    "price": "354",
-    "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:54.466Z"
-  },
-  "669800160": {
-    "title": "구주스피로닥톤정",
-    "mfg": "구주제약(주)",
-    "isETC": true,
-    "storageContainer": "차광한 기밀용기",
-    "storageTemp": null,
-    "effects": [],
-    "rawStorageMethod": "차광한 기밀용기\r\n",
-    "payType": "급여",
-    "unit": "정",
-    "gnlNmCd": "231101ATB",
-    "injectPath": "내복",
-    "mdfsCodeName": [
-      "이뇨제"
-    ],
-    "price": "54",
-    "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:37:38.527Z"
-  },
-  "669806230": {
-    "title": "테리아정20mg",
-    "mfg": "구주제약(주)",
-    "isETC": true,
-    "storageContainer": "밀폐용기",
-    "storageTemp": "실온 (1~30℃)",
-    "effects": [],
-    "rawStorageMethod": "밀폐용기, 실온 (1~30℃) 보관",
-    "payType": "급여",
-    "unit": "정",
-    "gnlNmCd": "695401ATB",
+    "gnlNmCd": "527302ATB",
     "injectPath": "내복",
     "mdfsCodeName": [
       "당뇨병용제"
     ],
-    "price": "665",
+    "price": "393",
     "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:51.250Z"
+    "mfdsCode": "396",
+    "updateDate": "2025-08-13T01:06:49.262Z"
+  },
+  "660402340": {
+    "title": "보리레바정",
+    "mfg": "경진제약(주)",
+    "isETC": true,
+    "storageContainer": "차광밀폐용기",
+    "storageTemp": "실온(1~30℃)",
+    "effects": [
+      "위궤양",
+      "다음 질환의 위점막병변(미란, 출혈, 발적, 부종)의 개선"
+    ],
+    "rawStorageMethod": "차광밀폐용기, 실온보관(1~30℃)",
+    "payType": "급여",
+    "unit": "정",
+    "gnlNmCd": "222901ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "소화성궤양용제"
+    ],
+    "price": "88",
+    "formulation": "정제,저작정",
+    "mfdsCode": "232",
+    "updateDate": "2025-08-13T01:03:09.759Z"
   },
   "669806280": {
     "title": "테리아엠서방정10/750mg",
@@ -1219,7 +902,9 @@
     "isETC": true,
     "storageContainer": "기밀용기",
     "storageTemp": "실온(1~30℃)",
-    "effects": [],
+    "effects": [
+      "이 약은 테네리글립틴과 메트포르민의 병용투여가 적합한 제2형 당뇨병 환자의 혈당조절을 향상시키기 위해 식사요법 및 운동요법 보조제로 투여한다."
+    ],
     "rawStorageMethod": "기밀용기, 실온(1~30℃)보관",
     "payType": "급여",
     "unit": "정",
@@ -1230,8 +915,8 @@
     ],
     "price": "334",
     "formulation": "서방형정제",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:54.053Z"
+    "mfdsCode": "396",
+    "updateDate": "2025-08-13T01:03:49.070Z"
   },
   "669806290": {
     "title": "테리아엠서방정10/500mg",
@@ -1239,7 +924,9 @@
     "isETC": true,
     "storageContainer": "기밀용기",
     "storageTemp": "실온(1~30℃)",
-    "effects": [],
+    "effects": [
+      "이 약은 테네리글립틴과 메트포르민의 병용투여가 적합한 제2형 당뇨병 환자의 혈당조절을 향상시키기 위해 식사요법 및 운동요법 보조제로 투여한다."
+    ],
     "rawStorageMethod": "기밀용기, 실온(1~30℃)보관",
     "payType": "급여",
     "unit": "정",
@@ -1250,68 +937,8 @@
     ],
     "price": "334",
     "formulation": "서방형정제",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:53.921Z"
-  },
-  "670500540": {
-    "title": "보령바이오아스트릭스캡슐100mg",
-    "mfg": "(주)보령바이오파마",
-    "isETC": false,
-    "storageContainer": "밀폐용기",
-    "storageTemp": "실온(1~30℃)",
-    "effects": [],
-    "rawStorageMethod": "밀폐용기, 실온(1~30℃)보관",
-    "payType": "급여",
-    "unit": "캡슐",
-    "gnlNmCd": "111001ACE",
-    "injectPath": "내복",
-    "mdfsCodeName": [
-      "기타의 순환계용약"
-    ],
-    "price": "77",
-    "formulation": "장용캡슐제",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:53.524Z"
-  },
-  "671803431": {
-    "title": "포타겔현탁액",
-    "mfg": "대원제약(주)",
-    "isETC": false,
-    "storageContainer": "기밀용기",
-    "storageTemp": "실온(1-30℃)",
-    "effects": [],
-    "rawStorageMethod": "기밀용기, 실온보관(1-30℃)",
-    "payType": "급여",
-    "unit": "mL/포",
-    "gnlNmCd": "146431ASS",
-    "injectPath": "내복",
-    "mdfsCodeName": [
-      "정장제"
-    ],
-    "price": "246",
-    "formulation": "현탁액제,현탁액용정제,현탁액용산제",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:59.262Z"
-  },
-  "671803580": {
-    "title": "핀카정",
-    "mfg": "대원제약(주)",
-    "isETC": true,
-    "storageContainer": "차광기밀용기",
-    "storageTemp": "실온(1~30℃)",
-    "effects": [],
-    "rawStorageMethod": "실온(1~30℃)보관, 차광기밀용기",
-    "payType": "급여",
-    "unit": "정",
-    "gnlNmCd": "159001ATB",
-    "injectPath": "내복",
-    "mdfsCodeName": [
-      "기타의 비뇨생식기관 및 항문용약"
-    ],
-    "price": "732",
-    "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:59.040Z"
+    "mfdsCode": "396",
+    "updateDate": "2025-08-13T01:06:46.709Z"
   },
   "671805260": {
     "title": "알포콜린연질캡슐",
@@ -1319,7 +946,9 @@
     "isETC": true,
     "storageContainer": "기밀용기",
     "storageTemp": "실온(1-30℃)",
-    "effects": [],
+    "effects": [
+      "☆국내임상시험결과 추가제출"
+    ],
     "rawStorageMethod": "기밀용기, 실온(1-30℃)보관",
     "payType": "급여",
     "unit": "캡슐",
@@ -1330,8 +959,8 @@
     ],
     "price": "445",
     "formulation": "연질캡슐제",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:36:00.711Z"
+    "mfdsCode": "119",
+    "updateDate": "2025-08-13T01:03:53.772Z"
   },
   "671806480": {
     "title": "베포스타비정",
@@ -1339,7 +968,9 @@
     "isETC": true,
     "storageContainer": "기밀용기",
     "storageTemp": "실온(1~30℃)",
-    "effects": [],
+    "effects": [
+      "다년성 알레르기성 비염, 만성 두드러기, 피부질환에 수반된 소양증(습진.피부염, 피부소양증, 양진)"
+    ],
     "rawStorageMethod": "기밀용기, 실온(1~30℃)보관",
     "payType": "급여",
     "unit": "정",
@@ -1350,8 +981,8 @@
     ],
     "price": "148",
     "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:53.867Z"
+    "mfdsCode": "141",
+    "updateDate": "2025-08-13T01:03:57.402Z"
   },
   "671807171": {
     "title": "코대원에스시럽",
@@ -1359,7 +990,9 @@
     "isETC": true,
     "storageContainer": "기밀용기",
     "storageTemp": "실온(1-30℃)",
-    "effects": [],
+    "effects": [
+      "급성 기관지염의 증상 및 징후 개선"
+    ],
     "rawStorageMethod": "기밀용기, 실온(1-30℃)보관",
     "payType": "임의불가",
     "unit": "mL/포",
@@ -1370,8 +1003,74 @@
     ],
     "price": "490",
     "formulation": "시럽제,건조시럽",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:59.569Z"
+    "mfdsCode": "222",
+    "updateDate": "2025-08-13T01:03:14.249Z"
+  },
+  "678600250": {
+    "title": "디스포지정10/160mg",
+    "mfg": "(주)다산제약",
+    "isETC": true,
+    "storageContainer": "기밀용기",
+    "storageTemp": "실온(1~30℃)",
+    "effects": [
+      "암로디핀 또는 발사르탄 단독요법으로 혈압이 적절하게 조절되지 않는 본태성 고혈압"
+    ],
+    "rawStorageMethod": "기밀용기, 실온(1~30℃)보관",
+    "payType": "급여",
+    "unit": "정",
+    "gnlNmCd": "495800ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "혈압강하제"
+    ],
+    "price": "1128",
+    "formulation": "정제,저작정",
+    "mfdsCode": "214",
+    "updateDate": "2025-08-13T01:03:06.550Z"
+  },
+  "693901660": {
+    "title": "칸타칸플러스정16/12.5mg",
+    "mfg": "(주)셀트리온제약",
+    "isETC": true,
+    "storageContainer": "기밀용기",
+    "storageTemp": "실온(1-30℃)",
+    "effects": [
+      "개별 성분 치료로 효과가 충분치 않은 본태성 고혈압"
+    ],
+    "rawStorageMethod": "기밀용기, 실온(1-30℃) 보관",
+    "payType": "급여",
+    "unit": "정",
+    "gnlNmCd": "423700ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "혈압강하제"
+    ],
+    "price": "853",
+    "formulation": "정제,저작정",
+    "mfdsCode": "214",
+    "updateDate": "2025-08-13T01:03:49.067Z"
+  },
+  "693901790": {
+    "title": "셀레비카정5/20mg",
+    "mfg": "(주)셀트리온제약",
+    "isETC": true,
+    "storageContainer": "기밀용기",
+    "storageTemp": "실온(1~30℃)",
+    "effects": [
+      "암로디핀 또는 올메사르탄메독소밀 단독요법으로 혈압이 적절하게 조절되지 않는 본태성 고혈압의 치료"
+    ],
+    "rawStorageMethod": "기밀용기, 실온(1~30℃)보관",
+    "payType": "급여",
+    "unit": "정",
+    "gnlNmCd": "500500ATB",
+    "injectPath": "내복",
+    "mdfsCodeName": [
+      "혈압강하제"
+    ],
+    "price": "592",
+    "formulation": "정제,저작정",
+    "mfdsCode": "214",
+    "updateDate": "2025-08-13T01:03:06.966Z"
   },
   "693901850": {
     "title": "칸타칸정8mg",
@@ -1381,7 +1080,7 @@
     "storageTemp": "실온(1~30℃)",
     "effects": [
       "본태고혈압",
-      "심부전 : 좌심실수축기능이 손상된(NYHA class Ⅱ ∼ Ⅳ, 좌심실박출률 40 %이하) 심부전 환자 중 다음에 해당하는 경우"
+      "심부전"
     ],
     "rawStorageMethod": "기밀용기, 실온(1~30℃) 보관",
     "payType": "급여",
@@ -1393,8 +1092,8 @@
     ],
     "price": "452",
     "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:53.295Z"
+    "mfdsCode": "214",
+    "updateDate": "2025-08-13T01:03:49.081Z"
   },
   "693901860": {
     "title": "칸타칸정16mg",
@@ -1404,7 +1103,7 @@
     "storageTemp": "실온(1~30℃)",
     "effects": [
       "본태고혈압",
-      "심부전 : 좌심실수축기능이 손상된(NYHA class Ⅱ ∼ Ⅳ, 좌심실박출률 40 %이하) 심부전 환자 중 다음에 해당하는 경우"
+      "심부전"
     ],
     "rawStorageMethod": "기밀용기, 실온(1~30℃)보관",
     "payType": "급여",
@@ -1416,8 +1115,8 @@
     ],
     "price": "762",
     "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:54.137Z"
+    "mfdsCode": "214",
+    "updateDate": "2025-08-13T01:04:27.976Z"
   },
   "693902290": {
     "title": "피타로틴정2mg",
@@ -1425,7 +1124,9 @@
     "isETC": true,
     "storageContainer": "차광기밀용기",
     "storageTemp": "실온(1~30℃)",
-    "effects": [],
+    "effects": [
+      "원발성 고콜레스테롤혈증(이형접합 가족형 및 비가족형, Fredrickson type lla) 및 혼합형 이상지질혈증 환자(Fredrickson type llb)의 상승된 총 콜레스테롤, LDL-콜레스테롤, 아포-B 단백 및 트리글리세라이드치를 감소시키고 HDL-콜레스테롤을 증가시키는 식이요법의 보조제"
+    ],
     "rawStorageMethod": "차광기밀용기, 실온(1~30℃)보관",
     "payType": "급여",
     "unit": "정",
@@ -1436,27 +1137,7 @@
     ],
     "price": "561",
     "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:55.511Z"
-  },
-  "073400340": {
-    "title": "리피토정10mg",
-    "mfg": "비아트리스코리아(주)",
-    "isETC": true,
-    "storageContainer": "기밀용기",
-    "storageTemp": "실온",
-    "effects": [],
-    "rawStorageMethod": "기밀용기, 실온보관",
-    "payType": "급여",
-    "unit": "정",
-    "gnlNmCd": "111501ATB",
-    "injectPath": "내복",
-    "mdfsCodeName": [
-      "동맥경화용제"
-    ],
-    "price": "640",
-    "formulation": "정제,저작정",
-    "mfdsCode": "",
-    "updateDate": "2025-08-12T08:35:55.431Z"
+    "mfdsCode": "218",
+    "updateDate": "2025-08-13T01:04:06.562Z"
   }
 }

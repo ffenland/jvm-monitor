@@ -67,7 +67,6 @@ function parseFileContent(buffer) {
                 parsedData.medicines.push(medicine);
             } else {
                 // 매치 실패 시 로그
-                console.log('Failed to parse medicine entry:', entry);
             }
         });
 

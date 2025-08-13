@@ -377,7 +377,6 @@ function initializeDatePicker() {
         },
         onChange: function(selectedDates, dateStr, instance) {
             // 날짜가 변경될 때 처리
-            console.log('Selected date:', dateStr);
         }
     });
 }
