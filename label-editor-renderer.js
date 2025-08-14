@@ -43,7 +43,7 @@ function displayInfo() {
     // receiptDate는 Flatpickr가 처리하므로 여기서는 설정하지 않음
     document.getElementById('medicineName').value = medicineInfo?.title || prescriptionData.name || '';
     document.getElementById('medicineType').value = 
-        medicineInfo?.mdfsCodeName?.[0] || medicineInfo?.formulation || '먹는약';
+        medicineInfo?.mdfsCodeName || medicineInfo?.type || '먹는약';
     
     // 처방일수와 1회 투여량은 숫자만 표시
     document.getElementById('prescriptionDays').value = prescriptionData.prescriptionDays || '';
@@ -324,7 +324,7 @@ async function printLabel() {
             medicineInfo: {
                 ...medicineInfo,
                 title: medicineNameValue,
-                mdfsCodeName: [medicineTypeValue]
+                mdfsCodeName: medicineTypeValue
             },
             dosageText: dosageText,
             medicineType: medicineTypeValue,

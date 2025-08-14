@@ -26,6 +26,27 @@ window.addEventListener('DOMContentLoaded', () => {
     const previewTemplateBtn = document.getElementById('preview-template-btn');
     const templatePreviewDiv = document.getElementById('template-preview');
     const previewImage = document.getElementById('preview-image');
+    
+    // 약품설정 관련 요소
+    const medicineBtn = document.getElementById('medicine-btn');
+    const medicineModal = document.getElementById('medicine-modal');
+    const medicineModalClose = document.getElementById('medicine-modal-close');
+    const medicineSearchInput = document.getElementById('medicine-search');
+    const medicineSearchBtn = document.getElementById('medicine-search-btn');
+    const medicineSearchResults = document.getElementById('medicine-search-results');
+    const medicineEditForm = document.getElementById('medicine-edit-form');
+    const medicineCancelBtn = document.getElementById('medicine-cancel-btn');
+    const medicineSaveBtn = document.getElementById('medicine-save-btn');
+    
+    // 약품 편집 폼 필드
+    const editMedicineCode = document.getElementById('edit-medicine-code');
+    const editMedicineName = document.getElementById('edit-medicine-name');
+    const editMedicineType = document.getElementById('edit-medicine-type');
+    const editMedicineEfficacy = document.getElementById('edit-medicine-efficacy');
+    const editMedicineUnit = document.getElementById('edit-medicine-unit');
+    const editMedicineStorageTemp = document.getElementById('edit-medicine-storage-temp');
+    const editMedicineStorageContainer = document.getElementById('edit-medicine-storage-container');
+    const editMedicineAutoPrint = document.getElementById('edit-medicine-auto-print');
 
     let prescriptions = []; // This will hold the list of prescriptions for the selected date
     let selectedPrescriptionIndex = -1;
@@ -161,15 +182,7 @@ window.addEventListener('DOMContentLoaded', () => {
             // 약품명 - medicine.json의 title 우선 사용 (medicineInfo가 있으면 사용, 없으면 name 사용)
             row.insertCell().textContent = med.medicineInfo?.title || med.name || '-';
             
-            // 전문/일반 구분
-            const etcCell = row.insertCell();
-            if (med.medicineInfo) {
-                etcCell.textContent = med.medicineInfo.isETC ? '전문' : '일반';
-                etcCell.style.color = med.medicineInfo.isETC ? '#d32f2f' : '#388e3c';
-                etcCell.style.fontWeight = 'bold';
-            } else {
-                etcCell.textContent = '-';
-            }
+            // 전문/일반 구분 제거됨
             
             row.insertCell().textContent = med.prescriptionDays;
             row.insertCell().textContent = med.singleDose;
@@ -393,6 +406,9 @@ window.addEventListener('DOMContentLoaded', () => {
         if (event.target === labelInfoModal) {
             labelInfoModal.style.display = 'none';
         }
+        if (event.target === medicineModal) {
+            medicineModal.style.display = 'none';
+        }
     });
     
     // 설정 저장
@@ -464,6 +480,130 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // 약품설정 버튼 이벤트
+    medicineBtn.addEventListener('click', () => {
+        medicineModal.style.display = 'block';
+        medicineSearchInput.value = '';
+        medicineSearchResults.style.display = 'none';
+        medicineEditForm.style.display = 'none';
+    });
+    
+    // 약품설정 모달 닫기
+    medicineModalClose.addEventListener('click', () => {
+        medicineModal.style.display = 'none';
+    });
+    
+    medicineCancelBtn.addEventListener('click', () => {
+        medicineModal.style.display = 'none';
+    });
+    
+    // 약품 검색
+    async function searchMedicine() {
+        const searchTerm = medicineSearchInput.value.trim();
+        if (!searchTerm) {
+            alert('검색어를 입력해주세요.');
+            return;
+        }
+        
+        try {
+            const result = await window.electronAPI.searchMedicine(searchTerm);
+            if (result.success && result.medicines.length > 0) {
+                displaySearchResults(result.medicines);
+            } else {
+                medicineSearchResults.innerHTML = '<div style="padding: 10px; text-align: center; color: #666;">검색 결과가 없습니다.</div>';
+                medicineSearchResults.style.display = 'block';
+            }
+        } catch (error) {
+            console.error('약품 검색 오류:', error);
+            alert('약품 검색 중 오류가 발생했습니다.');
+        }
+    }
+    
+    // 검색 결과 표시
+    function displaySearchResults(medicines) {
+        medicineSearchResults.innerHTML = '';
+        medicines.forEach(medicine => {
+            const item = document.createElement('div');
+            item.style.cssText = 'padding: 8px; border-bottom: 1px solid #eee; cursor: pointer; hover: background-color: #f5f5f5;';
+            item.innerHTML = `
+                <strong>${medicine.code}</strong> - ${medicine.title || '약품명 없음'}<br>
+                <small style="color: #666;">${medicine.mdfsCodeName || '유형 없음'}</small>
+            `;
+            item.addEventListener('mouseenter', () => {
+                item.style.backgroundColor = '#f5f5f5';
+            });
+            item.addEventListener('mouseleave', () => {
+                item.style.backgroundColor = 'white';
+            });
+            item.addEventListener('click', () => loadMedicineForEdit(medicine.code));
+            medicineSearchResults.appendChild(item);
+        });
+        medicineSearchResults.style.display = 'block';
+    }
+    
+    // 약품 편집을 위해 로드
+    async function loadMedicineForEdit(code) {
+        try {
+            const result = await window.electronAPI.getSingleMedicine(code);
+            if (result.success && result.medicine) {
+                const medicine = result.medicine;
+                editMedicineCode.value = medicine.code;
+                editMedicineName.value = medicine.title || '';
+                
+                // type 필드와 mdfsCodeName 필드 사용
+                editMedicineType.value = medicine.type || '';
+                editMedicineEfficacy.value = medicine.mdfsCodeName || '';
+                editMedicineUnit.value = medicine.unit || '정';
+                editMedicineStorageTemp.value = medicine.storageTemp || '';
+                editMedicineStorageContainer.value = medicine.storageContainer || '';
+                editMedicineAutoPrint.checked = medicine.autoPrint || false;
+                
+                medicineEditForm.style.display = 'block';
+                medicineSearchResults.style.display = 'none';
+            }
+        } catch (error) {
+            console.error('약품 정보 로드 오류:', error);
+            alert('약품 정보를 불러오는 중 오류가 발생했습니다.');
+        }
+    }
+    
+    // 약품 검색 버튼 클릭
+    medicineSearchBtn.addEventListener('click', searchMedicine);
+    
+    // 약품 검색 엔터키
+    medicineSearchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            searchMedicine();
+        }
+    });
+    
+    // 약품 정보 저장
+    medicineSaveBtn.addEventListener('click', async () => {
+        const medicineData = {
+            code: editMedicineCode.value,
+            title: editMedicineName.value,
+            type: editMedicineType.value,
+            mdfsCodeName: editMedicineEfficacy.value,
+            unit: editMedicineUnit.value,
+            storageTemp: editMedicineStorageTemp.value,
+            storageContainer: editMedicineStorageContainer.value,
+            autoPrint: editMedicineAutoPrint.checked
+        };
+        
+        try {
+            const result = await window.electronAPI.updateMedicine(medicineData);
+            if (result.success) {
+                alert('약품 정보가 업데이트되었습니다.');
+                medicineModal.style.display = 'none';
+            } else {
+                alert('약품 정보 업데이트 실패: ' + result.error);
+            }
+        } catch (error) {
+            console.error('약품 저장 오류:', error);
+            alert('약품 정보 저장 중 오류가 발생했습니다.');
+        }
+    });
+    
     // Request initial data when the app loads
     window.electronAPI.getInitialData();
     loadBrotherPrinters();

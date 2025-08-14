@@ -4,22 +4,22 @@ const fs = require('fs');
 const chokidar = require('chokidar');
 const { parseFileContent } = require('./parser');
 const { printWithBrother, getBrotherPrinters, previewTemplate } = require('./print_brother');
-const { processPrescriptionData, fetchAndParseDrugDetail } = require('./dataProcessor');
+const { processPrescriptionData } = require('./dataProcessor');
 const simpleSecureConfig = require('./simpleSecureConfig');
 const drugInfoManager = require('./druginfo');
+const DatabaseManager = require('./database');
 const monitorPath = 'C:\\atc'; // Directory to monitor
-const resultsDirPath = path.join(__dirname, 'data', 'results');
-const receiptsDirPath = path.join(__dirname, 'data', 'receipts');
 const originFilesPath = path.join(__dirname, 'originFiles'); // Directory for original files
 
 let mainWindow;
 let currentAvailableDates = new Set(); // To keep track of dates for dynamic updates
 let currentConfig = {}; // Store current configuration
+let dbManager; // Database manager instance
 
 function createWindow() {
     mainWindow = new BrowserWindow({
         width: 800,
-        height: 600,
+        height: 800,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'), // Using a preload script for security
             contextIsolation: true, // Recommended for security
@@ -327,7 +327,7 @@ ipcMain.handle('open-label-editor', async (event, prescriptionData, medicineCode
         // 편집 창 생성 - 스크롤 없이 볼 수 있도록 높이 조정
         const editorWindow = new BrowserWindow({
             width: 420,
-            height: 750,
+            height: 900,
             parent: mainWindow,
             modal: true,
             webPreferences: {
@@ -378,7 +378,7 @@ ipcMain.handle('print-from-editor', async (event, printData) => {
                     
                     // 약품 유형 업데이트
                     if (printData.updateMedicineType) {
-                        medicineData[printData.medicineCode].mdfsCodeName = [printData.medicineType];
+                        medicineData[printData.medicineCode].mdfsCodeName = printData.medicineType;  // 문자열로 저장
                         updated = true;
                     }
                     
@@ -460,137 +460,67 @@ ipcMain.handle('get-medicine-list', async () => {
     }
 });
 
-// 약품 상세정보 조회 및 medicine.json 업데이트
-ipcMain.handle('fetch-drug-detail', async (event, drugCode) => {
+// 약품 검색
+ipcMain.handle('search-medicine', async (event, searchTerm) => {
     try {
+        const medicines = dbManager.db.prepare(`
+            SELECT * FROM medicines 
+            WHERE code LIKE ? OR title LIKE ? 
+            LIMIT 50
+        `).all(`%${searchTerm}%`, `%${searchTerm}%`);
         
-        // API에서 약품 정보 조회 (약품코드 사용)
-        const drugDetail = await fetchAndParseDrugDetail(drugCode);
-        
-        if (!drugDetail) {
-            return { success: false, message: '약품 정보를 찾을 수 없습니다.' };
-        }
-        
-        // medicine.json 파일 경로
-        const medicineJsonPath = path.join(__dirname, 'db', 'medicine.json');
-        
-        // 기존 데이터 읽기
-        let medicines = {};
-        if (fs.existsSync(medicineJsonPath)) {
-            const content = fs.readFileSync(medicineJsonPath, 'utf8');
-            medicines = JSON.parse(content);
-        }
-        
-        // drugDetail에서 code 추출하고 나머지 데이터 분리
-        const { code, ...medicineData } = drugDetail;
-        
-        // 기존 데이터 체크
-        const existingData = medicines[code];
-        
-        if (existingData) {
-            // 기존 데이터 업데이트 (기존 필드 유지하면서 새 필드 추가)
-            medicines[code] = {
-                ...existingData,
-                storageContainer: medicineData.storageContainer,
-                storageTemp: medicineData.storageTemp,
-                effects: medicineData.effects,
-                rawStorageMethod: medicineData.rawStorageMethod,
-                updateDate: medicineData.updateDate
-            };
-        } else {
-            // 새 데이터 추가 (code를 제외한 데이터)
-            medicines[code] = medicineData;
-        }
-        
-        // 파일 저장
-        fs.writeFileSync(medicineJsonPath, JSON.stringify(medicines, null, 2), 'utf8');
-        
-        return { 
-            success: true, 
-            data: drugDetail,
-            message: existingIndex >= 0 ? '약품 정보가 업데이트되었습니다.' : '새 약품 정보가 추가되었습니다.'
-        };
-        
+        return { success: true, medicines };
     } catch (error) {
-        console.error('약품 상세정보 조회 실패:', error);
+        console.error('약품 검색 실패:', error);
+        return { success: false, error: error.message, medicines: [] };
+    }
+});
+
+// 단일 약품 정보 조회
+ipcMain.handle('get-single-medicine', async (event, code) => {
+    try {
+        const medicine = dbManager.getMedicine(code);
+        return { success: true, medicine };
+    } catch (error) {
+        console.error('약품 조회 실패:', error);
         return { success: false, error: error.message };
     }
 });
 
-// 다수의 약품 상세정보 일괄 업데이트
-ipcMain.handle('batch-update-drug-details', async (event, drugCodes) => {
-    const results = [];
-    const totalCount = drugCodes.length;
-    let successCount = 0;
-    let failCount = 0;
-    
-    for (const drugCode of drugCodes) {
-        try {
-            const result = await fetchAndParseDrugDetail(drugCode);
-            if (result) {
-                results.push(result);
-                successCount++;
-            } else {
-                failCount++;
-            }
-            
-            // 진행 상황 전송
-            mainWindow.webContents.send('batch-update-progress', {
-                current: successCount + failCount,
-                total: totalCount,
-                currentDrug: drugCode
-            });
-            
-            // API 부하 방지를 위한 대기
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-        } catch (error) {
-            console.error(`${drugCode} 조회 실패:`, error);
-            failCount++;
-        }
+// 약품 정보 업데이트
+ipcMain.handle('update-medicine', async (event, medicineData) => {
+    try {
+        // 데이터베이스 업데이트
+        const stmt = dbManager.db.prepare(`
+            UPDATE medicines 
+            SET title = ?, type = ?, mdfsCodeName = ?, unit = ?, storageTemp = ?, storageContainer = ?, autoPrint = ?
+            WHERE code = ?
+        `);
+        
+        stmt.run(
+            medicineData.title,
+            medicineData.type,
+            medicineData.mdfsCodeName,  // 효능 필드
+            medicineData.unit,
+            medicineData.storageTemp,
+            medicineData.storageContainer,
+            medicineData.autoPrint ? 1 : 0,
+            medicineData.code
+        );
+        
+        return { success: true, message: '약품 정보가 업데이트되었습니다.' };
+    } catch (error) {
+        console.error('약품 업데이트 실패:', error);
+        return { success: false, error: error.message };
     }
-    
-    // medicine.json 업데이트
-    if (results.length > 0) {
-        const medicineJsonPath = path.join(__dirname, 'db', 'medicine.json');
-        let medicines = {};
-        
-        if (fs.existsSync(medicineJsonPath)) {
-            const content = fs.readFileSync(medicineJsonPath, 'utf8');
-            medicines = JSON.parse(content);
-        }
-        
-        // 결과 병합
-        results.forEach(drugDetail => {
-            const { code, ...medicineData } = drugDetail;
-            
-            if (medicines[code]) {
-                // 기존 데이터와 병합
-                medicines[code] = {
-                    ...medicines[code],
-                    ...medicineData
-                };
-            } else {
-                // 새 데이터 추가
-                medicines[code] = medicineData;
-            }
-        });
-        
-        fs.writeFileSync(medicineJsonPath, JSON.stringify(medicines, null, 2), 'utf8');
-    }
-    
-    return {
-        success: true,
-        totalCount,
-        successCount,
-        failCount,
-        message: `총 ${totalCount}개 중 ${successCount}개 성공, ${failCount}개 실패`
-    };
 });
 
 
 app.whenReady().then(async () => {
     createWindow();
+    
+    // 데이터베이스 초기화
+    dbManager = new DatabaseManager();
     
     // 설정 파일 로드
     loadConfig();
@@ -607,27 +537,10 @@ app.whenReady().then(async () => {
         console.log('API key already exists');
     }
     
-    // 오늘 날짜의 result 파일 초기화
-    const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-    const todayResultPath = path.join(resultsDirPath, `result_${today}.json`);
-    if (!fs.existsSync(todayResultPath)) {
-        try {
-            if (!fs.existsSync(resultsDirPath)) {
-                fs.mkdirSync(resultsDirPath, { recursive: true });
-            }
-            if (!fs.existsSync(receiptsDirPath)) {
-                fs.mkdirSync(receiptsDirPath, { recursive: true });
-            }
-            fs.writeFileSync(todayResultPath, '[]', 'utf8');
-        } catch (error) {
-            console.error(`Error creating today's result file: ${error.message}`);
-        }
-    }
-    
     // Send initial log message to renderer
     mainWindow.webContents.on('did-finish-load', () => {
         mainWindow.webContents.send('log-message', `Monitoring directory: ${monitorPath}`);
-        mainWindow.webContents.send('log-message', `Data will be saved to: data/results and data/receipts`);
+        mainWindow.webContents.send('log-message', `Data will be saved to SQLite database`);
         
         // B-PAC SDK는 이미 작동 확인됨
         setTimeout(() => {
@@ -711,17 +624,21 @@ app.whenReady().then(async () => {
                     }))
                 };
                 
-                // 파일 저장
-                saveDataToFile(dataToSave, todayDate);
-                
-                // 약품 정보 API 호출 (동기적으로 처리)
+                // 약품 정보를 먼저 API로 가져오고 저장 (동기적으로 처리)
                 if (parsedContent.medicines && parsedContent.medicines.length > 0) {
                     drugInfoManager.processPrescriptionMedicines(parsedContent.medicines)
-                        .then(() => {
-                            // 더 긴 대기 시간으로 파일 시스템 동기화 보장
-                            return new Promise(resolve => setTimeout(resolve, 500));
+                        .then((result) => {
+                            // API 호출이 있었을 때만 대기
+                            if (result && result.apiCallCount > 0) {
+                                return new Promise(resolve => setTimeout(() => resolve(result), 100));
+                            } else {
+                                return Promise.resolve(result);
+                            }
                         })
-                        .then(() => {
+                        .then(async (result) => {
+                            // 약품 정보가 모두 저장된 후에 파일 저장
+                            saveDataToFile(dataToSave, todayDate);
+                            
                             // medicine.json 정보를 포함한 enriched data 생성
                             const enrichedMedicines = parsedContent.medicines.map(med => {
                                 const medicineInfo = drugInfoManager.getMedicineInfo(med.code);
@@ -741,14 +658,97 @@ app.whenReady().then(async () => {
                             
                             // 화면에 업데이트된 데이터 전송
                             mainWindow.webContents.send('parsed-data', enrichedData);
+                            
+                            // 자동 출력 확인 및 처리
+                            const autoPrintMedicines = [];
+                            for (const med of parsedContent.medicines) {
+                                const medicineInfo = dbManager.getMedicine(med.code);
+                                if (medicineInfo && medicineInfo.autoPrint) {
+                                    autoPrintMedicines.push({
+                                        ...med,
+                                        medicineInfo
+                                    });
+                                }
+                            }
+                            
+                            // 자동 출력할 약품이 있으면 출력
+                            if (autoPrintMedicines.length > 0) {
+                                mainWindow.webContents.send('log-message', `자동 출력 약품 ${autoPrintMedicines.length}개 발견`);
+                                
+                                // 프린터 목록 가져오기
+                                const printers = await getBrotherPrinters();
+                                const printerName = printers.length > 0 ? printers[0] : null;
+                                
+                                if (printerName) {
+                                    for (const medicine of autoPrintMedicines) {
+                                        const printData = {
+                                            patientName: parsedContent.patientName,
+                                            patientId: parsedContent.patientId,
+                                            receiptNum: parsedContent.receiptNum,
+                                            receiptDate: parsedContent.receiptDate,
+                                            hospitalName: parsedContent.hospitalName,
+                                            name: medicine.medicineInfo.title,
+                                            code: medicine.code,
+                                            prescriptionDays: medicine.prescriptionDays,
+                                            dailyDose: medicine.dailyDose,
+                                            singleDose: medicine.singleDose,
+                                            medicineInfo: medicine.medicineInfo
+                                        };
+                                        
+                                        try {
+                                            const config = loadConfig();
+                                            let templatePath = config.templatePath || './templates/testTemplate.lbx';
+                                            
+                                            if (templatePath.startsWith('./')) {
+                                                templatePath = path.join(__dirname, templatePath.substring(2));
+                                            } else if (!path.isAbsolute(templatePath)) {
+                                                templatePath = path.join(__dirname, templatePath);
+                                            }
+                                            
+                                            // 라벨 데이터 가공
+                                            const singleDoseVal = parseInt(printData.singleDose) || 0;
+                                            const dailyDoseVal = parseInt(printData.dailyDose) || 0;
+                                            const prescriptionDaysVal = parseInt(printData.prescriptionDays) || 0;
+                                            const unit = printData.medicineInfo?.unit || '정';
+                                            const storageTemp = printData.medicineInfo?.storageTemp || '';
+                                            
+                                            const processedData = {
+                                                patientName: printData.patientName,
+                                                medicineName: `[${printData.medicineInfo?.title || printData.name}]`,
+                                                medicineType: printData.medicineInfo?.mdfsCodeName || '약품',
+                                                dose: `${singleDoseVal}${unit}씩 하루 ${dailyDoseVal}번`,
+                                                prescriptionDays: printData.prescriptionDays + '일분',
+                                                madeDate: `조제일 ${new Date().toLocaleDateString('ko-KR')}`,
+                                                pharmacy: config.pharmacyName,
+                                                totalCount: `총${singleDoseVal * dailyDoseVal * prescriptionDaysVal}${unit}`,
+                                                storageTemp: storageTemp
+                                            };
+                                            
+                                            const result = await printWithBrother({
+                                                templatePath: templatePath,
+                                                printerName: printerName,
+                                                ...processedData
+                                            });
+                                            
+                                            mainWindow.webContents.send('log-message', `${printData.name} 자동 출력 완료`);
+                                        } catch (printError) {
+                                            console.error('자동 출력 실패:', printError);
+                                            mainWindow.webContents.send('log-message', `${printData.name} 자동 출력 실패: ${printError.message}`);
+                                        }
+                                    }
+                                }
+                            }
                         })
                         .catch(error => {
                             console.error('Error updating drug info:', error);
-                            // 에러 발생 시에도 원본 데이터로 화면 업데이트
+                            // 에러 발생 시에도 파일 저장 시도
+                            saveDataToFile(dataToSave, todayDate);
+                            // 원본 데이터로 화면 업데이트
                             mainWindow.webContents.send('parsed-data', dataToSend);
                         });
                 } else {
-                    // 약품이 없는 경우 바로 전송
+                    // 약품이 없는 경우 바로 저장 및 전송
+                    saveDataToFile(dataToSave, todayDate);
                     mainWindow.webContents.send('parsed-data', dataToSend);
                 }
             } catch (parseError) {
@@ -785,49 +785,47 @@ app.whenReady().then(async () => {
 
     ipcMain.on('get-initial-data', (event) => {
         const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-        const todayFilePath = path.join(resultsDirPath, `result_${today}.json`);
-        let todayData = [];
-        if (fs.existsSync(todayFilePath)) {
-            try {
-                todayData = JSON.parse(fs.readFileSync(todayFilePath, 'utf8'));
-                // 각 데이터의 medicines에 medicineInfo 추가
-                todayData = todayData.map(prescription => ({
-                    ...prescription,
-                    medicines: prescription.medicines.map(med => ({
-                        ...med,
-                        medicineInfo: drugInfoManager.getMedicineInfo(med.code)
-                    }))
-                }));
-            } catch (e) { /* ignore */ }
-        }
-
-        const availableDates = fs.existsSync(resultsDirPath) ? 
-            fs.readdirSync(resultsDirPath)
-                .filter(file => file.startsWith('result_') && file.endsWith('.json'))
-                .map(file => file.substring(7, 15)) // 'result_'.length, 'result_YYYYMMDD'.length
-                .sort((a, b) => b.localeCompare(a)) : []; // Sort descending
         
-        currentAvailableDates = new Set(availableDates); // Initialize the set of available dates
+        // 데이터베이스에서 오늘 날짜의 처방전 가져오기
+        const todayPrescriptions = dbManager.getPrescriptionsByDate(today);
+        
+        // medicine 정보 추가
+        const todayData = todayPrescriptions.map(prescription => ({
+            patientId: prescription.patientId,
+            receiptNum: prescription.receiptNum,
+            receiptDateRaw: prescription.receiptDateRaw,
+            receiptDate: prescription.receiptDate,  // receiptDate 추가
+            patientName: prescription.patientName,
+            hospitalName: prescription.hospitalName,
+            medicines: prescription.medicines.map(med => ({
+                ...med,
+                medicineInfo: dbManager.getMedicine(med.code) || drugInfoManager.getMedicineInfo(med.code)
+            }))
+        }));
 
-        event.sender.send('initial-data', { data: todayData, dates: availableDates, today: today });
+        // 사용 가능한 날짜 목록 가져오기 (DB에서만)
+        const dbDatesQuery = dbManager.db.prepare('SELECT DISTINCT receiptDateRaw FROM prescriptions ORDER BY receiptDateRaw DESC').all();
+        const allDates = dbDatesQuery.map(row => row.receiptDateRaw);
+        
+        currentAvailableDates = new Set(allDates);
+
+        event.sender.send('initial-data', { data: todayData, dates: allDates, today: today });
     });
 
     ipcMain.on('get-data-for-date', (event, date) => {
-        const filePath = path.join(resultsDirPath, `result_${date}.json`);
-        let data = [];
-        if (fs.existsSync(filePath)) {
-            try {
-                data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-                // 각 데이터의 medicines에 medicineInfo 추가
-                data = data.map(prescription => ({
-                    ...prescription,
-                    medicines: prescription.medicines.map(med => ({
-                        ...med,
-                        medicineInfo: drugInfoManager.getMedicineInfo(med.code)
-                    }))
-                }));
-            } catch (e) { /* ignore */ }
-        }
+        // 데이터베이스에서 데이터 가져오기
+        const dbData = dbManager.getPrescriptionsByDate(date);
+        
+        // 데이터베이스에서 가져온 데이터에 medicine 정보 추가
+        const data = dbData.map(prescription => ({
+            ...prescription,
+            receiptDate: prescription.receiptDate,  // receiptDate 명시적으로 포함
+            medicines: prescription.medicines.map(med => ({
+                ...med,
+                medicineInfo: dbManager.getMedicine(med.code) || drugInfoManager.getMedicineInfo(med.code)
+            }))
+        }));
+        
         event.sender.send('data-for-date', data);
     });
 
@@ -905,120 +903,31 @@ app.on('window-all-closed', () => {
 });
 
 function saveDataToFile(newData, todayDate) {
-    // 1. 오늘날짜의 result_YYYYMMDD.json에 추가
-    if (newData && todayDate) {
-        const resultFilePath = path.join(resultsDirPath, `result_${todayDate}.json`);
-        writeDataToDailyFile(resultFilePath, newData);
-        
-        // 날짜 목록 업데이트 확인
-        const isNewDate = !currentAvailableDates.has(todayDate);
-        if (isNewDate) {
-            currentAvailableDates.add(todayDate);
-            const updatedDates = Array.from(currentAvailableDates).sort((a, b) => b.localeCompare(a));
-            mainWindow.webContents.send('update-date-list', updatedDates);
-            mainWindow.webContents.send('log-message', `New date ${todayDate} added. Updating date list.`);
-        }
-    } else {
-        mainWindow.webContents.send('log-message', 'Error: Cannot save result data without today date.');
-    }
-    
-    // 2. 접수일자의 receipt_YYYYMMDD.json에 조건부 추가
+    // SQLite 데이터베이스에 저장
     if (newData && newData.receiptDateRaw) {
-        const receiptFilePath = path.join(receiptsDirPath, `receipt_${newData.receiptDateRaw}.json`);
-        writeDataToReceiptFile(receiptFilePath, newData);
+        try {
+            // 처방전 데이터를 데이터베이스에 저장
+            const result = dbManager.savePrescription(newData);
+            
+            if (result.success) {
+                mainWindow.webContents.send('log-message', `Data saved successfully to database.`);
+            } else if (result.message === 'Prescription already exists') {
+                mainWindow.webContents.send('log-message', `Prescription already exists (Receipt: ${newData.receiptNum}, Patient: ${newData.patientName})`);
+            }
+            
+            // 날짜 목록 업데이트 확인
+            const isNewDate = !currentAvailableDates.has(todayDate);
+            if (isNewDate) {
+                currentAvailableDates.add(todayDate);
+                const updatedDates = Array.from(currentAvailableDates).sort((a, b) => b.localeCompare(a));
+                mainWindow.webContents.send('update-date-list', updatedDates);
+                mainWindow.webContents.send('log-message', `New date ${todayDate} added. Updating date list.`);
+            }
+        } catch (error) {
+            console.error('Error saving to database:', error);
+            mainWindow.webContents.send('log-message', `Error saving to database: ${error.message}`);
+        }
     } else {
-        mainWindow.webContents.send('log-message', 'Error: Cannot save receipt data without a receipt date.');
-    }
-}
-
-function writeDataToDailyFile(filePath, newData) {
-    try {
-        // Ensure the directory exists
-        if (!fs.existsSync(resultsDirPath)) {
-            fs.mkdirSync(resultsDirPath, { recursive: true });
-        }
-
-        let dailyData = [];
-        if (fs.existsSync(filePath)) {
-            try {
-                const fileContent = fs.readFileSync(filePath, 'utf8');
-                dailyData = JSON.parse(fileContent);
-                if (!Array.isArray(dailyData)) {
-                    dailyData = []; // Reset if not an array
-                }
-            } catch (error) {
-                dailyData = []; // Reset on read error
-            }
-        }
-
-        dailyData.push(newData);
-
-        fs.writeFileSync(filePath, JSON.stringify(dailyData, null, 2), 'utf8');
-        mainWindow.webContents.send('log-message', `Data saved successfully to ${path.basename(filePath)}.`);
-    } catch (err) {
-        mainWindow.webContents.send('log-message', `Error saving data to ${path.basename(filePath)}: ${err.message}`);
-    }
-}
-
-function writeDataToReceiptFile(filePath, newData) {
-    try {
-        // Ensure the directory exists
-        if (!fs.existsSync(receiptsDirPath)) {
-            fs.mkdirSync(receiptsDirPath, { recursive: true });
-        }
-
-        let receiptData = [];
-        if (fs.existsSync(filePath)) {
-            try {
-                const fileContent = fs.readFileSync(filePath, 'utf8');
-                receiptData = JSON.parse(fileContent);
-                if (!Array.isArray(receiptData)) {
-                    receiptData = []; // Reset if not an array
-                }
-            } catch (error) {
-                receiptData = []; // Reset on read error
-            }
-        }
-
-        // 동일한 receiptNum과 patientId를 가진 항목들 찾기
-        const existingItems = receiptData.filter(item => 
-            item.receiptNum === newData.receiptNum && 
-            item.patientId === newData.patientId
-        );
-
-        if (existingItems.length === 0) {
-            // 중복이 없으면 그대로 추가
-            receiptData.push(newData);
-            fs.writeFileSync(filePath, JSON.stringify(receiptData, null, 2), 'utf8');
-            mainWindow.webContents.send('log-message', `Receipt data saved to ${path.basename(filePath)}.`);
-        } else {
-            // 중복이 있으면 내용이 완전히 동일한지 확인
-            const isExactDuplicate = existingItems.some(item => 
-                JSON.stringify(item) === JSON.stringify(newData)
-            );
-
-            if (isExactDuplicate) {
-                // 완전히 동일하면 추가하지 않음
-                mainWindow.webContents.send('log-message', `Duplicate receipt data skipped for ${path.basename(filePath)}.`);
-            } else {
-                // 내용이 다르면 suffix 추가
-                let suffix = 1;
-                let modifiedReceiptNum = `${newData.receiptNum}-${suffix}`;
-                
-                // 사용되지 않은 suffix 찾기
-                while (receiptData.some(item => item.receiptNum === modifiedReceiptNum)) {
-                    suffix++;
-                    modifiedReceiptNum = `${newData.receiptNum}-${suffix}`;
-                }
-                
-                // suffix가 추가된 새 데이터 저장
-                const modifiedData = { ...newData, receiptNum: modifiedReceiptNum };
-                receiptData.push(modifiedData);
-                fs.writeFileSync(filePath, JSON.stringify(receiptData, null, 2), 'utf8');
-                mainWindow.webContents.send('log-message', `Receipt data saved with suffix: ${modifiedReceiptNum} to ${path.basename(filePath)}.`);
-            }
-        }
-    } catch (err) {
-        mainWindow.webContents.send('log-message', `Error saving receipt data to ${path.basename(filePath)}: ${err.message}`);
+        mainWindow.webContents.send('log-message', 'Error: Cannot save data without a receipt date.');
     }
 }

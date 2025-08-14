@@ -4,16 +4,21 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "electron-rebuild"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "better-sqlite3": "^12.2.0",
     "chokidar": "^4.0.3",
     "electron": "^37.2.0",
     "iconv-lite": "^0.6.3",
     "xml2js": "^0.6.2"
+  },
+  "devDependencies": {
+    "electron-rebuild": "^3.2.9"
   }
 }

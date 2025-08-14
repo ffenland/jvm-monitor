@@ -3,91 +3,16 @@ const path = require('path');
 const http = require('http');
 const { parseStringPromise } = require('xml2js');
 const simpleSecureConfig = require('./simpleSecureConfig');
+const DatabaseManager = require('./database');
 
 class DrugInfoManager {
     constructor() {
-        this.dbPath = path.join(__dirname, 'db', 'medicine.json');
-        this.failPath = path.join(__dirname, 'db', 'medicineFail.json');
         this.priceApiUrl = 'http://apis.data.go.kr/B551182/dgamtCrtrInfoService1.2/getDgamtList';
         this.efficacyApiUrl = 'http://apis.data.go.kr/B551182/msupCmpnMeftInfoService/getMajorCmpnNmCdList';
         this.drugDetailApiUrl = 'https://apis.data.go.kr/1471000/DrugPrdtPrmsnInfoService06/getDrugPrdtPrmsnDtlInq05';
-        this.medicineData = this.loadMedicineData();
-        this.failData = this.loadFailData();
+        this.db = new DatabaseManager();
     }
 
-    /**
-     * medicine.json 파일 로드
-     */
-    loadMedicineData() {
-        try {
-            if (fs.existsSync(this.dbPath)) {
-                const data = fs.readFileSync(this.dbPath, 'utf8');
-                // 빈 파일이거나 공백만 있는 경우 처리
-                if (!data || data.trim() === '') {
-                    return {};
-                }
-                return JSON.parse(data);
-            }
-        } catch (error) {
-            console.error('Error loading medicine data:', error);
-        }
-        return {};
-    }
-
-    /**
-     * medicine.json 파일 저장
-     */
-    saveMedicineData() {
-        try {
-            const dbDir = path.dirname(this.dbPath);
-            if (!fs.existsSync(dbDir)) {
-                fs.mkdirSync(dbDir, { recursive: true });
-            }
-            fs.writeFileSync(this.dbPath, JSON.stringify(this.medicineData, null, 2), 'utf8');
-            // 파일 시스템 동기화 강제
-            fs.fsyncSync(fs.openSync(this.dbPath, 'r+'));
-            return true;
-        } catch (error) {
-            console.error('Error saving medicine data:', error);
-            return false;
-        }
-    }
-
-
-    /**
-     * medicineFail.json 파일 로드
-     */
-    loadFailData() {
-        try {
-            if (fs.existsSync(this.failPath)) {
-                const data = fs.readFileSync(this.failPath, 'utf8');
-                if (!data || data.trim() === '') {
-                    return [];
-                }
-                return JSON.parse(data);
-            }
-        } catch (error) {
-            console.error('Error loading fail data:', error);
-        }
-        return [];
-    }
-
-    /**
-     * medicineFail.json 파일 저장
-     */
-    saveFailData() {
-        try {
-            const dbDir = path.dirname(this.failPath);
-            if (!fs.existsSync(dbDir)) {
-                fs.mkdirSync(dbDir, { recursive: true });
-            }
-            fs.writeFileSync(this.failPath, JSON.stringify(this.failData, null, 2), 'utf8');
-            return true;
-        } catch (error) {
-            console.error('Error saving fail data:', error);
-            return false;
-        }
-    }
 
     /**
      * 품목명에서 제목 추출 (첫 번째 _ 또는 ( 이전까지)
@@ -486,6 +411,8 @@ class DrugInfoManager {
         }
 
         let updateCount = 0;
+        let apiCallCount = 0;
+        let skipCount = 0;
         
         for (const medicine of medicines) {
             if (!medicine.code) continue;
@@ -493,19 +420,24 @@ class DrugInfoManager {
             // 9자리 코드를 그대로 키로 사용
             const medicineKey = medicine.code;
             
-            // 이미 존재하는지 확인
-            if (this.medicineData[medicineKey]) {
+            // 데이터베이스에서 이미 존재하는지 확인
+            const existingMedicine = this.db.getMedicine(medicineKey);
+            if (existingMedicine && existingMedicine.api_fetched === 1) {
+                // API 성공한 약품은 완전히 스킵
+                skipCount++;
                 continue;
             }
             
-            // 이미 실패 목록에 있는지 확인
-            const existingFail = this.failData.find(item => item.code === medicineKey);
-            if (existingFail) {
-                continue;
-            }
+            // 이미 실패 목록에 있어도 재시도 (주석 처리)
+            // const existingFail = this.db.getMedicineFail(medicineKey);
+            // if (existingFail) {
+            //     continue;
+            // }
             
             
             try {
+                apiCallCount++;
+                
                 // 1단계: getDrugPrdtPrmsnDtlInq05 API로 약품 상세정보 조회
                 let detailInfo = await this.fetchDrugDetailInfo('code', medicineKey);
                 
@@ -516,24 +448,79 @@ class DrugInfoManager {
                 
                 // 조회 실패 또는 여러 개 조회된 경우 처리
                 if (!detailInfo) {
+                    // API 실패해도 기본 정보로 약품 저장
+                    const basicDrugInfo = {
+                        code: medicineKey,
+                        title: medicine.name || `약품코드 ${medicineKey}`,
+                        mfg: '',
+                        isETC: false,
+                        storageContainer: null,
+                        storageTemp: null,
+                        effects: [],
+                        rawStorageMethod: '',
+                        payType: '',
+                        unit: '',
+                        gnlNmCd: '',
+                        injectPath: '',
+                        mdfsCodeName: '',  // 문자열로 변경
+                        price: '',
+                        formulation: '',
+                        type: '',  // type 추가
+                        mfdsCode: '',
+                        updateDate: new Date().toISOString(),
+                        api_fetched: 0,  // API 실패 표시
+                        autoPrint: false  // 기본값 false
+                    };
+                    
+                    this.db.saveMedicine(basicDrugInfo);
+                    updateCount++;
+                    
+                    // 실패 기록도 저장
                     const failEntry = {
                         code: medicineKey,
                         name: medicine.name || '알 수 없음',
                         failedAt: new Date().toISOString(),
                         reason: '코드 또는 약품명으로 조회되지 않음'
                     };
-                    this.failData.push(failEntry);
+                    this.db.saveMedicineFail(failEntry);
                     continue;
                 }
                 
                 if (detailInfo.multipleItems) {
+                    // 여러 개 조회된 경우도 기본 정보로 저장
+                    const basicDrugInfo = {
+                        code: medicineKey,
+                        title: medicine.name || `약품코드 ${medicineKey}`,
+                        mfg: '',
+                        isETC: false,
+                        storageContainer: null,
+                        storageTemp: null,
+                        effects: [],
+                        rawStorageMethod: '',
+                        payType: '',
+                        unit: '',
+                        gnlNmCd: '',
+                        injectPath: '',
+                        mdfsCodeName: '',  // 문자열로 변경
+                        price: '',
+                        formulation: '',
+                        type: '',  // type 추가
+                        mfdsCode: '',
+                        updateDate: new Date().toISOString(),
+                        api_fetched: 0,  // API 실패 표시
+                        autoPrint: false  // 기본값 false
+                    };
+                    
+                    this.db.saveMedicine(basicDrugInfo);
+                    updateCount++;
+                    
                     const failEntry = {
                         code: medicineKey,
                         name: medicine.name || '알 수 없음',
                         failedAt: new Date().toISOString(),
                         reason: `해당 약품명으로 복수의 약품이 존재합니다 (${detailInfo.count}개). 사용자 확인이 필요`
                     };
-                    this.failData.push(failEntry);
+                    this.db.saveMedicineFail(failEntry);
                     continue;
                 }
                 
@@ -550,9 +537,10 @@ class DrugInfoManager {
                 let unit = '';
                 let gnlNmCd = '';
                 let injectPath = '';
-                let mdfsCodeName = [];
+                let mdfsCodeName = '';  // 문자열로 변경
                 let price = '';
                 let formulation = '';
+                let type = '';  // type 변수 선언 추가
                 let mfdsCode = '';
                 
                 if (priceInfo) {
@@ -567,15 +555,17 @@ class DrugInfoManager {
                     if (gnlNmCd) {
                         const efficacyInfoList = await this.fetchDrugEfficacyInfo(gnlNmCd);
                         if (efficacyInfoList.length > 0) {
-                            const mdfsCodeNames = efficacyInfoList
-                                .map(item => item.divNm || '')
-                                .filter(name => name);
-                            mdfsCodeName = [...new Set(mdfsCodeNames)];
+                            // 첫 번째 divNm 값만 문자열로 저장
+                            mdfsCodeName = efficacyInfoList[0]?.divNm || '';
                             
                             if (!injectPath && efficacyInfoList[0]?.injcPthCdNm) {
                                 injectPath = efficacyInfoList[0].injcPthCdNm;
                             }
                             formulation = efficacyInfoList[0]?.fomnTpCdNm || '';
+                            // formulation에서 첫 번째 값을 type으로 추출
+                            if (formulation) {
+                                type = formulation.split(',')[0].trim();
+                            }
                             
                             // mfdsCode가 없고 efficacyInfoList에서 찾을 수 있다면 추출
                             if (!mfdsCode && efficacyInfoList[0]?.meftDivNo) {
@@ -588,6 +578,7 @@ class DrugInfoManager {
                 
                 // 최종 약품 정보 구성
                 const drugInfo = {
+                    code: medicineKey,  // 약품 코드 추가 (중요!)
                     title: processedTitle,  // getDrugPrdtPrmsnDtlInq05에서 가져온 약품명 사용
                     mfg: detailInfo.ENTP_NAME || '',  // 제조사
                     isETC: detailInfo.ETC_OTC_CODE === '전문의약품',  // 전문/일반 구분
@@ -603,18 +594,65 @@ class DrugInfoManager {
                     mdfsCodeName: mdfsCodeName,
                     price: price,
                     formulation: formulation,
+                    type: type,  // type 추가
                     mfdsCode: mfdsCode,  // API에서 가져온 mfdsCode 사용
-                    updateDate: new Date().toISOString()
+                    updateDate: new Date().toISOString(),
+                    api_fetched: 1,  // API 성공 표시
+                    autoPrint: false  // 기본값 false
                 };
                 
-                this.medicineData[medicineKey] = drugInfo;
+                // 데이터베이스에 저장 (업데이트)
+                try {
+                    this.db.saveMedicine(drugInfo);
+                    // if (existingMedicine && existingMedicine.api_fetched === 0) {
+                    //     console.log(`약품 ${medicineKey} API 재시도 성공 - 정보 업데이트됨`);
+                    // } else {
+                    //     console.log(`약품 ${medicineKey} DB 저장 성공`);
+                    // }
+                } catch (dbError) {
+                    console.error(`약품 ${medicineKey} DB 저장 실패:`, dbError.message);
+                    throw dbError;
+                }
                 updateCount++;
                 
                 // API 호출 간격을 두어 과부하 방지 (0.5초)
                 await new Promise(resolve => setTimeout(resolve, 500));
             } catch (error) {
                 console.error(`Error processing medicine ${medicineKey}:`, error.message);
-                // API 호출 중 에러 발생 시 medicineFail.json에 저장
+                
+                // 에러가 발생해도 기본 정보로 약품 저장
+                const basicDrugInfo = {
+                    code: medicineKey,
+                    title: medicine.name || `약품코드 ${medicineKey}`,
+                    mfg: '',
+                    isETC: false,
+                    storageContainer: null,
+                    storageTemp: null,
+                    effects: [],
+                    rawStorageMethod: '',
+                    payType: '',
+                    unit: '',
+                    gnlNmCd: '',
+                    injectPath: '',
+                    mdfsCodeName: '',  // 문자열로 변경
+                    price: '',
+                    formulation: '',
+                    type: '',  // type 추가  
+                    mfdsCode: '',
+                    updateDate: new Date().toISOString(),
+                    api_fetched: 0,  // API 실패 표시
+                    autoPrint: false  // 기본값 false
+                };
+                
+                try {
+                    this.db.saveMedicine(basicDrugInfo);
+                    updateCount++;
+                    // console.log(`약품 ${medicineKey} 기본 정보로 저장됨`);
+                } catch (dbError) {
+                    console.error(`Failed to save basic medicine info for ${medicineKey}:`, dbError.message);
+                }
+                
+                // 실패 기록 저장
                 const failEntry = {
                     code: medicineKey,
                     name: medicine.name || '알 수 없음',
@@ -623,44 +661,32 @@ class DrugInfoManager {
                     reason: `API Error: ${error.message}`
                 };
                 
-                // 중복 체크 후 추가
-                const existingIndex = this.failData.findIndex(item => item.code === medicineKey);
-                if (existingIndex === -1) {
-                    this.failData.push(failEntry);
-                } else {
-                    this.failData[existingIndex] = failEntry;
+                try {
+                    this.db.saveMedicineFail(failEntry);
+                } catch (dbFailError) {
+                    console.error(`Failed to save medicine fail entry for ${medicineKey}:`, dbFailError.message);
                 }
+                
             }
         }
         
-        // 업데이트된 내용이 있으면 저장
-        if (updateCount > 0) {
-            const saved = this.saveMedicineData();
-        }
-        
-        // fail 데이터가 있으면 저장
-        if (this.failData.length > 0) {
-            const saved = this.saveFailData();
-        }
+        return {
+            total: medicines.length,
+            skipCount,
+            apiCallCount,
+            updateCount
+        };
     }
 
     /**
      * 단일 약품 코드 조회
      */
     getMedicineInfo(medicineCode) {
-        // 데이터가 업데이트되었을 수 있으므로 다시 로드
-        this.medicineData = this.loadMedicineData();
-        this.failData = this.loadFailData();
-        
         // 9자리 코드를 그대로 사용
         const medicineKey = medicineCode;
         
-        // 실패 목록에 있는지 확인
-        const failedMedicine = this.failData.find(item => item.code === medicineKey);
-        if (failedMedicine) {
-        }
-        
-        return this.medicineData[medicineKey] || null;
+        // 데이터베이스에서 확인
+        return this.db.getMedicine(medicineKey);
     }
 }
 

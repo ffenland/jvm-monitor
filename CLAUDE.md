@@ -1,14 +1,52 @@
 # Electron File Monitor - Brother 라벨 프린터 출력 시스템
 
 ## 프로젝트 개요
-이 프로젝트는 약국에서 사용하는 Brother QL-700 라벨 프린터를 통해 약품 라벨을 출력하는 Electron 애플리케이션입니다. 
+이 프로젝트는 약국에서 사용하는 Brother QL-700 라벨 프린터를 통해 약품 라벨을 출력하는 Electron 애플리케이션입니다.
 
-### 주요 기능
+## 앱 작동 방식
+
+### 1. TXT 파일 파싱
+- **모니터링 경로**: C:\atc 디렉토리
+- **파일 형식**: Copy\d+-\d{14}\.txt 패턴의 파일
+- **인코딩**: EUC-KR
+- **파싱 내용**:
+  - JVPHEAD 섹션: 환자명, 환자번호, 접수번호, 병원명, 처방일, 접수일자
+  - JVMHEAD 섹션: 약품코드(9자리), 약품명, 1회복용량, 1일복용횟수, 처방일수
+
+### 2. API를 통한 약품 정보 조회
+- 파싱된 약품코드로 DB(medicines 테이블) 조회
+- DB에 없는 약품은 공공데이터 API 호출:
+  - 약가정보 API: 제품코드로 기본 약품 정보 조회
+  - 약효정보 API: 일반명코드로 약효분류 조회
+  - 제품상세정보 API: 보관방법, 효능효과 조회
+- 조회된 정보를 DB에 저장
+
+### 3. 처방전 정보 화면 표시
+- 모든 약품 정보가 DB에 저장되면 처방전 정보 DB 저장
+- 저장된 처방전을 화면에 표시
+- 처방전별 약품 목록과 복용 정보 표시
+
+### 4. 라벨 출력
+- 사용자가 약품별 라벨 출력 버튼 클릭
+- DB에서 약품 정보와 처방 정보 조회
+- dataProcessor.js에서 데이터 가공
+- Brother b-PAC SDK를 통해 .lbx 템플릿에 데이터 매핑
+- Brother QL-700 프린터로 출력
+
+### 5. 부가 기능
+- 약품 정보 수정/추가
+- 레이아웃(.lbx) 템플릿 파일 변경
+- 약국 정보 설정
+- 자동 출력 설정
+
+## 주요 기능
 1. **파일 모니터링**: C:\atc 디렉토리의 TXT 파일을 실시간 모니터링
 2. **데이터 파싱**: EUC-KR 인코딩된 처방전 데이터를 파싱 (JVPHEAD, JVMHEAD 섹션)
-3. **데이터 저장**: 날짜별 JSON 파일로 데이터 저장 (2종류)
-   - receipt_YYYYMMDD.json: 저장용 (receiptDateRaw 기준)
-   - result_YYYYMMDD.json: 조회용 (파싱 시점 날짜 기준)
+3. **데이터 저장**: SQLite 데이터베이스로 데이터 관리
+   - prescriptions 테이블: 처방전 정보 저장
+   - medicines 테이블: 약품 정보 저장
+   - prescription_medicines 테이블: 처방전-약품 관계
+   - parsing_logs 테이블: 파싱 이력 관리
 4. **라벨 출력**: Brother b-PAC SDK를 사용하여 .lbx 템플릿 파일에 데이터를 매핑하고 출력
 
 ## 시스템 요구사항
@@ -225,20 +263,94 @@ TXT 파일에서 처방전 데이터를 추출합니다.
 }
 ```
 
-## 데이터 저장 시스템
+## 데이터 저장 시스템 (SQLite)
 
-### JSON 파일 구조
-1. **receipt_YYYYMMDD.json (저장용)**
-   - 경로: `result/receipt_YYYYMMDD.json`
-   - 파일명 날짜: parsedData.receiptDateRaw 값 기준
-   - 중복 처리: receiptNum과 patientId가 모두 일치하면 중복으로 판단
-   - 현재 구현: 중복 시 스킵 (요구사항: receiptNum만 확인하고 값이 다르면 -1, -2 접미어 추가)
+### 데이터베이스 구조
+better-sqlite3를 사용한 SQLite 데이터베이스 (`db/pharmacy.db`)
 
-2. **result_YYYYMMDD.json (조회용)**
-   - 경로: `result/result_YYYYMMDD.json`
-   - 파일명 날짜: 파싱 시점의 날짜
-   - 중복 처리: 없음 (단순 추가)
-   - 용도: 최근 파싱 순서대로 조회
+#### 테이블 구조
+
+1. **prescriptions 테이블 (처방전 정보)**
+   ```sql
+   - id: INTEGER PRIMARY KEY AUTOINCREMENT
+   - patientId: TEXT NOT NULL (환자ID)
+   - receiptNum: TEXT NOT NULL (접수번호)
+   - receiptDateRaw: TEXT NOT NULL (접수일자 YYYYMMDD)
+   - receiptDate: TEXT (접수일자 포맷팅)
+   - patientName: TEXT (환자명)
+   - hospitalName: TEXT (병원명)
+   - createdAt: TEXT DEFAULT CURRENT_TIMESTAMP
+   - UNIQUE(receiptNum, patientId, receiptDateRaw)
+   ```
+
+2. **medicines 테이블 (약품 정보)**
+   ```sql
+   - code: TEXT PRIMARY KEY (약품코드)
+   - title: TEXT (약품명)
+   - mfg: TEXT (제조사)
+   - isETC: INTEGER (전문/일반 구분)
+   - storageContainer: TEXT (보관용기)
+   - storageTemp: TEXT (보관온도)
+   - effects: TEXT (효능효과, JSON)
+   - rawStorageMethod: TEXT (원본 보관방법)
+   - payType: TEXT (급여타입)
+   - unit: TEXT (단위)
+   - gnlNmCd: TEXT (일반명코드)
+   - injectPath: TEXT (투여경로)
+   - mdfsCodeName: TEXT (약효분류명)
+   - price: TEXT (가격)
+   - formulation: TEXT (제형)
+   - type: TEXT (타입)
+   - mfdsCode: TEXT (식약처코드)
+   - updateDate: TEXT (업데이트일자)
+   - api_fetched: INTEGER DEFAULT 0 (API 조회여부)
+   - autoPrint: INTEGER DEFAULT 0 (자동출력여부)
+   ```
+
+3. **prescription_medicines 테이블 (처방전-약품 관계)**
+   ```sql
+   - id: INTEGER PRIMARY KEY AUTOINCREMENT
+   - prescriptionId: INTEGER NOT NULL
+   - medicineCode: TEXT NOT NULL
+   - prescriptionDays: TEXT (처방일수)
+   - dailyDose: TEXT (일일투여횟수)
+   - singleDose: TEXT (1회투여량)
+   - FOREIGN KEY (prescriptionId) REFERENCES prescriptions(id)
+   - FOREIGN KEY (medicineCode) REFERENCES medicines(code)
+   ```
+
+4. **parsing_logs 테이블 (파싱 이력)**
+   ```sql
+   - id: INTEGER PRIMARY KEY AUTOINCREMENT
+   - prescriptionId: INTEGER
+   - patientId: TEXT
+   - receiptNum: TEXT
+   - receiptDateRaw: TEXT
+   - patientName: TEXT
+   - hospitalName: TEXT
+   - medicines: TEXT (JSON)
+   - parsedAt: TEXT DEFAULT CURRENT_TIMESTAMP
+   ```
+
+5. **medicine_fails 테이블 (API 조회 실패 약품)**
+   ```sql
+   - code: TEXT PRIMARY KEY
+   - name: TEXT
+   - failedAt: TEXT
+   - reason: TEXT
+   - apiUrl: TEXT
+   ```
+
+### DatabaseManager 클래스 (database.js)
+SQLite 데이터베이스 작업을 관리하는 핵심 클래스입니다.
+
+#### 주요 메서드
+- `saveMedicine()`: 약품 정보 저장/업데이트
+- `getMedicine()`: 약품 정보 조회
+- `savePrescription()`: 처방전 저장 (트랜잭션 처리)
+- `getPrescriptionsByDate()`: 날짜별 처방전 조회
+- `getRecentParsingLogs()`: 최근 파싱 로그 조회
+- `getAllMedicines()`: 전체 약품 목록 조회
 
 ### 원본 파일 백업
 - 경로: `originFiles/origin_YYYYMMDD/` 
@@ -246,17 +358,17 @@ TXT 파일에서 처방전 데이터를 추출합니다.
 - 파싱 오류 발생 시: `originFiles/error/` 폴더로 이동
 
 ## 향후 개선 사항
-- [ ] receipt_YYYYMMDD.json의 중복 처리 로직 수정 (receiptNum 기준, 접미어 추가)
+- [x] **SQLite 데이터베이스 마이그레이션 완료**
+  - JSON 파일 기반에서 SQLite로 전환 완료
+  - better-sqlite3 패키지 사용
+  - 처방전, 약품정보, 처방약품 테이블 구조화 완료
+  - 트랜잭션 처리 및 외래키 제약조건 적용
+  - 인덱스 생성으로 조회 성능 최적화
 - [ ] 다양한 템플릿 지원 확대
 - [ ] 출력 미리보기 기능
 - [ ] 배치 출력 기능
 - [ ] 출력 이력 관리
-- [ ] **SQLite 데이터베이스 마이그레이션**
-  - JSON 파일 기반에서 SQLite로 전환
-  - better-sqlite3 패키지 사용
-  - 처방전, 약품정보, 처방약품 테이블 구조화
-  - 기존 JSON 데이터 마이그레이션 스크립트 제공
-  - 검색, 통계, 백업 기능 개선
+- [ ] 통계 및 리포트 기능 추가
 
 ## 라벨 템플릿 필드 가이드
 
@@ -317,5 +429,5 @@ Brother 라벨 프린터 템플릿(.lbx)에서 사용 가능한 필드명과 설
 - **ENTP_NAME**: 제조사
 
 ---
-*최종 업데이트: 2025-08-11*
+*최종 업데이트: 2025-08-13*
 *작성자: Claude Assistant*

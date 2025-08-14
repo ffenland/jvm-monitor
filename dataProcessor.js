@@ -76,49 +76,8 @@ function calculateEndDate(startDate, days) {
     }
 }
 
-/**
- * 약품 상세정보 조회 및 라벨용 데이터 가공
- * drugInfoManager의 기능을 활용하여 약품 정보를 조회하고
- * 라벨 출력에 필요한 형태로 가공합니다.
- * 
- * @param {string} drugCode 약품코드 (EDI 코드)
- * @returns {Promise<object>} 라벨용으로 가공된 약품 정보
- */
-async function fetchAndParseDrugDetail(drugCode) {
-    try {
-        // drugInfoManager의 기능을 활용하여 상세정보 조회
-        const detailInfo = await drugInfoManager.fetchDrugDetailInfo('code', drugCode);
-        
-        if (!detailInfo || detailInfo.multipleItems) {
-            return null;
-        }
-        
-        // drugInfoManager의 파싱 함수들 활용
-        const storage = drugInfoManager.parseStorageMethod(detailInfo.STORAGE_METHOD);
-        const effects = drugInfoManager.parseEffects(detailInfo.EE_DOC_DATA);
-        const processedTitle = drugInfoManager.extractTitle(detailInfo.ITEM_NAME);
-        
-        // 라벨 출력용 데이터 구조로 반환
-        return {
-            code: detailInfo.ITEM_SEQ || '',
-            title: processedTitle || '',
-            manufacturer: detailInfo.ENTP_NAME || '',
-            storageContainer: storage.container || '',
-            storageTemp: storage.temperature || '',
-            effects: effects,
-            rawStorageMethod: detailInfo.STORAGE_METHOD || '',
-            updateDate: new Date().toISOString()
-        };
-        
-    } catch (error) {
-        console.error('약품 상세정보 조회 실패:', error);
-        return null;
-    }
-}
-
 module.exports = {
     processPrescriptionData,
     formatDate,
-    calculateEndDate,
-    fetchAndParseDrugDetail
+    calculateEndDate
 };
