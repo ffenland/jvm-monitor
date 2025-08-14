@@ -31,5 +31,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // 약품 설정 API
     searchMedicine: (searchTerm) => ipcRenderer.invoke('search-medicine', searchTerm),
     getSingleMedicine: (code) => ipcRenderer.invoke('get-single-medicine', code),
-    updateMedicine: (medicineData) => ipcRenderer.invoke('update-medicine', medicineData)
+    updateMedicine: (medicineData) => ipcRenderer.invoke('update-medicine', medicineData),
+    // 미완성 약품 관련 API
+    getMedicineFails: () => ipcRenderer.invoke('get-medicine-fails'),
+    getMedicineFailCount: () => ipcRenderer.invoke('get-medicine-fail-count'),
+    autoFillMedicine: (code) => ipcRenderer.invoke('auto-fill-medicine', code)
 });

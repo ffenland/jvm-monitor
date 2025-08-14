@@ -350,6 +350,25 @@ class DatabaseManager {
         return this.statements.getMedicineFail.get(code);
     }
 
+    // 전체 실패 약품 목록 조회
+    getAllMedicineFails() {
+        const query = `SELECT * FROM medicine_fails ORDER BY failedAt DESC`;
+        return this.db.prepare(query).all();
+    }
+
+    // 실패 약품 개수 조회
+    getMedicineFailCount() {
+        const query = `SELECT COUNT(*) as count FROM medicine_fails`;
+        const result = this.db.prepare(query).get();
+        return result ? result.count : 0;
+    }
+
+    // 실패 약품 삭제
+    deleteMedicineFail(code) {
+        const query = `DELETE FROM medicine_fails WHERE code = ?`;
+        return this.db.prepare(query).run(code);
+    }
+
     // 전체 약품 목록 조회
     getAllMedicines() {
         const query = `SELECT * FROM medicines ORDER BY code`;

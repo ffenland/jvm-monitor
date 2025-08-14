@@ -508,10 +508,90 @@ ipcMain.handle('update-medicine', async (event, medicineData) => {
             medicineData.code
         );
         
+        // 약품 정보가 성공적으로 업데이트되면 medicine_fails에서 삭제
+        dbManager.deleteMedicineFail(medicineData.code);
+        
         return { success: true, message: '약품 정보가 업데이트되었습니다.' };
     } catch (error) {
         console.error('약품 업데이트 실패:', error);
         return { success: false, error: error.message };
+    }
+});
+
+// 실패한 약품 목록 조회
+ipcMain.handle('get-medicine-fails', async () => {
+    try {
+        const fails = dbManager.getAllMedicineFails();
+        return { success: true, data: fails };
+    } catch (error) {
+        console.error('실패 약품 목록 조회 실패:', error);
+        return { success: false, error: error.message };
+    }
+});
+
+// 실패한 약품 개수 조회
+ipcMain.handle('get-medicine-fail-count', async () => {
+    try {
+        const count = dbManager.getMedicineFailCount();
+        return { success: true, count };
+    } catch (error) {
+        console.error('실패 약품 개수 조회 실패:', error);
+        return { success: false, count: 0 };
+    }
+});
+
+// 약품 정보 자동 입력 (API 재요청)
+ipcMain.handle('auto-fill-medicine', async (event, medicineCode) => {
+    try {
+        const drugInfoManager = require('./druginfo');
+        
+        // 약품명 찾기: medicine_fails 또는 medicines 테이블에서 조회
+        let medicineName = '';
+        const failedMedicine = dbManager.getMedicineFail(medicineCode);
+        
+        if (failedMedicine) {
+            // 실패 목록에 있으면 그 정보 사용
+            medicineName = failedMedicine.name;
+        } else {
+            // 실패 목록에 없으면 medicines 테이블에서 조회
+            const existingMedicine = dbManager.getMedicine(medicineCode);
+            if (existingMedicine) {
+                medicineName = existingMedicine.title;
+            }
+        }
+        
+        // API로 약품 정보 조회 시도 (forceUpdate=true로 강제 업데이트)
+        const medicines = [{
+            code: medicineCode,
+            name: medicineName || `약품코드 ${medicineCode}`
+        }];
+        
+        await drugInfoManager.processPrescriptionMedicines(medicines, true);
+        
+        // 성공적으로 처리되었는지 확인
+        const updatedMedicine = dbManager.getMedicine(medicineCode);
+        if (updatedMedicine && updatedMedicine.api_fetched === 1) {
+            // 성공했고 medicine_fails에 있었다면 삭제
+            if (failedMedicine) {
+                dbManager.deleteMedicineFail(medicineCode);
+            }
+            return { 
+                success: true, 
+                message: '정상적으로 저장했습니다.',
+                medicine: updatedMedicine 
+            };
+        } else {
+            return { 
+                success: false, 
+                error: '자동 입력에 실패했습니다. 직접 입력하던가 나중에 다시 시도하세요.' 
+            };
+        }
+    } catch (error) {
+        console.error('약품 자동 입력 실패:', error);
+        return { 
+            success: false, 
+            error: '자동 입력에 실패했습니다. 직접 입력하던가 나중에 다시 시도하세요.' 
+        };
     }
 });
 

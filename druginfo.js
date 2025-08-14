@@ -404,8 +404,10 @@ class DrugInfoManager {
 
     /**
      * 처방전의 모든 약품 처리 (새로운 로직)
+     * @param {Array} medicines - 처리할 약품 목록
+     * @param {boolean} forceUpdate - 강제 업데이트 여부 (자동입력 시 true)
      */
-    async processPrescriptionMedicines(medicines) {
+    async processPrescriptionMedicines(medicines, forceUpdate = false) {
         if (!medicines || !Array.isArray(medicines)) {
             return;
         }
@@ -422,8 +424,8 @@ class DrugInfoManager {
             
             // 데이터베이스에서 이미 존재하는지 확인
             const existingMedicine = this.db.getMedicine(medicineKey);
-            if (existingMedicine && existingMedicine.api_fetched === 1) {
-                // API 성공한 약품은 완전히 스킵
+            if (existingMedicine && existingMedicine.api_fetched === 1 && !forceUpdate) {
+                // API 성공한 약품은 스킵 (forceUpdate가 true면 스킵하지 않음)
                 skipCount++;
                 continue;
             }

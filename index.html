@@ -238,6 +238,7 @@
             border-radius: 8px;
             width: 500px;
             max-width: 80%;
+            position: relative;
         }
         
         .close {
@@ -484,11 +485,17 @@
             <span class="close" id="medicine-modal-close">&times;</span>
             <h2>약품 설정</h2>
             
-            <div class="form-group">
-                <label for="medicine-search">약품 검색:</label>
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" id="medicine-search" placeholder="약품코드 또는 약품명으로 검색">
-                    <button id="medicine-search-btn" style="padding: 8px 16px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">검색</button>
+            <div class="medicine-fail-button-container">
+                <!-- 미완성 약품 버튼이 여기에 추가됩니다 -->
+            </div>
+            
+            <div class="medicine-search-container">
+                <div class="form-group">
+                    <label for="medicine-search">약품 검색:</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="medicine-search" placeholder="약품코드 또는 약품명으로 검색">
+                        <button id="medicine-search-btn" style="padding: 8px 16px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">검색</button>
+                    </div>
                 </div>
             </div>
             

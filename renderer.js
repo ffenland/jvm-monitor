@@ -1,3 +1,78 @@
+// 토스트 메시지 표시 함수
+function showToast(message, type = 'info') {
+    // 기존 토스트가 있으면 제거
+    const existingToast = document.getElementById('toast-message');
+    if (existingToast) {
+        existingToast.remove();
+    }
+    
+    const toast = document.createElement('div');
+    toast.id = 'toast-message';
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        z-index: 10000;
+        animation: slideIn 0.3s ease-out;
+        max-width: 300px;
+    `;
+    
+    // 타입별 스타일 설정
+    switch(type) {
+        case 'success':
+            toast.style.backgroundColor = '#4CAF50';
+            toast.style.color = 'white';
+            break;
+        case 'error':
+            toast.style.backgroundColor = '#f44336';
+            toast.style.color = 'white';
+            break;
+        default:
+            toast.style.backgroundColor = '#2196F3';
+            toast.style.color = 'white';
+    }
+    
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    // 3초 후 자동 제거
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease-out';
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }, 3000);
+}
+
+// CSS 애니메이션 추가
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
+
 window.addEventListener('DOMContentLoaded', () => {
     const prescriptionListContainer = document.getElementById('prescription-list-container');
     const dateSelect = document.getElementById('date-select');
@@ -486,6 +561,8 @@ window.addEventListener('DOMContentLoaded', () => {
         medicineSearchInput.value = '';
         medicineSearchResults.style.display = 'none';
         medicineEditForm.style.display = 'none';
+        updateMedicineFailBadge(); // 미완성 약품 개수 업데이트
+        addFailedMedicineButton(); // 미완성 약품 목록 버튼 추가
     });
     
     // 약품설정 모달 닫기
@@ -542,7 +619,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     
     // 약품 편집을 위해 로드
-    async function loadMedicineForEdit(code) {
+    async function loadMedicineForEdit(code, isFailedMedicine = false) {
         try {
             const result = await window.electronAPI.getSingleMedicine(code);
             if (result.success && result.medicine) {
@@ -560,6 +637,9 @@ window.addEventListener('DOMContentLoaded', () => {
                 
                 medicineEditForm.style.display = 'block';
                 medicineSearchResults.style.display = 'none';
+                
+                // 모든 약품에 대해 자동입력 버튼 표시
+                showAutoFillButton(true);
             }
         } catch (error) {
             console.error('약품 정보 로드 오류:', error);
@@ -593,19 +673,284 @@ window.addEventListener('DOMContentLoaded', () => {
         try {
             const result = await window.electronAPI.updateMedicine(medicineData);
             if (result.success) {
-                alert('약품 정보가 업데이트되었습니다.');
+                showToast('약품 정보가 업데이트되었습니다.', 'success');
                 medicineModal.style.display = 'none';
+                updateMedicineFailBadge(); // 뱃지 업데이트
             } else {
-                alert('약품 정보 업데이트 실패: ' + result.error);
+                showToast('약품 정보 업데이트 실패: ' + result.error, 'error');
             }
         } catch (error) {
             console.error('약품 저장 오류:', error);
-            alert('약품 정보 저장 중 오류가 발생했습니다.');
+            showToast('약품 정보 저장 중 오류가 발생했습니다.', 'error');
         }
     });
+    
+    // 미완성 약품 개수 뱃지 업데이트
+    async function updateMedicineFailBadge() {
+        try {
+            const result = await window.electronAPI.getMedicineFailCount();
+            if (result.success && result.count > 0) {
+                // 뱃지가 없으면 생성
+                let badge = medicineBtn.querySelector('.fail-badge');
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = 'fail-badge';
+                    badge.style.cssText = `
+                        position: absolute;
+                        top: -8px;
+                        right: -8px;
+                        background: red;
+                        color: white;
+                        border-radius: 50%;
+                        padding: 2px 6px;
+                        font-size: 12px;
+                        font-weight: bold;
+                        min-width: 20px;
+                        text-align: center;
+                    `;
+                    medicineBtn.style.position = 'relative';
+                    medicineBtn.appendChild(badge);
+                }
+                badge.textContent = result.count;
+                badge.style.display = 'block';
+            } else {
+                // 개수가 0이면 뱃지 숨김
+                const badge = medicineBtn.querySelector('.fail-badge');
+                if (badge) {
+                    badge.style.display = 'none';
+                }
+            }
+        } catch (error) {
+            console.error('미완성 약품 개수 조회 실패:', error);
+        }
+    }
+    
+    // 미완성 약품 목록 보기 버튼 추가
+    function addFailedMedicineButton() {
+        const buttonContainer = document.querySelector('.medicine-fail-button-container');
+        if (!buttonContainer) return;
+        
+        // 이미 버튼이 있으면 추가하지 않음
+        if (document.getElementById('show-failed-medicines')) return;
+        
+        const failBtn = document.createElement('button');
+        failBtn.id = 'show-failed-medicines';
+        failBtn.textContent = '약품 정보 미완성 약품목록 보기';
+        failBtn.style.cssText = `
+            margin-bottom: 10px;
+            padding: 8px 16px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        `;
+        failBtn.addEventListener('click', showFailedMedicines);
+        
+        buttonContainer.appendChild(failBtn);
+    }
+    
+    // 미완성 약품 목록 표시
+    async function showFailedMedicines() {
+        const buttonContainer = document.querySelector('.medicine-fail-button-container');
+        if (!buttonContainer) return;
+        
+        // 이미 목록이 표시되어 있으면 제거
+        const existingList = document.getElementById('failed-medicines-list');
+        if (existingList) {
+            existingList.remove();
+            return;
+        }
+        
+        try {
+            const result = await window.electronAPI.getMedicineFails();
+            if (result.success && result.data.length > 0) {
+                const listContainer = document.createElement('div');
+                listContainer.id = 'failed-medicines-list';
+                listContainer.style.cssText = `
+                    background: white;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                    padding: 15px;
+                    margin-bottom: 15px;
+                    max-height: 300px;
+                    overflow-y: auto;
+                `;
+                
+                const title = document.createElement('h4');
+                title.textContent = '미완성 약품 목록';
+                title.style.cssText = `
+                    margin-top: 0;
+                    margin-bottom: 10px;
+                    color: #333;
+                `;
+                listContainer.appendChild(title);
+                
+                const list = document.createElement('div');
+                result.data.forEach(fail => {
+                    const item = document.createElement('div');
+                    item.style.cssText = `
+                        padding: 8px;
+                        border-bottom: 1px solid #eee;
+                        cursor: pointer;
+                        transition: background-color 0.2s;
+                    `;
+                    item.innerHTML = `
+                        <strong>${fail.code}</strong> - ${fail.name || '약품명 없음'}<br>
+                        <small style="color: #666;">실패 사유: ${fail.reason}</small><br>
+                        <small style="color: #999;">실패 시간: ${new Date(fail.failedAt).toLocaleString()}</small>
+                    `;
+                    item.addEventListener('mouseenter', () => {
+                        item.style.backgroundColor = '#f5f5f5';
+                    });
+                    item.addEventListener('mouseleave', () => {
+                        item.style.backgroundColor = 'white';
+                    });
+                    item.addEventListener('click', () => {
+                        listContainer.remove();
+                        loadMedicineForEdit(fail.code, true);
+                    });
+                    list.appendChild(item);
+                });
+                listContainer.appendChild(list);
+                
+                const closeBtn = document.createElement('button');
+                closeBtn.textContent = '닫기';
+                closeBtn.style.cssText = `
+                    margin-top: 10px;
+                    padding: 6px 12px;
+                    background: #666;
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 12px;
+                `;
+                closeBtn.addEventListener('click', () => {
+                    listContainer.remove();
+                });
+                listContainer.appendChild(closeBtn);
+                
+                // 버튼 아래에 목록 추가
+                const failBtn = document.getElementById('show-failed-medicines');
+                if (failBtn) {
+                    failBtn.parentNode.insertBefore(listContainer, failBtn.nextSibling);
+                }
+            } else {
+                // alert 대신 DOM에 메시지 표시
+                const messageDiv = document.createElement('div');
+                messageDiv.style.cssText = `
+                    background: #f8f9fa;
+                    border: 1px solid #dee2e6;
+                    border-radius: 4px;
+                    padding: 10px;
+                    margin-bottom: 10px;
+                    color: #6c757d;
+                    text-align: center;
+                `;
+                messageDiv.textContent = '미완성 약품이 없습니다.';
+                
+                const failBtn = document.getElementById('show-failed-medicines');
+                if (failBtn) {
+                    failBtn.parentNode.insertBefore(messageDiv, failBtn.nextSibling);
+                    // 3초 후 자동으로 제거
+                    setTimeout(() => {
+                        messageDiv.remove();
+                    }, 3000);
+                }
+            }
+        } catch (error) {
+            console.error('미완성 약품 목록 조회 실패:', error);
+            // alert 대신 DOM에 에러 메시지 표시
+            const errorDiv = document.createElement('div');
+            errorDiv.style.cssText = `
+                background: #f8d7da;
+                border: 1px solid #f5c6cb;
+                border-radius: 4px;
+                padding: 10px;
+                margin-bottom: 10px;
+                color: #721c24;
+                text-align: center;
+            `;
+            errorDiv.textContent = '미완성 약품 목록을 불러오는 중 오류가 발생했습니다.';
+            
+            const failBtn = document.getElementById('show-failed-medicines');
+            if (failBtn) {
+                failBtn.parentNode.insertBefore(errorDiv, failBtn.nextSibling);
+                // 5초 후 자동으로 제거
+                setTimeout(() => {
+                    errorDiv.remove();
+                }, 5000);
+            }
+        }
+    }
+    
+    // 자동입력 버튼 표시/숨김
+    function showAutoFillButton(show) {
+        let autoFillBtn = document.getElementById('auto-fill-btn');
+        
+        if (show) {
+            if (!autoFillBtn) {
+                autoFillBtn = document.createElement('button');
+                autoFillBtn.id = 'auto-fill-btn';
+                autoFillBtn.textContent = '자동입력';
+                autoFillBtn.style.cssText = `
+                    padding: 8px 16px;
+                    background: #4CAF50;
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    margin-right: 10px;
+                `;
+                autoFillBtn.addEventListener('click', autoFillMedicine);
+                
+                const buttonContainer = medicineSaveBtn.parentElement;
+                buttonContainer.insertBefore(autoFillBtn, medicineSaveBtn);
+            }
+            autoFillBtn.style.display = 'inline-block';
+        } else {
+            if (autoFillBtn) {
+                autoFillBtn.style.display = 'none';
+            }
+        }
+    }
+    
+    // 약품 정보 자동입력
+    async function autoFillMedicine() {
+        const code = editMedicineCode.value;
+        if (!code) {
+            showToast('약품 코드가 없습니다.', 'error');
+            return;
+        }
+        
+        const autoFillBtn = document.getElementById('auto-fill-btn');
+        autoFillBtn.disabled = true;
+        autoFillBtn.textContent = '처리 중...';
+        
+        try {
+            const result = await window.electronAPI.autoFillMedicine(code);
+            if (result.success) {
+                showToast(result.message, 'success');
+                // 약품 정보 다시 로드
+                await loadMedicineForEdit(code, false);
+                updateMedicineFailBadge(); // 뱃지 업데이트
+            } else {
+                showToast(result.error, 'error');
+            }
+        } catch (error) {
+            console.error('자동입력 실패:', error);
+            showToast('자동 입력에 실패했습니다. 직접 입력하던가 나중에 다시 시도하세요.', 'error');
+        } finally {
+            autoFillBtn.disabled = false;
+            autoFillBtn.textContent = '자동입력';
+        }
+    }
     
     // Request initial data when the app loads
     window.electronAPI.getInitialData();
     loadBrotherPrinters();
     loadConfig(); // 설정 로드
+    updateMedicineFailBadge(); // 미완성 약품 뱃지 업데이트
 });
