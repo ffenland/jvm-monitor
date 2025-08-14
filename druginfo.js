@@ -565,6 +565,17 @@ class DrugInfoManager {
                             // formulation에서 첫 번째 값을 type으로 추출
                             if (formulation) {
                                 type = formulation.split(',')[0].trim();
+                                
+                                // formulation을 콤마로 분리하여 점안제나 안연고제가 포함되어 있는지 확인
+                                const formulationParts = formulation.split(',').map(part => part.trim());
+                                const isEyeDrops = formulationParts.some(part => 
+                                    part.includes('점안제') || part.includes('안연고제')
+                                );
+                                
+                                // 점안제나 안연고제인 경우 unit을 "방울"로 변경
+                                if (isEyeDrops) {
+                                    unit = '방울';
+                                }
                             }
                             
                             // mfdsCode가 없고 efficacyInfoList에서 찾을 수 있다면 추출
