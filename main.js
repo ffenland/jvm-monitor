@@ -368,37 +368,30 @@ ipcMain.handle('print-from-editor', async (event, printData) => {
             templatePath = path.join(__dirname, templatePath);
         }
         
-        // 약품 정보 업데이트 체크
+        // 약품 정보 업데이트 체크 (SQLite DB 사용)
         if ((printData.updateMedicineType || printData.updateMedicineName) && printData.medicineCode) {
             try {
-                // medicine.json 업데이트
-                const medicineData = drugInfoManager.loadMedicineData();
-                if (medicineData[printData.medicineCode]) {
-                    let updated = false;
+                const db = drugInfoManager.db;
+                const existingMedicine = db.getMedicine(printData.medicineCode);
+                
+                if (existingMedicine) {
+                    const updatedData = { ...existingMedicine };
                     
                     // 약품 유형 업데이트
                     if (printData.updateMedicineType) {
-                        medicineData[printData.medicineCode].mdfsCodeName = printData.medicineType;  // 문자열로 저장
-                        updated = true;
+                        updatedData.mdfsCodeName = printData.medicineType;
                     }
                     
                     // 약품명 업데이트
                     if (printData.updateMedicineName && printData.name) {
-                        medicineData[printData.medicineCode].title = printData.name;
-                        updated = true;
+                        updatedData.title = printData.name;
                     }
                     
-                    // 파일 저장
-                    if (updated) {
-                        fs.writeFileSync(
-                            path.join(__dirname, 'db', 'medicine.json'),
-                            JSON.stringify(medicineData, null, 2),
-                            'utf8'
-                        );
-                    }
+                    // DB에 저장
+                    db.saveMedicine(updatedData);
                 }
             } catch (updateError) {
-                console.error('Error updating medicine info:', updateError);
+                console.error('Error updating medicine info in DB:', updateError);
                 // 업데이트 실패해도 출력은 계속 진행
             }
         }
