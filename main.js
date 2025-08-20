@@ -8,12 +8,13 @@ const { processPrescriptionData } = require('./dataProcessor');
 const simpleSecureConfig = require('./simpleSecureConfig');
 const drugInfoManager = require('./druginfo');
 const DatabaseManager = require('./database');
-const monitorPath = 'C:\\atc'; // Directory to monitor
+let monitorPath = 'C:\\atc'; // Default directory to monitor (can be changed in config)
 const originFilesPath = path.join(__dirname, 'originFiles'); // Directory for original files
 
 let mainWindow;
 let currentAvailableDates = new Set(); // To keep track of dates for dynamic updates
 let currentConfig = {}; // Store current configuration
+let watcher = null; // File watcher instance
 let dbManager; // Database manager instance
 
 function createWindow() {
@@ -40,11 +41,17 @@ function loadConfig() {
         if (fs.existsSync(configPath)) {
             const configData = fs.readFileSync(configPath, 'utf8');
             currentConfig = JSON.parse(configData);
+            // atcPath가 있으면 monitorPath 업데이트
+            if (currentConfig.atcPath) {
+                monitorPath = currentConfig.atcPath;
+                console.log('ATC path loaded from config:', monitorPath);
+            }
         } else {
             // 기본 설정
             currentConfig = {
                 pharmacyName: "",
-                templatePath: "./templates/testTemplate.lbx"
+                templatePath: "./templates/testTemplate.lbx",
+                atcPath: "C:\\atc"
             };
             saveConfig(currentConfig);
         }
@@ -52,7 +59,8 @@ function loadConfig() {
         console.error('Error loading config:', error);
         currentConfig = {
             pharmacyName: "",
-            templatePath: "./templates/testTemplate.lbx"
+            templatePath: "./templates/testTemplate.lbx",
+            atcPath: "C:\\atc"
         };
     }
     return currentConfig;
@@ -84,8 +92,23 @@ ipcMain.handle('get-config', async () => {
 
 ipcMain.handle('save-config', async (event, config) => {
     try {
+        // atcPath가 변경되었는지 확인
+        const oldPath = monitorPath;
         const success = saveConfig(config);
+        
         if (success) {
+            // atcPath가 변경되었으면 monitorPath 업데이트 및 파일 감시 재시작
+            if (config.atcPath && config.atcPath !== oldPath) {
+                monitorPath = config.atcPath;
+                console.log('ATC path updated to:', monitorPath);
+                
+                // 파일 감시 재시작
+                if (watcher) {
+                    watcher.close();
+                }
+                startFileWatcher();
+            }
+            
             return { success: true, message: '설정이 저장되었습니다.' };
         } else {
             return { success: false, error: '설정 저장에 실패했습니다.' };
@@ -480,6 +503,20 @@ ipcMain.handle('get-single-medicine', async (event, code) => {
     }
 });
 
+// 약품 상세정보 조회 (모달용)
+ipcMain.handle('get-medicine-detail', async (event, code) => {
+    try {
+        const medicine = dbManager.getMedicine(code);
+        if (!medicine) {
+            return { success: false, error: '약품 정보를 찾을 수 없습니다.' };
+        }
+        return { success: true, medicine };
+    } catch (error) {
+        console.error('약품 상세정보 조회 실패:', error);
+        return { success: false, error: error.message };
+    }
+});
+
 // 약품 정보 업데이트
 ipcMain.handle('update-medicine', async (event, medicineData) => {
     try {
@@ -622,13 +659,26 @@ app.whenReady().then(async () => {
         }, 1000); // 1초 후에 실행
     });
 
-    const watcher = chokidar.watch(monitorPath, {
+    // 파일 감시 시작
+    startFileWatcher();
+});
+
+// 파일 감시 시작 함수
+function startFileWatcher() {
+    if (!mainWindow) return;
+    
+    // 기존 watcher가 있으면 종료
+    if (watcher) {
+        watcher.close();
+    }
+    
+    watcher = chokidar.watch(monitorPath, {
         persistent: true,
         ignoreInitial: true,
     });
-
+    
     mainWindow.webContents.send('log-message', `Chokidar watcher initialized for: ${monitorPath}`);
-
+    
     watcher.on('ready', () => {
         mainWindow.webContents.send('log-message', 'Chokidar: Initial scan complete. Ready for changes.');
     });
@@ -849,14 +899,15 @@ app.whenReady().then(async () => {
     watcher.on('error', (error) => {
         mainWindow.webContents.send('log-message', `Watcher error: ${error.message}`);
     });
+}
 
-    app.on('activate', () => {
-        if (BrowserWindow.getAllWindows().length === 0) {
-            createWindow();
-        }
-    });
+app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+        createWindow();
+    }
+});
 
-    ipcMain.on('get-initial-data', (event) => {
+ipcMain.on('get-initial-data', (event) => {
         const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
         
         // 데이터베이스에서 오늘 날짜의 처방전 가져오기
@@ -878,14 +929,20 @@ app.whenReady().then(async () => {
 
         // 사용 가능한 날짜 목록 가져오기 (DB에서만)
         const dbDatesQuery = dbManager.db.prepare('SELECT DISTINCT receiptDateRaw FROM prescriptions ORDER BY receiptDateRaw DESC').all();
-        const allDates = dbDatesQuery.map(row => row.receiptDateRaw);
+        let allDates = dbDatesQuery.map(row => row.receiptDateRaw);
+        
+        // 오늘 날짜가 목록에 없으면 추가
+        if (!allDates.includes(today)) {
+            allDates.unshift(today);
+        }
         
         currentAvailableDates = new Set(allDates);
 
+        // 오늘 날짜의 데이터가 없어도 오늘 날짜를 선택하고 빈 배열 전송
         event.sender.send('initial-data', { data: todayData, dates: allDates, today: today });
     });
 
-    ipcMain.on('get-data-for-date', (event, date) => {
+ipcMain.on('get-data-for-date', (event, date) => {
         // 데이터베이스에서 데이터 가져오기
         const dbData = dbManager.getPrescriptionsByDate(date);
         
@@ -902,7 +959,7 @@ app.whenReady().then(async () => {
         event.sender.send('data-for-date', data);
     });
 
-    ipcMain.on('get-printers', async (event) => {
+ipcMain.on('get-printers', async (event) => {
     try {
         // B-PAC SDK 확인을 스킵하고 바로 프린터 목록을 가져옴
         mainWindow.webContents.send('log-message', 'Getting Brother printers...');
@@ -936,7 +993,7 @@ app.whenReady().then(async () => {
 });
 
 
-    ipcMain.on('print-label', async (event, printData) => {
+ipcMain.on('print-label', async (event, printData) => {
     try {
         // 필수 필드 검증
         if (!printData.templatePath || !fs.existsSync(printData.templatePath)) {
@@ -966,7 +1023,6 @@ app.whenReady().then(async () => {
             message: errorMessage 
         });
     }
-});
 });
 
 app.on('window-all-closed', () => {
