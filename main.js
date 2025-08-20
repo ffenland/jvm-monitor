@@ -727,22 +727,6 @@ function startFileWatcher() {
                 const timestamp = Date.now();
                 const dataToSend = { ...parsedContent, fileName, preparationDate: todayDate, timestamp };
 
-                // --- Copy original file to today's date-specific folder ---
-                const dailyOriginPath = path.join(originFilesPath, `origin_${todayDate}`);
-                if (!fs.existsSync(dailyOriginPath)) {
-                    fs.mkdirSync(dailyOriginPath, { recursive: true });
-                }
-                const destPath = path.join(dailyOriginPath, fileName);
-                fs.copyFile(filePath, destPath, (err) => {
-                    if (err) {
-                        console.error(`Error copying original file: ${err.message}`);
-                        mainWindow.webContents.send('log-message', `Error copying original file: ${err.message}`);
-                    } else {
-                        mainWindow.webContents.send('log-message', `Original file saved to ${path.basename(dailyOriginPath)}.`);
-                    }
-                });
-                // --- End of copy ---
-
                 mainWindow.webContents.send('log-message', `Content of ${fileName} parsed and stored.`);
                 
                 // 먼저 로딩 상태 전송
@@ -896,20 +880,29 @@ function startFileWatcher() {
                     mainWindow.webContents.send('parsed-data', dataToSend);
                 }
             } catch (parseError) {
-                const errorMessage = `Error parsing ${fileName}: ${parseError.message}. Moving to error folder.`;
-                console.error(errorMessage); // Added console.error
-                mainWindow.webContents.send('log-message', errorMessage);
-
-                // Move the problematic file to an error directory
-                const errorDirPath = path.join(originFilesPath, 'error');
+                // Move the problematic file to an error/original directory
+                const errorDirPath = path.join(originFilesPath, 'error', 'original');
                 if (!fs.existsSync(errorDirPath)) {
                     fs.mkdirSync(errorDirPath, { recursive: true });
                 }
-                const errorDestPath = path.join(errorDirPath, fileName);
+                
+                // Add timestamp to filename to prevent conflicts
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const errorFileName = `${timestamp}_${fileName}`;
+                const errorDestPath = path.join(errorDirPath, errorFileName);
+                
+                // Create error message with file path
+                const errorMessage = `Error parsing ${fileName}: ${parseError.message}\n원본 파일 위치: error/original/${errorFileName}`;
+                console.error(errorMessage);
+                mainWindow.webContents.send('log-message', errorMessage);
+                
+                // Move file to error directory
                 fs.rename(filePath, errorDestPath, (err) => {
                     if (err) {
-                        console.error(`Could not move error file: ${err.message}`); // Added console.error
+                        console.error(`Could not move error file: ${err.message}`);
                         mainWindow.webContents.send('log-message', `Could not move error file: ${err.message}`);
+                    } else {
+                        console.log(`Error file moved to: ${errorDestPath}`);
                     }
                 });
             }
