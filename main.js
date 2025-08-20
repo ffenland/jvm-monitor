@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const chokidar = require('chokidar');
@@ -311,6 +311,27 @@ ipcMain.handle('has-api-key', async () => {
     } catch (error) {
         console.error('Error checking API key:', error);
         return { success: false, error: error.message, exists: false };
+    }
+});
+
+// 폴더 선택 다이얼로그
+ipcMain.handle('select-folder', async (event, defaultPath) => {
+    try {
+        const result = await dialog.showOpenDialog(mainWindow, {
+            title: 'ATC 서버 경로 선택',
+            defaultPath: defaultPath || 'C:\\atc',
+            properties: ['openDirectory'],
+            buttonLabel: '폴더 선택'
+        });
+        
+        if (result.canceled) {
+            return { success: false, canceled: true };
+        }
+        
+        return { success: true, folderPath: result.filePaths[0] };
+    } catch (error) {
+        console.error('Error selecting folder:', error);
+        return { success: false, error: error.message };
     }
 });
 

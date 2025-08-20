@@ -37,5 +37,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getMedicineFailCount: () => ipcRenderer.invoke('get-medicine-fail-count'),
     autoFillMedicine: (code) => ipcRenderer.invoke('auto-fill-medicine', code),
     // 약품 상세정보 API
-    getMedicineDetail: (code) => ipcRenderer.invoke('get-medicine-detail', code)
+    getMedicineDetail: (code) => ipcRenderer.invoke('get-medicine-detail', code),
+    // 폴더 선택 API
+    selectFolder: (defaultPath) => ipcRenderer.invoke('select-folder', defaultPath)
 });

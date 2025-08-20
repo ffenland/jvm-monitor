@@ -317,7 +317,12 @@
             <form id="settings-form">
                 <div class="form-group">
                     <label for="atc-path">ATC 서버 경로:</label>
-                    <input type="text" id="atc-path" name="atcPath" placeholder="C:\atc" value="C:\atc">
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="text" id="atc-path" name="atcPath" placeholder="C:\atc" value="C:\atc" readonly style="flex: 1; background-color: #f5f5f5;">
+                        <button type="button" id="select-atc-folder-btn" style="padding: 8px 16px; background-color: #0056b3; color: white; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap;">
+                            폴더 선택
+                        </button>
+                    </div>
                     <small style="display: block; margin-top: 5px; color: #666; font-size: 12px;">
                         PM프로그램에서 ATC사용-B타입으로 설정된 경로의 폴더를 선택해주세요
                     </small>

@@ -452,6 +452,24 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+    // 폴더 선택 버튼 이벤트 리스너 (한 번만 등록)
+    const selectAtcFolderBtn = document.getElementById('select-atc-folder-btn');
+    if (selectAtcFolderBtn) {
+        selectAtcFolderBtn.addEventListener('click', async () => {
+            const atcPathInput = document.getElementById('atc-path');
+            const currentPath = atcPathInput.value || 'C:\\atc';
+            try {
+                const result = await window.electronAPI.selectFolder(currentPath);
+                if (result.success && !result.canceled) {
+                    atcPathInput.value = result.folderPath;
+                }
+            } catch (error) {
+                console.error('폴더 선택 오류:', error);
+                showToast('폴더 선택 중 오류가 발생했습니다.', 'error');
+            }
+        });
+    }
+    
     // 설정 모달 열기
     settingsBtn.addEventListener('click', async () => {
         await loadConfig();
