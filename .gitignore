@@ -12,7 +12,8 @@ yarn-error.log*
 /dist
 /out
 /release
-/build
+/build/*
+!build/icon.ico
 
 # OS generated files
 .DS_Store

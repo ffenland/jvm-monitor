@@ -7,7 +7,11 @@
       "Bash(C:WINDOWSSysWOW64WindowsPowerShellv1.0powershell.exe -ExecutionPolicy Bypass -NoProfile -File \".\\scripts\\test_step1_template.ps1\" -templatePath \"C:\\Users\\BoramATDPS\\Documents\\dev\\electron-file-monitor\\templates\\test01.lbx\")",
       "Bash(node:*)",
       "Bash(npm uninstall:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(npm install:*)",
+      "Bash(set WIN_CSC_LINK=none)",
+      "Bash(npm run dist:*)",
+      "Bash(mv:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

@@ -1,5 +1,126 @@
 const iconv = require('iconv-lite');
 
+/**
+ * 새로운 정확한 약품 정보 파싱 함수
+ * @param {string} drugSection - JVMHEAD 섹션 내용
+ * @returns {Array} 파싱된 약품 배열
+ */
+function parseDrugInfo(drugSection) {
+    const result = [];
+    
+    // 1단계: 약품코드 패턴으로 분할
+    const drugCodePattern = /[TE]\d{9}/g;
+    const drugCodes = [...drugSection.matchAll(drugCodePattern)];
+    
+    if (drugCodes.length === 0) {
+        return result;
+    }
+    
+    // 2단계: 각 약품별로 분할하여 처리
+    drugCodes.forEach((match, i) => {
+        const startIndex = match.index;
+        const endIndex = i < drugCodes.length - 1 ? drugCodes[i + 1].index : drugSection.length;
+        const drugText = drugSection.substring(startIndex, endIndex).trim();
+        
+        // 약품코드 추출
+        const drugcode = match[0].substring(1); // T/E 제거
+        
+        // 약품명 추출 (코드 다음부터 숫자 패턴 앞까지)
+        let drugname = '';
+        const afterCode = drugText.substring(10).trim(); // 약품코드(10자리) 이후
+        
+        // 마지막에서 역방향으로 첫 번째 숫자 찾기
+        let firstDigitIndex = -1;
+        for (let j = afterCode.length - 1; j >= 0; j--) {
+            if (/\d/.test(afterCode[j])) {
+                firstDigitIndex = j;
+                break;
+            }
+        }
+        
+        if (firstDigitIndex !== -1) {
+            // 약품명은 첫 번째 숫자 앞까지
+            drugname = afterCode.substring(0, firstDigitIndex).trim();
+            
+            // 약품명 정리
+            drugname = drugname.replace(/\(1일\s*\d+회\)/g, '').trim();
+            drugname = drugname.replace(/\s*[^,\s]*,.*$/, '').trim();
+            drugname = drugname.replace(/_+$/, '').trim();
+            drugname = drugname.replace(/\s+/g, ' ');
+        }
+        
+        // 복용정보 파싱 (10자리 역방향 읽기)
+        let tday = '', thoi = '', tuse = '';
+        
+        if (firstDigitIndex !== -1) {
+            const start = Math.max(0, firstDigitIndex - 9);
+            const end = firstDigitIndex + 1;
+            const tenDigitBlock = afterCode.substring(start, end);
+            
+            let firstNumberStart = -1;
+            for (let k = 0; k < tenDigitBlock.length; k++) {
+                if (/\d/.test(tenDigitBlock[k])) {
+                    firstNumberStart = k;
+                    break;
+                }
+            }
+            
+            if (firstNumberStart !== -1) {
+                const numberPart = tenDigitBlock.substring(firstNumberStart);
+                
+                // 처방일수 (최대 3자리)
+                let daysPart = '';
+                let currentIndex = 0;
+                
+                while (currentIndex < numberPart.length && daysPart.length < 3) {
+                    if (/\d/.test(numberPart[currentIndex])) {
+                        daysPart += numberPart[currentIndex];
+                    } else if (daysPart.length > 0) {
+                        break;
+                    }
+                    currentIndex++;
+                }
+                
+                tday = daysPart;
+                
+                // 공백 건너뛰기
+                while (currentIndex < numberPart.length && !/\d/.test(numberPart[currentIndex])) {
+                    currentIndex++;
+                }
+                
+                // 1일 복용횟수 (4번째 자리)
+                if (currentIndex < numberPart.length && /\d/.test(numberPart[currentIndex])) {
+                    thoi = numberPart[currentIndex];
+                    currentIndex++;
+                }
+                
+                // 1회 복용량 (5번째 이후)
+                let dosePart = '';
+                while (currentIndex < numberPart.length) {
+                    if (/[\d.]/.test(numberPart[currentIndex])) {
+                        dosePart += numberPart[currentIndex];
+                    } else if (dosePart.length > 0) {
+                        break;
+                    }
+                    currentIndex++;
+                }
+                
+                tuse = dosePart || '1';
+            }
+        }
+        
+        result.push({
+            code: drugcode,           // 기존 필드명 사용
+            name: drugname,           // 기존 필드명 사용
+            prescriptionDays: tday,   // 기존 필드명 사용
+            dailyDose: thoi,          // 기존 필드명 사용
+            singleDose: tuse          // 기존 필드명 사용
+        });
+    });
+    
+    return result;
+}
+
 function parseFileContent(buffer) {
     const content = iconv.decode(buffer, 'euc-kr');
     const parsedData = {};
@@ -42,37 +163,9 @@ function parseFileContent(buffer) {
     parsedData.medicines = [];
     if (jvmHeadMatch && jvmHeadMatch[1]) {
         const jvmHeadContent = jvmHeadMatch[1];
-
-        // Split medicine entries using a regex lookahead to find 'T' or 'E' followed by 9 digits.
-        // This prevents splitting on characters within a medicine's name.
-        const medicineEntries = jvmHeadContent.trim().split(/(?=[TE]\d{9})/).filter(entry => entry.trim().length > 0);
-
-        medicineEntries.forEach(entry => {
-            // 패턴: 약품코드(T/E+9자리) 약품명 처방일수 하루투여횟수 1회투여량
-            // 예: T643100080 약품명 5 3 1 -> 5일분, 하루3번, 1회1알
-            // 예: T649404690 약품명 5 3 0.5 -> 5일분, 하루3번, 1회0.5알
-            
-            // 숫자들을 개별적으로 캡처하도록 수정
-            const medicineRegex = /^([TE]\d{9})\s+(.*?)\s+(\d+)\s+(\d)(\d+(?:\.\d+)?)\s*.*$/;
-            const match = entry.match(medicineRegex);
-            
-            if (match) {
-                const medicine = {
-                    code: match[1].trim().substring(1), // Remove 'T' or 'E' prefix, use only 9-digit code
-                    name: match[2].trim().replace(/_$/, ''), // Clean trailing underscores
-                    prescriptionDays: match[3].trim(),  // 처방일수 (예: 5)
-                    dailyDose: match[4].trim(),         // 하루투여횟수 (예: 3)
-                    singleDose: match[5].trim()         // 1회투여량 (예: 1 또는 0.5)
-                };
-                parsedData.medicines.push(medicine);
-            } else {
-                // 매치 실패 시 로그
-            }
-        });
-
-        if (parsedData.medicines.length === 0) {
-            // No medicine entries found
-        }
+        
+        // 새로운 정확한 파싱 로직 사용
+        parsedData.medicines = parseDrugInfo(jvmHeadContent);
     }
 
     return parsedData;

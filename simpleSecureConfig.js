@@ -11,7 +11,7 @@ class SimpleSecureConfig {
             userDataPath = app.getPath('userData');
         } catch (e) {
             // Electron 환경이 아닌 경우 (테스트 등)
-            userDataPath = path.join(require('os').homedir(), '.electron-file-monitor');
+            userDataPath = path.join(require('os').homedir(), '.DrugLabel');
             if (!fs.existsSync(userDataPath)) {
                 fs.mkdirSync(userDataPath, { recursive: true });
             }

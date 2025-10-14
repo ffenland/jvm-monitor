@@ -8,8 +8,35 @@ const { processPrescriptionData } = require('./dataProcessor');
 const simpleSecureConfig = require('./simpleSecureConfig');
 const drugInfoManager = require('./druginfo');
 const DatabaseManager = require('./database');
+const { spawn } = require('child_process');
 let monitorPath = 'C:\\atc'; // Default directory to monitor (can be changed in config)
-const originFilesPath = path.join(__dirname, 'originFiles'); // Directory for original files
+let originFilesPath; // Directory for original files - will be set after app.ready
+
+/**
+ * PowerShell 실행 파일 경로를 동적으로 찾는 함수
+ * @returns {string} PowerShell 실행 파일 경로
+ */
+function getPowerShellPath() {
+    // 가능한 PowerShell 경로들 (우선순위 순)
+    const possiblePaths = [
+        'C:\\WINDOWS\\SysWOW64\\WindowsPowerShell\\v1.0\\powershell.exe',  // 32비트 (b-PAC용)
+        'C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe',  // 64비트
+        'C:\\Windows\\SysWOW64\\WindowsPowerShell\\v1.0\\powershell.exe',  // 대소문자 다른 경우
+        'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe'   // 대소문자 다른 경우
+    ];
+    
+    // 각 경로를 순차적으로 확인
+    for (const psPath of possiblePaths) {
+        if (fs.existsSync(psPath)) {
+            console.log(`PowerShell found at: ${psPath}`);
+            return psPath;
+        }
+    }
+    
+    // 모든 경로에서 찾지 못한 경우 시스템 PATH에서 검색
+    console.log('Using system PATH for PowerShell');
+    return 'powershell';
+}
 
 let mainWindow;
 let currentAvailableDates = new Set(); // To keep track of dates for dynamic updates
@@ -21,12 +48,19 @@ function createWindow() {
     mainWindow = new BrowserWindow({
         width: 800,
         height: 800,
+        title: 'DrugLabel - PM프로그램 연동 약품 라벨 출력 시스템',
+        icon: path.join(__dirname, 'build', 'icon.ico'), // ICO 아이콘 사용
+        autoHideMenuBar: true, // 메뉴바 숨기기
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'), // Using a preload script for security
             contextIsolation: true, // Recommended for security
             nodeIntegration: false // Recommended for security
         }
     });
+
+    // 메뉴를 완전히 제거 (Alt 키로도 접근 불가)
+    mainWindow.setMenuBarVisibility(false);
+    mainWindow.setMenu(null);
 
     mainWindow.loadFile('index.html');
 
@@ -36,7 +70,11 @@ function createWindow() {
 
 // 설정 파일 읽기/쓰기 함수
 function loadConfig() {
-    const configPath = path.join(__dirname, 'config', 'config.json');
+    const appDataDir = path.join(app.getPath('documents'), 'DrugLabel');
+    if (!fs.existsSync(appDataDir)) {
+        fs.mkdirSync(appDataDir, { recursive: true });
+    }
+    const configPath = path.join(appDataDir, 'config.json');
     try {
         if (fs.existsSync(configPath)) {
             const configData = fs.readFileSync(configPath, 'utf8');
@@ -44,36 +82,70 @@ function loadConfig() {
             // atcPath가 있으면 monitorPath 업데이트
             if (currentConfig.atcPath) {
                 monitorPath = currentConfig.atcPath;
-                console.log('ATC path loaded from config:', monitorPath);
+                // console.log('ATC path loaded from config:', monitorPath);
             }
         } else {
             // 기본 설정
+            const templatesDir = path.join(appDataDir, 'templates');
+            
+            // 템플릿 폴더가 없으면 생성하고 기본 템플릿 복사
+            if (!fs.existsSync(templatesDir)) {
+                fs.mkdirSync(templatesDir, { recursive: true });
+            }
+            
+            // 기본 템플릿 경로
+            const defaultTemplatePath = path.join(templatesDir, 'default.lbx');
+            
+            // 기본 템플릿이 없으면 app 폴더에서 복사 시도
+            if (!fs.existsSync(defaultTemplatePath)) {
+                const sourceTemplate = path.join(__dirname, 'templates', 'default.lbx');
+                if (fs.existsSync(sourceTemplate)) {
+                    fs.copyFileSync(sourceTemplate, defaultTemplatePath);
+                }
+            }
+            
             currentConfig = {
                 pharmacyName: "",
-                templatePath: "./templates/testTemplate.lbx",
-                atcPath: "C:\\atc"
+                templatePath: defaultTemplatePath,
+                atcPath: "C:\\atc",
+                isFirstRun: true  // 첫 실행 플래그
             };
             saveConfig(currentConfig);
         }
     } catch (error) {
         console.error('Error loading config:', error);
+        const templatesDir = path.join(appDataDir, 'templates');
+        
+        // 템플릿 폴더가 없으면 생성
+        if (!fs.existsSync(templatesDir)) {
+            fs.mkdirSync(templatesDir, { recursive: true });
+        }
+        
+        const defaultTemplatePath = path.join(templatesDir, 'default.lbx');
+        
+        // 기본 템플릿이 없으면 app 폴더에서 복사 시도
+        if (!fs.existsSync(defaultTemplatePath)) {
+            const sourceTemplate = path.join(__dirname, 'templates', 'default.lbx');
+            if (fs.existsSync(sourceTemplate)) {
+                fs.copyFileSync(sourceTemplate, defaultTemplatePath);
+            }
+        }
+        
         currentConfig = {
             pharmacyName: "",
-            templatePath: "./templates/testTemplate.lbx",
-            atcPath: "C:\\atc"
+            templatePath: defaultTemplatePath,
+            atcPath: "C:\\atc",
+            isFirstRun: true
         };
     }
     return currentConfig;
 }
 
 function saveConfig(config) {
-    const configPath = path.join(__dirname, 'config', 'config.json');
-    const configDir = path.join(__dirname, 'config');
+    const appDataDir = path.join(app.getPath('documents'), 'DrugLabel');
+    const configPath = path.join(appDataDir, 'config.json');
     
     try {
-        if (!fs.existsSync(configDir)) {
-            fs.mkdirSync(configDir, { recursive: true });
-        }
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf8');
         currentConfig = config;
         return true;
@@ -86,14 +158,32 @@ function saveConfig(config) {
 // IPC 핸들러 등록
 
 // 설정 관련 핸들러
+ipcMain.handle('open-external', async (event, url) => {
+    const { shell } = require('electron');
+    shell.openExternal(url);
+    return { success: true };
+});
+
 ipcMain.handle('get-config', async () => {
     return loadConfig();
+});
+
+ipcMain.handle('check-first-run', async () => {
+    const config = loadConfig();
+    // 약국명이 비어있으면 첫 실행으로 간주
+    return !config.pharmacyName || config.pharmacyName === "";
 });
 
 ipcMain.handle('save-config', async (event, config) => {
     try {
         // atcPath가 변경되었는지 확인
         const oldPath = monitorPath;
+        
+        // isFirstRun 플래그 제거 (설정을 저장하면 더 이상 첫 실행이 아님)
+        if (config.isFirstRun) {
+            delete config.isFirstRun;
+        }
+        
         const success = saveConfig(config);
         
         if (success) {
@@ -121,9 +211,26 @@ ipcMain.handle('save-config', async (event, config) => {
 // 템플릿 목록 가져오기
 ipcMain.handle('get-templates', async () => {
     try {
-        const templatesDir = path.join(__dirname, 'templates');
+        // Documents\DrugLabel\templates 폴더에서 템플릿 읽기
+        const appDataDir = path.join(app.getPath('documents'), 'DrugLabel');
+        const templatesDir = path.join(appDataDir, 'templates');
+        
+        // 템플릿 폴더가 없으면 생성
         if (!fs.existsSync(templatesDir)) {
-            return { success: true, templates: [] };
+            fs.mkdirSync(templatesDir, { recursive: true });
+            
+            // 기본 템플릿을 앱 폴더에서 복사 (첫 실행 시)
+            const sourceTemplatesDir = path.join(__dirname, 'templates');
+            if (fs.existsSync(sourceTemplatesDir)) {
+                const sourceFiles = fs.readdirSync(sourceTemplatesDir);
+                sourceFiles.filter(file => file.endsWith('.lbx')).forEach(file => {
+                    const sourcePath = path.join(sourceTemplatesDir, file);
+                    const targetPath = path.join(templatesDir, file);
+                    if (!fs.existsSync(targetPath)) {
+                        fs.copyFileSync(sourcePath, targetPath);
+                    }
+                });
+            }
         }
         
         const files = fs.readdirSync(templatesDir);
@@ -131,7 +238,7 @@ ipcMain.handle('get-templates', async () => {
             .filter(file => file.endsWith('.lbx'))
             .map(file => ({
                 name: file,
-                path: `./templates/${file}`
+                path: path.join(templatesDir, file)
             }));
         
         return { success: true, templates };
@@ -147,16 +254,16 @@ ipcMain.handle('check-template-fields', async (event, templatePath) => {
         const { spawn } = require('child_process');
         let fullPath = templatePath;
         
-        // 상대 경로를 절대 경로로 변환
-        if (templatePath.startsWith('./')) {
-            fullPath = path.join(__dirname, templatePath.substring(2));
-        } else if (!path.isAbsolute(templatePath)) {
-            fullPath = path.join(__dirname, templatePath);
+        // 상대 경로를 절대 경로로 변환 (템플릿은 이미 절대 경로로 저장됨)
+        if (!path.isAbsolute(templatePath)) {
+            const appDataDir = path.join(app.getPath('documents'), 'DrugLabel');
+            const templatesDir = path.join(appDataDir, 'templates');
+            fullPath = path.join(templatesDir, path.basename(templatePath));
         }
         
         // PowerShell 스크립트 경로
         const scriptPath = path.join(__dirname, 'scripts', 'check_template_fields.ps1');
-        const powershellPath = 'C:\\WINDOWS\\SysWOW64\\WindowsPowerShell\\v1.0\\powershell.exe';
+        const powershellPath = getPowerShellPath();
         
         return new Promise((resolve, reject) => {
             const ps = spawn(powershellPath, [
@@ -222,12 +329,12 @@ ipcMain.handle('get-brother-printers', async () => {
 // 템플릿 미리보기
 ipcMain.handle('preview-template', async (event, templatePath) => {
     try {
-        // 상대 경로를 절대 경로로 변환
+        // 상대 경로를 절대 경로로 변환 (템플릿은 이미 절대 경로로 저장됨)
         let fullPath = templatePath;
-        if (templatePath.startsWith('./')) {
-            fullPath = path.join(__dirname, templatePath.substring(2));
-        } else if (!path.isAbsolute(templatePath)) {
-            fullPath = path.join(__dirname, templatePath);
+        if (!path.isAbsolute(templatePath)) {
+            const appDataDir = path.join(app.getPath('documents'), 'DrugLabel');
+            const templatesDir = path.join(appDataDir, 'templates');
+            fullPath = path.join(templatesDir, path.basename(templatePath));
         }
         
         // 샘플 데이터로 미리보기 생성
@@ -341,8 +448,9 @@ ipcMain.handle('print-prescription', async (event, prescriptionData, printerName
         // 데이터 가공 - dataProcessor 모듈 사용
         const processedData = processPrescriptionData(prescriptionData);
         
-        // 템플릿 파일 경로
-        const templatePath = path.join(__dirname, 'templates', 'prescription_label.lbx');
+        // 템플릿 파일 경로 (Documents\DrugLabel\templates)
+        const appDataDir = path.join(app.getPath('documents'), 'DrugLabel');
+        const templatePath = path.join(appDataDir, 'templates', 'prescription_label.lbx');
         
         const printData = {
             templatePath,
@@ -374,11 +482,17 @@ ipcMain.handle('open-label-editor', async (event, prescriptionData, medicineCode
             height: 900,
             parent: mainWindow,
             modal: true,
+            icon: path.join(__dirname, 'build', 'icon.ico'), // 아이콘 설정
+            autoHideMenuBar: true, // 메뉴바 숨기기
             webPreferences: {
                 nodeIntegration: true,
                 contextIsolation: false
             }
         });
+        
+        // 메뉴를 완전히 제거 (Alt 키로도 접근 불가)
+        editorWindow.setMenuBarVisibility(false);
+        editorWindow.setMenu(null);
         
         // 데이터를 URL 파라미터로 전달
         const data = {
@@ -403,13 +517,13 @@ ipcMain.handle('print-from-editor', async (event, printData) => {
     try {
         const config = loadConfig();
         
-        let templatePath = config.templatePath || './templates/testTemplate.lbx';
+        let templatePath = config.templatePath;
         
-        // 상대 경로를 절대 경로로 변환
-        if (templatePath.startsWith('./')) {
-            templatePath = path.join(__dirname, templatePath.substring(2));
-        } else if (!path.isAbsolute(templatePath)) {
-            templatePath = path.join(__dirname, templatePath);
+        // templatePath가 없거나 존재하지 않는 경우 기본 템플릿 사용
+        if (!templatePath || !fs.existsSync(templatePath)) {
+            const appDataDir = path.join(app.getPath('documents'), 'DrugLabel');
+            const templatesDir = path.join(appDataDir, 'templates');
+            templatePath = path.join(templatesDir, 'default.lbx');
         }
         
         // 약품 정보 업데이트 체크 (SQLite DB 사용)
@@ -648,13 +762,29 @@ ipcMain.handle('auto-fill-medicine', async (event, medicineCode) => {
 
 
 app.whenReady().then(async () => {
+    // originFiles 경로 설정 (현재 작업 디렉토리 사용)
+    originFilesPath = path.join(__dirname, 'originFiles');
+    if (!fs.existsSync(originFilesPath)) {
+        fs.mkdirSync(originFilesPath, { recursive: true });
+    }
+    
     createWindow();
     
     // 데이터베이스 초기화
     dbManager = new DatabaseManager();
     
     // 설정 파일 로드
-    loadConfig();
+    const config = loadConfig();
+    
+    // 첫 실행 확인 (약국명이 비어있으면 첫 실행으로 간주)
+    if (!config.pharmacyName || config.pharmacyName === "") {
+        // 첫 실행 시 설정 창 자동 표시
+        setTimeout(() => {
+            if (mainWindow) {
+                mainWindow.webContents.send('show-initial-setup');
+            }
+        }, 1000); // 창이 완전히 로드된 후 표시
+    }
     
     // API 키 자동 설정 (없을 경우) - 인코딩된 키 사용
     if (!simpleSecureConfig.hasApiKey()) {
@@ -677,6 +807,8 @@ app.whenReady().then(async () => {
         setTimeout(() => {
             console.log('B-PAC SDK is ready');
             mainWindow.webContents.send('log-message', 'B-PAC SDK가 준비되었습니다.');
+            // b-PAC 설치 확인
+            checkBpacInstallation();
         }, 1000); // 1초 후에 실행
     });
 
@@ -765,7 +897,7 @@ function startFileWatcher() {
                         })
                         .then(async (result) => {
                             // 약품 정보가 모두 저장된 후에 파일 저장
-                            saveDataToFile(dataToSave, todayDate);
+                            saveDataToFile(dataToSave, todayDate, filePath);
                             
                             // medicine.json 정보를 포함한 enriched data 생성
                             const enrichedMedicines = parsedContent.medicines.map(med => {
@@ -825,12 +957,13 @@ function startFileWatcher() {
                                         
                                         try {
                                             const config = loadConfig();
-                                            let templatePath = config.templatePath || './templates/testTemplate.lbx';
+                                            let templatePath = config.templatePath;
                                             
-                                            if (templatePath.startsWith('./')) {
-                                                templatePath = path.join(__dirname, templatePath.substring(2));
-                                            } else if (!path.isAbsolute(templatePath)) {
-                                                templatePath = path.join(__dirname, templatePath);
+                                            // templatePath가 없거나 존재하지 않는 경우 기본 템플릿 사용
+                                            if (!templatePath || !fs.existsSync(templatePath)) {
+                                                const appDataDir = path.join(app.getPath('documents'), 'DrugLabel');
+                                                const templatesDir = path.join(appDataDir, 'templates');
+                                                templatePath = path.join(templatesDir, 'default.lbx');
                                             }
                                             
                                             // 라벨 데이터 가공
@@ -870,13 +1003,13 @@ function startFileWatcher() {
                         .catch(error => {
                             console.error('Error updating drug info:', error);
                             // 에러 발생 시에도 파일 저장 시도
-                            saveDataToFile(dataToSave, todayDate);
+                            saveDataToFile(dataToSave, todayDate, filePath);
                             // 원본 데이터로 화면 업데이트
                             mainWindow.webContents.send('parsed-data', dataToSend);
                         });
                 } else {
                     // 약품이 없는 경우 바로 저장 및 전송
-                    saveDataToFile(dataToSave, todayDate);
+                    saveDataToFile(dataToSave, todayDate, filePath);
                     mainWindow.webContents.send('parsed-data', dataToSend);
                 }
             } catch (parseError) {
@@ -927,8 +1060,8 @@ ipcMain.on('get-initial-data', (event) => {
         // 데이터베이스에서 오늘 날짜의 처방전 가져오기
         const todayPrescriptions = dbManager.getPrescriptionsByDate(today);
         
-        // medicine 정보 추가
-        const todayData = todayPrescriptions.map(prescription => ({
+        // medicine 정보 추가 및 timestamp 추가
+        const todayData = todayPrescriptions.map((prescription, index) => ({
             patientId: prescription.patientId,
             receiptNum: prescription.receiptNum,
             receiptDateRaw: prescription.receiptDateRaw,
@@ -938,15 +1071,20 @@ ipcMain.on('get-initial-data', (event) => {
             medicines: prescription.medicines.map(med => ({
                 ...med,
                 medicineInfo: dbManager.getMedicine(med.code) || drugInfoManager.getMedicineInfo(med.code)
-            }))
+            })),
+            timestamp: prescription.createdAt ? new Date(prescription.createdAt).getTime() : Date.now() - (1000 * index) // timestamp 추가
         }));
 
         // 사용 가능한 날짜 목록 가져오기 (DB에서만)
         const dbDatesQuery = dbManager.db.prepare('SELECT DISTINCT receiptDateRaw FROM prescriptions ORDER BY receiptDateRaw DESC').all();
         let allDates = dbDatesQuery.map(row => row.receiptDateRaw);
         
-        // 오늘 날짜가 목록에 없으면 추가
+        // 오늘 날짜가 목록에 없으면 추가 (항상 첫 번째 위치에)
         if (!allDates.includes(today)) {
+            allDates.unshift(today);
+        } else {
+            // 오늘 날짜가 있으면 첫 번째 위치로 이동
+            allDates = allDates.filter(date => date !== today);
             allDates.unshift(today);
         }
         
@@ -1045,12 +1183,40 @@ app.on('window-all-closed', () => {
     }
 });
 
-function saveDataToFile(newData, todayDate) {
+function saveDataToFile(newData, todayDate, sourceFilePath = null) {
+    // 원본 파일 백업 (sourceFilePath가 있는 경우)
+    if (sourceFilePath && fs.existsSync(sourceFilePath)) {
+        try {
+            // 오늘 날짜로 폴더 생성 (YYYYMMDD 형식)
+            const today = new Date();
+            const dateFolder = `origin_${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+            const backupDir = path.join(originFilesPath, dateFolder);
+            
+            // 백업 디렉토리가 없으면 생성
+            if (!fs.existsSync(backupDir)) {
+                fs.mkdirSync(backupDir, { recursive: true });
+                mainWindow.webContents.send('log-message', `Created backup directory: ${dateFolder}`);
+            }
+            
+            // 원본 파일명 가져오기
+            const originalFileName = path.basename(sourceFilePath);
+            const backupPath = path.join(backupDir, originalFileName);
+            
+            // 파일 복사
+            fs.copyFileSync(sourceFilePath, backupPath);
+            mainWindow.webContents.send('log-message', `Original file backed up to: ${dateFolder}/${originalFileName}`);
+            
+        } catch (backupError) {
+            console.error('Error backing up file:', backupError);
+            mainWindow.webContents.send('log-message', `Warning: Could not backup original file: ${backupError.message}`);
+        }
+    }
+    
     // SQLite 데이터베이스에 저장
     if (newData && newData.receiptDateRaw) {
         try {
-            // 처방전 데이터를 데이터베이스에 저장
-            const result = dbManager.savePrescription(newData);
+            // 처방전 데이터를 데이터베이스에 저장 (원본 파일 경로와 함께)
+            const result = dbManager.savePrescription(newData, sourceFilePath);
             
             if (result.success) {
                 mainWindow.webContents.send('log-message', `Data saved successfully to database.`);
@@ -1062,7 +1228,13 @@ function saveDataToFile(newData, todayDate) {
             const isNewDate = !currentAvailableDates.has(todayDate);
             if (isNewDate) {
                 currentAvailableDates.add(todayDate);
-                const updatedDates = Array.from(currentAvailableDates).sort((a, b) => b.localeCompare(a));
+                // 오늘 날짜를 항상 첫 번째로 유지
+                let updatedDates = Array.from(currentAvailableDates).sort((a, b) => b.localeCompare(a));
+                const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+                if (updatedDates.includes(today)) {
+                    updatedDates = updatedDates.filter(date => date !== today);
+                    updatedDates.unshift(today);
+                }
                 mainWindow.webContents.send('update-date-list', updatedDates);
                 mainWindow.webContents.send('log-message', `New date ${todayDate} added. Updating date list.`);
             }
@@ -1073,4 +1245,111 @@ function saveDataToFile(newData, todayDate) {
     } else {
         mainWindow.webContents.send('log-message', 'Error: Cannot save data without a receipt date.');
     }
+}
+
+/**
+ * b-PAC 설치 확인 및 안내
+ */
+async function checkBpacInstallation() {
+    const { spawn } = require('child_process');
+    const { shell } = require('electron');
+    
+    // 더 많은 COM 객체 이름 시도
+    const checkScript = `
+    $comNames = @(
+        "bpac.Document",
+        "b-PAC.Document", 
+        "bpac3.Document",
+        "Brother.bpac.Document",
+        "BrssCom.Document"
+    )
+    
+    $found = $false
+    foreach ($comName in $comNames) {
+        try {
+            $bpac = New-Object -ComObject $comName -ErrorAction Stop
+            [System.Runtime.Interopservices.Marshal]::ReleaseComObject($bpac) | Out-Null
+            Write-Output "OK:$comName"
+            $found = $true
+            break
+        } catch {
+            # Continue to next COM name
+        }
+    }
+    
+    if (-not $found) {
+        Write-Output "NOT_FOUND"
+    }`;
+    
+    const powershellPath = getPowerShellPath();
+    console.log('Checking b-PAC installation with PowerShell:', powershellPath);
+    
+    // spawn 사용으로 변경
+    const ps = spawn(powershellPath, [
+        '-ExecutionPolicy', 'Bypass',
+        '-NoProfile', 
+        '-Command', checkScript
+    ]);
+    
+    let stdout = '';
+    let stderr = '';
+    
+    ps.stdout.on('data', (data) => {
+        stdout += data.toString();
+    });
+    
+    ps.stderr.on('data', (data) => {
+        stderr += data.toString();
+    });
+    
+    ps.on('close', async (code) => {
+        const result = stdout.trim();
+        console.log('b-PAC check result:', result);
+        console.log('b-PAC check stderr:', stderr);
+        
+        if (result.startsWith('OK:')) {
+            // b-PAC이 설치되어 있음
+            const comName = result.split(':')[1];
+            console.log(`b-PAC is installed (COM: ${comName})`);
+            mainWindow.webContents.send('bpac-status', { installed: true });
+            mainWindow.webContents.send('log-message', `b-PAC COM 객체 확인됨: ${comName}`);
+        } else {
+            // b-PAC이 설치되지 않음
+            console.log('b-PAC not installed, showing installation guide');
+            
+            // b-PAC이 설치되지 않은 경우 안내 다이얼로그 표시
+            const { response } = await dialog.showMessageBox(mainWindow, {
+                type: 'warning',
+                title: 'Brother b-PAC 구성 요소 필요',
+                message: 'DrugLabel을 사용하려면 Brother b-PAC Client Component가 필요합니다.',
+                detail: '라벨 출력 기능을 사용하려면 Brother b-PAC Client Component(32비트)를 설치해야 합니다.\n\n지금 다운로드 페이지로 이동하시겠습니까?',
+                buttons: ['다운로드 페이지 열기', '나중에'],
+                defaultId: 0,
+                cancelId: 1
+            });
+            
+            if (response === 0) {
+                // Brother 다운로드 페이지 열기
+                shell.openExternal('https://support.brother.com/g/s/es/dev/en/bpac/download/index.html');
+                
+                // 추가 안내 다이얼로그
+                dialog.showMessageBox(mainWindow, {
+                    type: 'info',
+                    title: '설치 안내',
+                    message: 'b-PAC Client Component 설치 안내',
+                    detail: '1. 열린 페이지에서 "b-PAC Client Component" 선택\n2. "32-bit ver." 다운로드\n3. 다운로드한 파일 실행하여 설치\n4. 설치 완료 후 DrugLabel 재시작\n\n자세한 내용은 프로그램 폴더의 INSTALLATION.md 파일을 참조하세요.',
+                    buttons: ['확인']
+                });
+            }
+            
+            // 메인 창에 상태 전송
+            mainWindow.webContents.send('bpac-status', { installed: false });
+        }
+    });
+    
+    ps.on('error', (error) => {
+        console.error('Failed to check b-PAC:', error);
+        // 에러가 발생해도 앱은 계속 실행되도록
+        mainWindow.webContents.send('bpac-status', { installed: false });
+    });
 }

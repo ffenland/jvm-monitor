@@ -83,6 +83,13 @@ class DrugInfoManager {
                 
                 res.on('end', () => {
                     try {
+                        // API 응답 로깅
+                        if (data.includes('unexpected errors') || !data.trim().startsWith('{')) {
+                            console.log('Invalid API response for', searchType, searchValue, ':', data.substring(0, 200));
+                            resolve(null);
+                            return;
+                        }
+                        
                         const result = JSON.parse(data);
                         
                         if (result.header && result.header.resultCode === '00') {
@@ -481,6 +488,7 @@ class DrugInfoManager {
                     const failEntry = {
                         code: medicineKey,
                         name: medicine.name || '알 수 없음',
+                        apiUrl: this.drugDetailApiUrl + '?edi_code=' + encodeURIComponent(medicineKey),
                         failedAt: new Date().toISOString(),
                         reason: '코드 또는 약품명으로 조회되지 않음'
                     };
@@ -519,6 +527,7 @@ class DrugInfoManager {
                     const failEntry = {
                         code: medicineKey,
                         name: medicine.name || '알 수 없음',
+                        apiUrl: this.drugDetailApiUrl + '?item_name=' + encodeURIComponent(medicine.name),
                         failedAt: new Date().toISOString(),
                         reason: `해당 약품명으로 복수의 약품이 존재합니다 (${detailInfo.count}개). 사용자 확인이 필요`
                     };

@@ -39,5 +39,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // 약품 상세정보 API
     getMedicineDetail: (code) => ipcRenderer.invoke('get-medicine-detail', code),
     // 폴더 선택 API
-    selectFolder: (defaultPath) => ipcRenderer.invoke('select-folder', defaultPath)
+    selectFolder: (defaultPath) => ipcRenderer.invoke('select-folder', defaultPath),
+    // b-PAC 상태 처리
+    onBpacStatus: (callback) => ipcRenderer.on('bpac-status', (_event, value) => callback(value)),
+    openExternal: (url) => ipcRenderer.invoke('open-external', url),
+    // 첫 실행 체크
+    checkFirstRun: () => ipcRenderer.invoke('check-first-run'),
+    // 초기 설정 표시 이벤트
+    onShowInitialSetup: (callback) => ipcRenderer.on('show-initial-setup', (_event) => callback())
 });

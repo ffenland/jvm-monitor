@@ -6,6 +6,7 @@ let medicineInfo = null;
 let selectedTimes = new Set();
 let isSpecialDosage = false;
 let selectedMealRelation = null; // 선택된 식사 관계
+let userModifiedDailyDose = false; // 사용자가 하루 복용횟수를 직접 수정했는지 여부
 
 // 페이지 로드 시 초기화
 document.addEventListener('DOMContentLoaded', async () => {
@@ -45,9 +46,25 @@ function displayInfo() {
     document.getElementById('medicineType').value = 
         medicineInfo?.mdfsCodeName || medicineInfo?.type || '먹는약';
     
-    // 처방일수와 1회 투여량은 숫자만 표시
+    // 처방일수와 1회 투여량, 하루 복용횟수는 숫자만 표시
     document.getElementById('prescriptionDays').value = prescriptionData.prescriptionDays || '';
     document.getElementById('singleDose').value = prescriptionData.singleDose || '';
+    document.getElementById('dailyDose').value = prescriptionData.dailyDose || '';
+    
+    // 총량 초기 계산
+    updateTotalAmount();
+}
+
+// 총량 자동 계산 함수
+function updateTotalAmount() {
+    const prescriptionDays = parseInt(document.getElementById('prescriptionDays').value) || 0;
+    const singleDose = parseFloat(document.getElementById('singleDose').value) || 0;
+    const dailyDose = parseInt(document.getElementById('dailyDose').value) || 0;
+    
+    if (prescriptionDays && singleDose && dailyDose) {
+        const total = prescriptionDays * singleDose * dailyDose;
+        document.getElementById('totalAmount').value = total;
+    }
 }
 
 // 초기 용법 설정
@@ -112,6 +129,14 @@ function setupEventListeners() {
                 button.classList.add('active');
                 selectedTimes.add(time);
             }
+            
+            // 하루 복용횟수 자동 업데이트 (사용자가 직접 수정하지 않은 경우에만)
+            if (!userModifiedDailyDose) {
+                const activeCount = selectedTimes.size;
+                document.getElementById('dailyDose').value = activeCount;
+                updateTotalAmount();
+            }
+            
             updateDosageResult();
         });
     });
@@ -170,9 +195,28 @@ function setupEventListeners() {
         }
     });
     
-    // 1회 투여량 변경 시 용법 업데이트
+    // 1회 투여량 변경 시 용법 업데이트 및 총량 재계산
     document.getElementById('singleDose').addEventListener('input', () => {
+        updateTotalAmount();
         updateDosageResult();
+    });
+    
+    // 처방일수 변경 시 총량 재계산
+    document.getElementById('prescriptionDays').addEventListener('input', () => {
+        updateTotalAmount();
+        updateDosageResult();
+    });
+    
+    // 하루 복용횟수 수동 수정 감지
+    document.getElementById('dailyDose').addEventListener('input', () => {
+        userModifiedDailyDose = true;
+        updateTotalAmount();
+        updateDosageResult();
+    });
+    
+    // 총량 수동 입력 시에는 자동 계산 비활성화 (향후 확장 가능)
+    document.getElementById('totalAmount').addEventListener('input', () => {
+        // 총량을 직접 수정한 경우 추가 로직 구현 가능
     });
     
     // 출력 버튼
@@ -287,7 +331,17 @@ function updateDosageResult() {
             // 시간은 선택하지 않고 식사 관계만 선택한 경우
             dosageText = `${selectedMealRelation} ${singleDose}${unit}씩`;
         } else {
-            dosageText = '-';
+            // 복용시간이 선택되지 않은 경우 하루 복용횟수로 처리
+            const dailyDose = document.getElementById('dailyDose').value;
+            if (dailyDose && singleDose) {
+                dosageText = `하루 ${dailyDose}번 ${singleDose}${unit}씩`;
+                // 식사 관계가 있으면 추가
+                if (selectedMealRelation) {
+                    dosageText = `하루 ${dailyDose}번 ${selectedMealRelation} ${singleDose}${unit}씩`;
+                }
+            } else {
+                dosageText = '-';
+            }
         }
     }
     
@@ -297,9 +351,11 @@ function updateDosageResult() {
 // 라벨 출력
 async function printLabel() {
     const dosageText = document.getElementById('dosageResult').textContent;
+    const dailyDose = document.getElementById('dailyDose').value;
     
-    if (dosageText === '-') {
-        alert('용법을 선택해주세요.');
+    // 복용시간 선택 또는 하루 복용횟수 입력 시 출력 허용
+    if (dosageText === '-' && !dailyDose) {
+        alert('복용시간을 선택하거나 하루 복용횟수를 입력해주세요.');
         return;
     }
     
@@ -321,6 +377,8 @@ async function printLabel() {
             receiptDate: document.getElementById('receiptDate').value, // 수정된 처방일 포함
             prescriptionDays: document.getElementById('prescriptionDays').value,
             singleDose: document.getElementById('singleDose').value,
+            dailyDose: document.getElementById('dailyDose').value, // 하루 복용횟수 추가
+            totalAmount: document.getElementById('totalAmount').value, // 총량 추가
             medicineInfo: {
                 ...medicineInfo,
                 title: medicineNameValue,

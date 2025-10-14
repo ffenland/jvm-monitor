@@ -3,14 +3,40 @@ const path = require('path');
 const fs = require('fs');
 
 /**
+ * PowerShell 실행 파일 경로를 동적으로 찾는 함수
+ * @returns {string} PowerShell 실행 파일 경로
+ */
+function getPowerShellPath() {
+    // 가능한 PowerShell 경로들 (우선순위 순)
+    const possiblePaths = [
+        'C:\\WINDOWS\\SysWOW64\\WindowsPowerShell\\v1.0\\powershell.exe',  // 32비트 (b-PAC용)
+        'C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe',  // 64비트
+        'C:\\Windows\\SysWOW64\\WindowsPowerShell\\v1.0\\powershell.exe',  // 대소문자 다른 경우
+        'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe'   // 대소문자 다른 경우
+    ];
+    
+    // 각 경로를 순차적으로 확인
+    for (const path of possiblePaths) {
+        if (fs.existsSync(path)) {
+            console.log(`PowerShell found at: ${path}`);
+            return path;
+        }
+    }
+    
+    // 모든 경로에서 찾지 못한 경우 시스템 PATH에서 검색
+    console.log('Using system PATH for PowerShell');
+    return 'powershell';
+}
+
+/**
  * PowerShell 스크립트를 실행하는 헬퍼 함수 (한글 지원)
  * @param {object} params Parameters to embed in the script
  * @returns {Promise<object>} A promise that resolves with the result
  */
 async function executePowerShellWithKorean(params = {}) {
     return new Promise((resolve, reject) => {
-        // PowerShell 실행 경로 - 항상 32비트 버전 사용 (b-PAC은 32비트 COM)
-        const powershellPath = 'C:\\WINDOWS\\SysWOW64\\WindowsPowerShell\\v1.0\\powershell.exe';
+        // PowerShell 실행 경로 동적으로 찾기
+        const powershellPath = getPowerShellPath();
         
         // Generate PowerShell script with embedded Korean text
         const scriptContent = `
@@ -22,8 +48,18 @@ try {
     # Create b-PAC COM object
     $bpac = New-Object -ComObject "bpac.Document"
     
-    # Open template
-    $templatePath = "${params.templatePath.replace(/\\/g, '\\\\')}"
+    # Open template - normalize path
+    $templatePath = "${params.templatePath.replace(/\\/g, '/')}"
+    Write-Host "Template path: $templatePath"
+    
+    # Convert forward slashes back to backslashes for Windows
+    $templatePath = $templatePath -replace '/', '\\'
+    
+    # Check if file exists
+    if (-not (Test-Path $templatePath)) {
+        throw "Template file does not exist: $templatePath"
+    }
+    
     $openResult = $bpac.Open($templatePath)
     if (-not $openResult) {
         throw "Failed to open template file: $templatePath"
@@ -133,7 +169,18 @@ catch {
 
         // Write script with UTF-8 BOM
         const BOM = '\ufeff';
-        const tempScriptPath = path.join(__dirname, `temp_print_${Date.now()}.ps1`);
+        let tempDir;
+        try {
+            const { app } = require('electron');
+            const appDataDir = path.join(app.getPath('documents'), 'DrugLabel');
+            tempDir = path.join(appDataDir, 'temp');
+            if (!fs.existsSync(tempDir)) {
+                fs.mkdirSync(tempDir, { recursive: true });
+            }
+        } catch (e) {
+            tempDir = __dirname;
+        }
+        const tempScriptPath = path.join(tempDir, `temp_print_${Date.now()}.ps1`);
         fs.writeFileSync(tempScriptPath, BOM + scriptContent, 'utf8');
 
 
@@ -220,6 +267,25 @@ catch {
  */
 async function printWithBrother(data) {
     try {
+        // 템플릿 파일 존재 여부 확인
+        if (!data.templatePath) {
+            return {
+                success: false,
+                error: '템플릿 파일 경로가 지정되지 않았습니다.'
+            };
+        }
+        
+        // 템플릿 파일이 실제로 존재하는지 확인
+        if (!fs.existsSync(data.templatePath)) {
+            console.error('Template file not found:', data.templatePath);
+            return {
+                success: false,
+                error: `템플릿 파일을 찾을 수 없습니다: ${data.templatePath}`
+            };
+        }
+        
+        console.log('Using template:', data.templatePath);
+        
         // 한글 지원을 위해 새로운 방식 사용
         const result = await executePowerShellWithKorean(data);
         
@@ -277,10 +343,21 @@ try {
 }`;
 
         const BOM = '\ufeff';
-        const tempScriptPath = path.join(__dirname, `temp_get_printers_${Date.now()}.ps1`);
+        let tempDir;
+        try {
+            const { app } = require('electron');
+            const appDataDir = path.join(app.getPath('documents'), 'DrugLabel');
+            tempDir = path.join(appDataDir, 'temp');
+            if (!fs.existsSync(tempDir)) {
+                fs.mkdirSync(tempDir, { recursive: true });
+            }
+        } catch (e) {
+            tempDir = __dirname;
+        }
+        const tempScriptPath = path.join(tempDir, `temp_get_printers_${Date.now()}.ps1`);
         fs.writeFileSync(tempScriptPath, BOM + scriptContent, 'utf8');
 
-        const powershellPath = 'C:\\WINDOWS\\SysWOW64\\WindowsPowerShell\\v1.0\\powershell.exe';
+        const powershellPath = getPowerShellPath();
         
         const ps = spawn(powershellPath, [
             '-ExecutionPolicy', 'Bypass',
@@ -337,11 +414,18 @@ try {
  */
 async function previewTemplate(params = {}) {
     return new Promise((resolve, reject) => {
-        // PowerShell 실행 경로 - 항상 32비트 버전 사용
-        const powershellPath = 'C:\\WINDOWS\\SysWOW64\\WindowsPowerShell\\v1.0\\powershell.exe';
+        // PowerShell 실행 경로 동적으로 찾기
+        const powershellPath = getPowerShellPath();
         
         // 임시 BMP 파일 경로
-        const tempDir = path.join(__dirname, 'temp');
+        let tempDir;
+        try {
+            const { app } = require('electron');
+            const appDataDir = path.join(app.getPath('documents'), 'DrugLabel');
+            tempDir = path.join(appDataDir, 'temp');
+        } catch (e) {
+            tempDir = path.join(__dirname, 'temp');
+        }
         if (!fs.existsSync(tempDir)) {
             fs.mkdirSync(tempDir, { recursive: true });
         }
@@ -357,8 +441,18 @@ try {
     # Create b-PAC COM object
     $bpac = New-Object -ComObject "bpac.Document"
     
-    # Open template
-    $templatePath = "${params.templatePath.replace(/\\/g, '\\\\')}"
+    # Open template - normalize path
+    $templatePath = "${params.templatePath.replace(/\\/g, '/')}"
+    Write-Host "Template path: $templatePath"
+    
+    # Convert forward slashes back to backslashes for Windows
+    $templatePath = $templatePath -replace '/', '\\'
+    
+    # Check if file exists
+    if (-not (Test-Path $templatePath)) {
+        throw "Template file does not exist: $templatePath"
+    }
+    
     $openResult = $bpac.Open($templatePath)
     if (-not $openResult) {
         throw "Failed to open template file: $templatePath"
@@ -418,7 +512,18 @@ try {
 
         // UTF-8 BOM 추가
         const BOM = '\ufeff';
-        const tempScriptPath = path.join(__dirname, `temp_preview_${Date.now()}.ps1`);
+        let tempDirForScript;
+        try {
+            const { app } = require('electron');
+            const appDataDir = path.join(app.getPath('documents'), 'DrugLabel');
+            tempDirForScript = path.join(appDataDir, 'temp');
+            if (!fs.existsSync(tempDirForScript)) {
+                fs.mkdirSync(tempDirForScript, { recursive: true });
+            }
+        } catch (e) {
+            tempDirForScript = __dirname;
+        }
+        const tempScriptPath = path.join(tempDirForScript, `temp_preview_${Date.now()}.ps1`);
         fs.writeFileSync(tempScriptPath, BOM + scriptContent, 'utf8');
 
         // PowerShell 실행

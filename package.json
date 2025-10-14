@@ -1,24 +1,74 @@
 {
-  "name": "electron-file-monitor",
+  "name": "druglabel",
+  "productName": "DrugLabel",
   "version": "1.0.0",
   "main": "main.js",
+  "description": "PM프로그램과 연동된 약품 라벨 출력 시스템",
+  "author": "CleaReach System",
+  "license": "ISC",
   "scripts": {
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "electron-rebuild"
+    "postinstall": "electron-rebuild",
+    "compile": "node compile.js",
+    "build:win": "electron-builder --win",
+    "dist": "electron-builder",
+    "dist-secure": "npm run compile && electron-builder"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "keywords": [
+    "pharmacy",
+    "label",
+    "printer",
+    "medical"
+  ],
   "dependencies": {
     "better-sqlite3": "^12.2.0",
+    "bytenode": "^1.5.7",
     "chokidar": "^4.0.3",
-    "electron": "^37.2.0",
     "iconv-lite": "^0.6.3",
     "xml2js": "^0.6.2"
   },
   "devDependencies": {
-    "electron-rebuild": "^3.2.9"
+    "electron": "^37.2.0",
+    "electron-builder": "^25.1.8",
+    "electron-rebuild": "^3.2.9",
+    "rcedit": "^4.0.1"
+  },
+  "build": {
+    "appId": "com.cleareach.druglabel",
+    "productName": "DrugLabel",
+    "copyright": "Copyright © 2024 CleaReach System",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "afterPack": "./scripts/afterPack.js",
+    "files": [
+      "**/*",
+      "!**/*.ts",
+      "!*.md",
+      "!dist",
+      "!originFiles/**",
+      "!scripts/archive/**",
+      "!*-original.js",
+      "!compile.js",
+      "**/*.jsc"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico",
+      "verifyUpdateCodeSignature": false,
+      "signingHashAlgorithms": [],
+      "signAndEditExecutable": false,
+      "forceCodeSigning": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "DrugLabel"
+    }
   }
 }

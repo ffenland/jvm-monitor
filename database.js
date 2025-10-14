@@ -4,10 +4,31 @@ const fs = require('fs');
 
 class DatabaseManager {
     constructor() {
-        const dbDir = path.join(__dirname, 'db');
+        // Electron 환경 체크
+        let dbDir;
+        let originFilesDir;
+        try {
+            const { app } = require('electron');
+            // Documents\DrugLabel 디렉토리는 DB용으로만 사용
+            const appDataDir = path.join(app.getPath('documents'), 'DrugLabel');
+            dbDir = path.join(appDataDir, 'db');
+            // originFiles는 현재 작업 디렉토리 사용
+            originFilesDir = path.join(__dirname, 'originFiles');
+        } catch (e) {
+            // 개발 환경이나 Electron 컨텍스트가 없는 경우
+            dbDir = path.join(__dirname, 'db');
+            originFilesDir = path.join(__dirname, 'originFiles');
+        }
+        
         if (!fs.existsSync(dbDir)) {
             fs.mkdirSync(dbDir, { recursive: true });
         }
+        
+        // originFiles 디렉토리 생성
+        if (!fs.existsSync(originFilesDir)) {
+            fs.mkdirSync(originFilesDir, { recursive: true });
+        }
+        this.originFilesDir = originFilesDir;
         
         this.dbPath = path.join(dbDir, 'pharmacy.db');
         this.db = new Database(this.dbPath);
@@ -216,8 +237,58 @@ class DatabaseManager {
         return result;
     }
 
+    // 원본 파일 백업
+    backupOriginalFile(sourceFilePath, receiptDateRaw) {
+        try {
+            if (!sourceFilePath || !fs.existsSync(sourceFilePath)) {
+                console.log('백업할 원본 파일이 없습니다:', sourceFilePath);
+                return false;
+            }
+
+            // 날짜 형식 변환 (YYYYMMDD)
+            const dateStr = receiptDateRaw ? receiptDateRaw.substring(0, 8) : 
+                          new Date().toISOString().split('T')[0].replace(/-/g, '');
+            
+            // 백업 디렉토리 생성 (originFiles/origin_YYYYMMDD)
+            const backupDir = path.join(this.originFilesDir, `origin_${dateStr}`);
+            if (!fs.existsSync(backupDir)) {
+                fs.mkdirSync(backupDir, { recursive: true });
+            }
+
+            // 파일명 가져오기
+            const fileName = path.basename(sourceFilePath);
+            const destPath = path.join(backupDir, fileName);
+
+            // 파일 복사
+            fs.copyFileSync(sourceFilePath, destPath);
+            // console.log(`원본 파일 백업 완료: ${destPath}`);
+            return true;
+        } catch (error) {
+            console.error('원본 파일 백업 실패:', error);
+            
+            // 에러 발생 시 error 폴더로 백업 시도
+            try {
+                const errorDir = path.join(this.originFilesDir, 'error');
+                if (!fs.existsSync(errorDir)) {
+                    fs.mkdirSync(errorDir, { recursive: true });
+                }
+                
+                const fileName = path.basename(sourceFilePath);
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const errorPath = path.join(errorDir, `${timestamp}_${fileName}`);
+                
+                fs.copyFileSync(sourceFilePath, errorPath);
+                // console.log(`원본 파일을 error 폴더에 백업: ${errorPath}`);
+            } catch (errorBackupError) {
+                console.error('error 폴더 백업도 실패:', errorBackupError);
+            }
+            
+            return false;
+        }
+    }
+
     // 처방전 저장 (트랜잭션 사용)
-    savePrescription(prescriptionData) {
+    savePrescription(prescriptionData, sourceFilePath = null) {
         const startTime = Date.now();
         const transaction = this.db.transaction((data) => {
             // 중복 체크
@@ -285,6 +356,11 @@ class DatabaseManager {
         });
         
         const result = transaction(prescriptionData);
+        
+        // 처방전 저장 성공 시 원본 파일 백업
+        if (result.success && sourceFilePath) {
+            this.backupOriginalFile(sourceFilePath, prescriptionData.receiptDateRaw);
+        }
         
         // 성능 로깅
         const elapsed = Date.now() - startTime;

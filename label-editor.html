@@ -317,6 +317,20 @@
             </div>
         </div>
         
+        <div class="form-row">
+            <div class="form-group">
+                <label>하루 복용횟수</label>
+                <input type="number" id="dailyDose" value="" min="1" max="10">
+            </div>
+            <div class="form-group">
+                <label>총량</label>
+                <div style="display: flex; align-items: center; gap: 5px;">
+                    <input type="number" id="totalAmount" value="" min="1" step="0.1" style="flex: 1;">
+                    <span id="totalAmountUnit" style="font-size: 12px; color: #666;">정</span>
+                </div>
+            </div>
+        </div>
+        
         <div class="section-divider"></div>
         
         <div class="dosage-section">

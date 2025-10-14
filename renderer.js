@@ -10,8 +10,9 @@ function showToast(message, type = 'info') {
     toast.id = 'toast-message';
     toast.style.cssText = `
         position: fixed;
-        top: 20px;
-        right: 20px;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
         padding: 12px 20px;
         border-radius: 4px;
         box-shadow: 0 2px 5px rgba(0,0,0,0.2);
@@ -387,6 +388,10 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 
     window.electronAPI.onUpdateDateList((updatedDates) => {
+        // 현재 선택된 날짜 저장
+        const currentSelectedDate = dateSelect.value;
+        const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        
         // Clear existing options
         dateSelect.innerHTML = '';
         // Repopulate with updated dates
@@ -396,10 +401,18 @@ window.addEventListener('DOMContentLoaded', () => {
             option.textContent = `${dateStr.substring(0, 4)}-${dateStr.substring(4, 6)}-${dateStr.substring(6, 8)}`;
             dateSelect.appendChild(option);
         });
-        // Optionally, select the newest date or keep the current selection if it still exists
-        if (updatedDates.length > 0) {
-            dateSelect.value = updatedDates[0]; // Select the newest date
-            window.electronAPI.getDataForDate(updatedDates[0]); // Load data for the newly selected date
+        
+        // 오늘 날짜가 있고 현재 선택이 오늘이면 오늘 유지, 아니면 현재 선택 유지
+        if (updatedDates.includes(today) && currentSelectedDate === today) {
+            dateSelect.value = today;
+            window.electronAPI.getDataForDate(today);
+        } else if (updatedDates.includes(currentSelectedDate)) {
+            // 현재 선택된 날짜가 목록에 있으면 유지
+            dateSelect.value = currentSelectedDate;
+        } else if (updatedDates.length > 0) {
+            // 그 외의 경우 첫 번째 날짜 선택 (오늘)
+            dateSelect.value = updatedDates[0];
+            window.electronAPI.getDataForDate(updatedDates[0]);
         }
     });
 
@@ -416,13 +429,29 @@ window.addEventListener('DOMContentLoaded', () => {
             }
             
             // 템플릿 선택 상태 업데이트
-            if (currentConfig.templatePath && templatePathSelect.options.length > 0) {
+            if (currentConfig.templatePath) {
+                // 템플릿 목록이 비어있으면 먼저 로드
+                if (templatePathSelect.options.length === 0) {
+                    await loadTemplates();
+                }
+                
+                // 템플릿 선택
+                let templateFound = false;
                 for (let i = 0; i < templatePathSelect.options.length; i++) {
                     if (templatePathSelect.options[i].value === currentConfig.templatePath) {
                         templatePathSelect.selectedIndex = i;
+                        templateFound = true;
                         break;
                     }
                 }
+                
+                // 템플릿을 찾지 못한 경우 기본 템플릿 선택
+                if (!templateFound && templatePathSelect.options.length > 0) {
+                    templatePathSelect.selectedIndex = 0;
+                }
+            } else if (templatePathSelect.options.length > 0) {
+                // 템플릿이 설정되지 않은 경우 첫 번째 템플릿 선택
+                templatePathSelect.selectedIndex = 0;
             }
         } catch (error) {
             console.error('설정 로드 실패:', error);
@@ -519,10 +548,17 @@ window.addEventListener('DOMContentLoaded', () => {
     settingsForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         
+        // 약국명 확인
+        if (!pharmacyNameInput.value || pharmacyNameInput.value.trim() === '') {
+            alert('약국명을 반드시 입력해주세요.');
+            pharmacyNameInput.focus();
+            return;
+        }
+        
         const atcPathInput = document.getElementById('atc-path');
         const config = {
-            pharmacyName: pharmacyNameInput.value,
-            templatePath: templatePathSelect.value || './templates/testTemplate.lbx',
+            pharmacyName: pharmacyNameInput.value.trim(),
+            templatePath: templatePathSelect.value || './templates/default.lbx',
             atcPath: atcPathInput ? atcPathInput.value : 'C:\\atc'
         };
         
@@ -530,6 +566,15 @@ window.addEventListener('DOMContentLoaded', () => {
             const result = await window.electronAPI.saveConfig(config);
             if (result.success) {
                 currentConfig = config;
+                
+                // 경고 메시지 제거
+                const warningDiv = settingsModal.querySelector('.initial-warning');
+                if (warningDiv) {
+                    warningDiv.remove();
+                }
+                pharmacyNameInput.style.borderColor = '';
+                pharmacyNameInput.style.borderWidth = '';
+                
                 alert('설정이 저장되었습니다.');
                 settingsModal.style.display = 'none';
             } else {
@@ -1070,9 +1115,88 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+    // b-PAC 설치 안내 버튼 이벤트 처리
+    const installBpacBtn = document.getElementById('installBpac');
+    if (installBpacBtn) {
+        installBpacBtn.addEventListener('click', () => {
+            // Brother 다운로드 페이지 열기
+            window.electronAPI.openExternal('https://support.brother.com/g/s/es/dev/en/bpac/download/index.html');
+            
+            // 설치 안내 메시지
+            showToast('Brother 다운로드 페이지가 열렸습니다. b-PAC Client Component (32-bit)를 다운로드하여 설치해주세요.', 'info');
+        });
+    }
+    
+    // b-PAC 상태 수신 처리
+    window.electronAPI.onBpacStatus((status) => {
+        const statusDiv = document.getElementById('bpacStatus');
+        if (statusDiv) {
+            if (!status.installed) {
+                // b-PAC이 설치되지 않은 경우 경고 표시
+                statusDiv.style.display = 'block';
+            } else {
+                // b-PAC이 설치된 경우 경고 숨김
+                statusDiv.style.display = 'none';
+            }
+        }
+    });
+    
+    // 초기 설정 표시 이벤트 리스너
+    window.electronAPI.onShowInitialSetup(() => {
+        showInitialSetup();
+    });
+    
+    // 초기 설정 표시 함수
+    async function showInitialSetup() {
+        await loadConfig();
+        await loadTemplates();
+        
+        // 약국명이 없으면 경고 메시지 표시
+        if (!currentConfig.pharmacyName || currentConfig.pharmacyName === "") {
+            // 설정 모달에 경고 메시지 추가
+            const warningDiv = document.createElement('div');
+            warningDiv.style.cssText = `
+                background-color: #fff3cd;
+                border: 1px solid #ffc107;
+                color: #856404;
+                padding: 10px;
+                margin-bottom: 15px;
+                border-radius: 4px;
+                font-weight: bold;
+            `;
+            warningDiv.innerHTML = '⚠️ 처음 실행하셨습니다. 약국명을 반드시 입력해주세요.';
+            
+            const modalContent = settingsModal.querySelector('.modal-content');
+            const existingWarning = modalContent.querySelector('.initial-warning');
+            if (existingWarning) {
+                existingWarning.remove();
+            }
+            warningDiv.className = 'initial-warning';
+            modalContent.insertBefore(warningDiv, modalContent.firstChild);
+            
+            // 약국명 입력 필드에 포커스
+            pharmacyNameInput.focus();
+            pharmacyNameInput.style.borderColor = '#ffc107';
+            pharmacyNameInput.style.borderWidth = '2px';
+        }
+        
+        settingsModal.style.display = 'block';
+    }
+    
+    // 첫 실행 체크
+    async function checkFirstRun() {
+        const isFirstRun = await window.electronAPI.checkFirstRun();
+        if (isFirstRun) {
+            setTimeout(() => {
+                showInitialSetup();
+            }, 500); // 화면이 완전히 로드된 후 표시
+        }
+    }
+    
     // Request initial data when the app loads
     window.electronAPI.getInitialData();
     loadBrotherPrinters();
     loadConfig(); // 설정 로드
     updateMedicineFailBadge(); // 미완성 약품 뱃지 업데이트
+    checkFirstRun(); // 첫 실행 체크
 });
