@@ -1193,6 +1193,19 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+    // API 에러 메시지 수신 처리
+    window.electronAPI.onApiError((error) => {
+        const errorMessageDiv = document.getElementById('api-error-message');
+        if (errorMessageDiv) {
+            errorMessageDiv.classList.add('show');
+
+            // 10초 후 자동으로 숨김
+            setTimeout(() => {
+                errorMessageDiv.classList.remove('show');
+            }, 10000);
+        }
+    });
+
     // Request initial data when the app loads
     window.electronAPI.getInitialData();
     loadBrotherPrinters();

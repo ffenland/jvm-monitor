@@ -54,6 +54,13 @@
       "!compile.js",
       "**/*.jsc"
     ],
+    "extraResources": [
+      {
+        "from": "templates",
+        "to": "templates",
+        "filter": ["*.lbx"]
+      }
+    ],
     "win": {
       "target": "nsis",
       "icon": "build/icon.ico",
@@ -68,7 +75,11 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "DrugLabel"
+      "shortcutName": "DrugLabel",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico",
+      "include": "build/installer.nsh"
     }
   }
 }

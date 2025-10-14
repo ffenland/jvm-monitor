@@ -10,7 +10,6 @@ const drugInfoManager = require('./druginfo');
 const DatabaseManager = require('./database');
 const { spawn } = require('child_process');
 let monitorPath = 'C:\\atc'; // Default directory to monitor (can be changed in config)
-let originFilesPath; // Directory for original files - will be set after app.ready
 
 /**
  * PowerShell 실행 파일 경로를 동적으로 찾는 함수
@@ -762,12 +761,6 @@ ipcMain.handle('auto-fill-medicine', async (event, medicineCode) => {
 
 
 app.whenReady().then(async () => {
-    // originFiles 경로 설정 (현재 작업 디렉토리 사용)
-    originFilesPath = path.join(__dirname, 'originFiles');
-    if (!fs.existsSync(originFilesPath)) {
-        fs.mkdirSync(originFilesPath, { recursive: true });
-    }
-    
     createWindow();
     
     // 데이터베이스 초기화
@@ -888,6 +881,13 @@ function startFileWatcher() {
                 if (parsedContent.medicines && parsedContent.medicines.length > 0) {
                     drugInfoManager.processPrescriptionMedicines(parsedContent.medicines)
                         .then((result) => {
+                            // API 호출이 있었고 업데이트 실패가 많으면 에러 메시지 표시
+                            if (result && result.apiCallCount > 0 && result.updateCount === 0) {
+                                mainWindow.webContents.send('api-error', {
+                                    message: '현재 약품정보 요청이 처리되지 않습니다. 서버오류이거나 인터넷 문제일 수 있습니다.'
+                                });
+                            }
+
                             // API 호출이 있었을 때만 대기
                             if (result && result.apiCallCount > 0) {
                                 return new Promise(resolve => setTimeout(() => resolve(result), 100));
@@ -1013,31 +1013,10 @@ function startFileWatcher() {
                     mainWindow.webContents.send('parsed-data', dataToSend);
                 }
             } catch (parseError) {
-                // Move the problematic file to an error/original directory
-                const errorDirPath = path.join(originFilesPath, 'error', 'original');
-                if (!fs.existsSync(errorDirPath)) {
-                    fs.mkdirSync(errorDirPath, { recursive: true });
-                }
-                
-                // Add timestamp to filename to prevent conflicts
-                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-                const errorFileName = `${timestamp}_${fileName}`;
-                const errorDestPath = path.join(errorDirPath, errorFileName);
-                
-                // Create error message with file path
-                const errorMessage = `Error parsing ${fileName}: ${parseError.message}\n원본 파일 위치: error/original/${errorFileName}`;
+                // 파싱 에러 로깅만 수행
+                const errorMessage = `Error parsing ${fileName}: ${parseError.message}`;
                 console.error(errorMessage);
                 mainWindow.webContents.send('log-message', errorMessage);
-                
-                // Move file to error directory
-                fs.rename(filePath, errorDestPath, (err) => {
-                    if (err) {
-                        console.error(`Could not move error file: ${err.message}`);
-                        mainWindow.webContents.send('log-message', `Could not move error file: ${err.message}`);
-                    } else {
-                        console.log(`Error file moved to: ${errorDestPath}`);
-                    }
-                });
             }
         });
     });
@@ -1184,34 +1163,6 @@ app.on('window-all-closed', () => {
 });
 
 function saveDataToFile(newData, todayDate, sourceFilePath = null) {
-    // 원본 파일 백업 (sourceFilePath가 있는 경우)
-    if (sourceFilePath && fs.existsSync(sourceFilePath)) {
-        try {
-            // 오늘 날짜로 폴더 생성 (YYYYMMDD 형식)
-            const today = new Date();
-            const dateFolder = `origin_${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
-            const backupDir = path.join(originFilesPath, dateFolder);
-            
-            // 백업 디렉토리가 없으면 생성
-            if (!fs.existsSync(backupDir)) {
-                fs.mkdirSync(backupDir, { recursive: true });
-                mainWindow.webContents.send('log-message', `Created backup directory: ${dateFolder}`);
-            }
-            
-            // 원본 파일명 가져오기
-            const originalFileName = path.basename(sourceFilePath);
-            const backupPath = path.join(backupDir, originalFileName);
-            
-            // 파일 복사
-            fs.copyFileSync(sourceFilePath, backupPath);
-            mainWindow.webContents.send('log-message', `Original file backed up to: ${dateFolder}/${originalFileName}`);
-            
-        } catch (backupError) {
-            console.error('Error backing up file:', backupError);
-            mainWindow.webContents.send('log-message', `Warning: Could not backup original file: ${backupError.message}`);
-        }
-    }
-    
     // SQLite 데이터베이스에 저장
     if (newData && newData.receiptDateRaw) {
         try {

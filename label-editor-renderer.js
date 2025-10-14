@@ -130,12 +130,10 @@ function setupEventListeners() {
                 selectedTimes.add(time);
             }
             
-            // 하루 복용횟수 자동 업데이트 (사용자가 직접 수정하지 않은 경우에만)
-            if (!userModifiedDailyDose) {
-                const activeCount = selectedTimes.size;
-                document.getElementById('dailyDose').value = activeCount;
-                updateTotalAmount();
-            }
+            // 하루 복용횟수 강제 업데이트 (복용 시간 버튼 클릭 시 항상 업데이트)
+            const activeCount = selectedTimes.size;
+            document.getElementById('dailyDose').value = activeCount;
+            updateTotalAmount();
             
             updateDosageResult();
         });

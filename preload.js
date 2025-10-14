@@ -46,5 +46,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // 첫 실행 체크
     checkFirstRun: () => ipcRenderer.invoke('check-first-run'),
     // 초기 설정 표시 이벤트
-    onShowInitialSetup: (callback) => ipcRenderer.on('show-initial-setup', (_event) => callback())
+    onShowInitialSetup: (callback) => ipcRenderer.on('show-initial-setup', (_event) => callback()),
+    // API 에러 처리
+    onApiError: (callback) => ipcRenderer.on('api-error', (_event, value) => callback(value))
 });

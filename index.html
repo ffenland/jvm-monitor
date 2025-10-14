@@ -306,6 +306,36 @@
         .cancel-btn:hover {
             background-color: #da190b;
         }
+
+        /* API 에러 메시지 스타일 */
+        #api-error-message {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #f8d7da;
+            color: #721c24;
+            border-top: 2px solid #f5c6cb;
+            padding: 12px 20px;
+            font-size: 14px;
+            text-align: center;
+            display: none;
+            z-index: 2000;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        #api-error-message.show {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -717,6 +747,12 @@
             </div>
         </div>
     </div>
+
+    <!-- API 에러 메시지 표시 영역 -->
+    <div id="api-error-message">
+        현재 약품정보 요청이 처리되지 않습니다. 서버오류이거나 인터넷 문제일 수 있습니다.
+    </div>
+
     <script src="./renderer.js"></script>
 </body>
 </html>
