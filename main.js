@@ -4,7 +4,6 @@ const fs = require('fs');
 const chokidar = require('chokidar');
 const { parseFile } = require('./parser');
 const { fetchAndSaveMedicine } = require('./medicine-fetcher');
-const simpleSecureConfig = require('./simpleSecureConfig');
 const DatabaseManager = require('./database');
 const { spawn } = require('child_process');
 const { registerAllHandlers } = require('./src/main/ipc-handlers');
@@ -191,19 +190,7 @@ app.whenReady().then(async () => {
             }
         }, 1000); // 창이 완전히 로드된 후 표시
     }
-    
-    // API 키 자동 설정 (없을 경우) - 인코딩된 키 사용
-    if (!simpleSecureConfig.hasApiKey()) {
-        const DEFAULT_API_KEY = 'CO%2B6SC4kgIs5atXW%2FZDETfMu9T87tscntUhZ6cliQKjRsZM4xmiyOEfWFznoUwHkLKteqdM1e4ZpkZEopwBEMg%3D%3D';
-        if (simpleSecureConfig.setApiKey(DEFAULT_API_KEY)) {
-            console.log('API key initialized successfully');
-        } else {
-            console.error('Failed to initialize API key');
-        }
-    } else {
-        console.log('API key already exists');
-    }
-    
+
     // Send initial log message to renderer
     mainWindow.webContents.on('did-finish-load', () => {
         mainWindow.webContents.send('log-message', `Monitoring directory: ${monitorPath}`);

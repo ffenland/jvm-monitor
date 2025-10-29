@@ -45,7 +45,7 @@ async function fetchAndSaveMedicine(bohcode, drugNameFromParsing = null, dbInsta
         }
 
         // 2. yakjung_code(icode) 조회
-        const { searchMedicineByBohcode } = require('./scripts/parse.js');
+        const { searchMedicineByBohcode } = require('./scripts/medicine-api.js');
         const searchResult = await searchMedicineByBohcode(bohcode);
 
         if (!searchResult || !searchResult.icode) {
@@ -74,10 +74,10 @@ async function fetchAndSaveMedicine(bohcode, drugNameFromParsing = null, dbInsta
         const yakjungCode = searchResult.icode;
 
         // 3. 약학정보원 API 호출
-        const { getMedicineInfo } = require('./scripts/getInfo.js');
-        const medicineInfoArray = await getMedicineInfo(yakjungCode);
+        const { fetchMedicineDetailByYakjungCode } = require('./scripts/medicine-api.js');
+        const medicineInfo = await fetchMedicineDetailByYakjungCode(yakjungCode);
 
-        if (!medicineInfoArray || medicineInfoArray.length === 0) {
+        if (!medicineInfo) {
             // API 실패 시 기본값으로 저장
             const failedData = {
                 bohcode: bohcode,
@@ -100,25 +100,13 @@ async function fetchAndSaveMedicine(bohcode, drugNameFromParsing = null, dbInsta
             return { success: true, medicine: savedMedicine, cached: false, apiFailure: true };
         }
 
-        const medicineInfo = medicineInfoArray[0];
-
         // 4. 데이터 가공 (정상 조회)
-        const drugForm = medicineInfo.drug_form || null;
+        // fetchMedicineDetailByYakjungCode가 이미 가공된 데이터 반환
         const processedData = {
             bohcode: bohcode,
-            yakjung_code: yakjungCode,
-            drug_name: medicineInfo.drug_name || drugNameFromParsing || null,
-            drug_form: drugForm,
-            dosage_route: medicineInfo.dosage_route || null,
-            cls_code: medicineInfo.cls_code || null,
-            upso_name: parseUpsoName(medicineInfo.upso_name),
-            medititle: medicineInfo.medititle || null,
-            stmt: medicineInfo.stmt || null,
-            temperature: medicineInfo.stmt ? extractTemperature(medicineInfo.stmt) : null,
-            unit: getUnitFromDrugForm(drugForm),
+            ...medicineInfo,  // yakjung_code, drug_name, drug_form, dosage_route, cls_code, upso_name, medititle, stmt, temperature, unit, api_fetched 포함
             custom_usage: null,
-            usage_priority: '1324',
-            api_fetched: 1
+            usage_priority: '1324'
         };
 
         // 5. DB 저장

@@ -3,7 +3,6 @@ const path = require('path');
 const fs = require('fs');
 const { app, shell } = require('electron');
 const { spawn } = require('child_process');
-const simpleSecureConfig = require('../../../simpleSecureConfig');
 const { previewTemplate } = require('../../../print_brother');
 
 /**
@@ -193,58 +192,6 @@ function registerConfigHandlers(getMainWindow, loadConfig, saveConfig, getPowerS
         } catch (error) {
             console.error('Error previewing template:', error);
             return { success: false, error: error.message };
-        }
-    });
-
-    // API 키 관리 핸들러
-    ipcMain.handle('set-api-key', async (event, apiKey) => {
-        try {
-            const success = simpleSecureConfig.setApiKey(apiKey);
-            if (success) {
-                return { success: true, message: 'API key saved securely' };
-            } else {
-                return { success: false, error: 'Failed to save API key' };
-            }
-        } catch (error) {
-            console.error('Error saving API key:', error);
-            return { success: false, error: error.message };
-        }
-    });
-
-    ipcMain.handle('get-api-key', async () => {
-        try {
-            const apiKey = simpleSecureConfig.getApiKey();
-            if (!apiKey) {
-                return { success: false, error: 'No API key found' };
-            }
-            return { success: true, apiKey };
-        } catch (error) {
-            console.error('Error getting API key:', error);
-            return { success: false, error: error.message };
-        }
-    });
-
-    ipcMain.handle('delete-api-key', async () => {
-        try {
-            const success = simpleSecureConfig.deleteApiKey();
-            if (success) {
-                return { success: true, message: 'API key deleted' };
-            } else {
-                return { success: false, error: 'Failed to delete API key' };
-            }
-        } catch (error) {
-            console.error('Error deleting API key:', error);
-            return { success: false, error: error.message };
-        }
-    });
-
-    ipcMain.handle('has-api-key', async () => {
-        try {
-            const exists = simpleSecureConfig.hasApiKey();
-            return { success: true, exists };
-        } catch (error) {
-            console.error('Error checking API key:', error);
-            return { success: false, error: error.message, exists: false };
         }
     });
 

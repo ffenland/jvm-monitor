@@ -376,7 +376,7 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
     // 약품명으로 검색 (약학정보원 API)
     ipcMain.handle('search-medicine-by-name', async (event, medicineName) => {
         try {
-            const { searchMedicineByName } = require('../../../scripts/search-by-name');
+            const { searchMedicineByName } = require('../../../scripts/medicine-api');
             const results = await searchMedicineByName(medicineName);
             return { success: true, medicines: results };
         } catch (error) {
@@ -388,7 +388,7 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
     // 약학정보원 코드로 상세 정보 조회 및 DB 저장
     ipcMain.handle('fetch-medicine-detail-from-yakjungwon', async (event, oldYakjungCode, newYakjungCode) => {
         try {
-            const { fetchMedicineDetailByYakjungCode } = require('../../../scripts/search-by-name');
+            const { fetchMedicineDetailByYakjungCode } = require('../../../scripts/medicine-api');
             const medicineData = await fetchMedicineDetailByYakjungCode(newYakjungCode);
 
             // DB에 저장 (yakjung_code 변경하면서 업데이트)

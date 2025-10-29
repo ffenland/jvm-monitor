@@ -14,7 +14,9 @@
       "Bash(mv:*)",
       "Bash(npm rebuild:*)",
       "Bash(npx:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(del \"C:\\Users\\BoramATDPS\\Documents\\dev\\electron-file-monitor\\druginfo.js\")",
+      "Bash(del \"C:\\Users\\BoramATDPS\\Documents\\dev\\electron-file-monitor\\simpleSecureConfig.js\")"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

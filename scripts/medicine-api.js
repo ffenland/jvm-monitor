@@ -4,6 +4,129 @@ const { extractTemperature } = require('./extract-temperature.js');
 const { getUnitFromDrugForm } = require('./drug-form-unit-map.js');
 
 /**
+ * bohcode(9자리 보험코드)로 약학정보원에서 약품 검색
+ * @param {string} bohcode - 9자리 보험코드
+ * @returns {Promise<Object|null>} { icode: yakjung_code } 또는 null (결과 없음)
+ */
+async function searchMedicineByBohcode(bohcode) {
+  const urlencoded = new URLSearchParams();
+  urlencoded.append("NoProTabState", "0");
+  urlencoded.append("anchor_dosage_route_hidden", "");
+  urlencoded.append("anchor_form_info_hidden", "");
+  urlencoded.append("atccode_name", "");
+  urlencoded.append("atccode_val", "");
+  urlencoded.append("atccode_val_opener", "");
+  urlencoded.append("cbx_bio", "");
+  urlencoded.append("cbx_bio", "");
+  urlencoded.append("cbx_bio", "");
+  urlencoded.append("cbx_bio", "");
+  urlencoded.append("cbx_bio_mode", "0");
+  urlencoded.append("cbx_bohtype", "");
+  urlencoded.append("cbx_bohtype", "");
+  urlencoded.append("cbx_bohtype", "");
+  urlencoded.append("cbx_bohtype", "");
+  urlencoded.append("cbx_bohtype_mode", "0");
+  urlencoded.append("cbx_class", "0");
+  urlencoded.append("cbx_class", "");
+  urlencoded.append("cbx_class", "");
+  urlencoded.append("cbx_class", "");
+  urlencoded.append("cbx_class_mode", "0");
+  urlencoded.append("cbx_narcotic", "");
+  urlencoded.append("cbx_narcotic", "");
+  urlencoded.append("cbx_narcotic", "");
+  urlencoded.append("cbx_narcotic", "");
+  urlencoded.append("cbx_narcotic", "");
+  urlencoded.append("cbx_narcotic_mode", "0");
+  urlencoded.append("cbx_sunbcnt", "0");
+  urlencoded.append("cbx_sunbcnt_mode", "0");
+  urlencoded.append("drug_nm", "");
+  urlencoded.append("drug_nm_mode", "field");
+  urlencoded.append("icode", "");
+  urlencoded.append("input_drug_nm", "");
+  urlencoded.append("input_hiraingdcd", "");
+  urlencoded.append("input_upsoNm", "");
+  urlencoded.append("kpic_atc_nm", "");
+  urlencoded.append("kpic_atc_nm_opener", "");
+  urlencoded.append("match_value", "");
+  urlencoded.append("mfds_cd", "");
+  urlencoded.append("mfds_cdWord", "");
+  urlencoded.append("movefrom", "drug");
+  urlencoded.append("proTabState", "0");
+  urlencoded.append("proYN", "");
+  urlencoded.append("search_bohcode", bohcode);  // 보험코드로 검색
+  urlencoded.append("search_detail", "Y");
+  urlencoded.append("search_drugnm_initial", "");
+  urlencoded.append("search_drugnm_initial", "");
+  urlencoded.append("search_drugnm_initial", "");
+  urlencoded.append("search_drugnm_initial", "");
+  urlencoded.append("search_drugnm_initial", "");
+  urlencoded.append("search_drugnm_initial", "");
+  urlencoded.append("search_drugnm_initial", "");
+  urlencoded.append("search_drugnm_initial", "");
+  urlencoded.append("search_drugnm_initial", "");
+  urlencoded.append("search_drugnm_initial", "");
+  urlencoded.append("search_drugnm_initial", "");
+  urlencoded.append("search_drugnm_initial", "");
+  urlencoded.append("search_drugnm_initial", "");
+  urlencoded.append("search_drugnm_initial", "");
+  urlencoded.append("search_effect", "");
+  urlencoded.append("search_sunb1", "");
+  urlencoded.append("sunb_equals1", "");
+  urlencoded.append("sunb_equals2", "");
+  urlencoded.append("sunb_equals3", "");
+  urlencoded.append("sunb_where1", "and");
+  urlencoded.append("sunb_where2", "and");
+
+  const requestOptions = {
+    method: "POST",
+    headers: {
+      "sec-ch-ua": '"Google Chrome";v="141", "Not?A_Brand";v="8", "Chromium";v="141"',
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": '"Windows"',
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Upgrade-Insecure-Requests": "1",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+      "Sec-Fetch-Site": "same-origin",
+      "Sec-Fetch-Mode": "navigate",
+      "Sec-Fetch-User": "?1",
+      "Sec-Fetch-Dest": "document",
+    },
+    body: urlencoded.toString(),
+  };
+
+  try {
+    const response = await fetch("https://www.health.kr/searchDrug/search_detail.asp", requestOptions);
+    const html = await response.text();
+
+    // HTML 파싱
+    const $ = cheerio.load(html);
+
+    // onclick="javascript:drug_detailHref('2020071600007')" 형식에서 yakjung_code 추출
+    let yakjungCode = null;
+    $('#tbl_proY td[onclick]').each((index, element) => {
+      const onclickAttr = $(element).attr('onclick');
+      if (onclickAttr) {
+        const match = onclickAttr.match(/drug_detailHref\('([^']+)'\)/);
+        if (match) {
+          yakjungCode = match[1];
+          return false; // break loop
+        }
+      }
+    });
+
+    if (yakjungCode) {
+      return { icode: yakjungCode };
+    }
+    return null; // 결과 없음
+
+  } catch (error) {
+    console.error('Error searching by bohcode:', error);
+    return null;
+  }
+}
+
+/**
  * 약품명으로 약품 정보를 검색하는 함수
  * @param {string} drugName - 검색할 약품명
  * @returns {Promise<Array>} 검색 결과 배열 [{ icode, name, manufacturer, etc }, ...]
@@ -303,6 +426,7 @@ async function fetchMedicineDetailByYakjungCode(yakjungCode) {
 module.exports = {
   searchMedicineByName,
   parseSearchResults,
+  searchMedicineByBohcode,
   fetchMedicineDetailByYakjungCode
 };
 
