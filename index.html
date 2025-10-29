@@ -205,6 +205,12 @@
         #medicine-btn:hover {
             background-color: #218838;
         }
+        #custom-label-btn {
+            background-color: #fd7e14;
+        }
+        #custom-label-btn:hover {
+            background-color: #e8590c;
+        }
         #label-info-btn {
             background-color: #17a2b8;
         }
@@ -521,91 +527,6 @@
         </div>
     </div>
     
-    <!-- 약품 상세정보 모달 -->
-    <div id="medicine-detail-modal" class="modal">
-        <div class="modal-content" style="width: 600px; max-height: 80vh; overflow-y: auto;">
-            <span class="close" id="medicine-detail-close">&times;</span>
-            <h2 id="medicine-detail-title">약품 상세정보</h2>
-            
-            <div id="medicine-detail-content">
-                <div class="form-group">
-                    <label>약품코드:</label>
-                    <div style="padding: 8px; background-color: #f5f5f5; border-radius: 4px;" id="detail-code"></div>
-                </div>
-                
-                <div class="form-group">
-                    <label>약품명:</label>
-                    <div style="padding: 8px; background-color: #f5f5f5; border-radius: 4px;" id="detail-name"></div>
-                </div>
-                
-                <div class="form-group">
-                    <label>제조사:</label>
-                    <div style="padding: 8px; background-color: #f5f5f5; border-radius: 4px;" id="detail-mfg"></div>
-                </div>
-                
-                <div class="form-group">
-                    <label>약품유형:</label>
-                    <div style="padding: 8px; background-color: #f5f5f5; border-radius: 4px;" id="detail-type"></div>
-                </div>
-                
-                <div class="form-group">
-                    <label>약효분류:</label>
-                    <div style="padding: 8px; background-color: #f5f5f5; border-radius: 4px;" id="detail-efficacy"></div>
-                </div>
-                
-                <div class="form-group">
-                    <label>제형:</label>
-                    <div style="padding: 8px; background-color: #f5f5f5; border-radius: 4px;" id="detail-formulation"></div>
-                </div>
-                
-                <div class="form-group">
-                    <label>단위:</label>
-                    <div style="padding: 8px; background-color: #f5f5f5; border-radius: 4px;" id="detail-unit"></div>
-                </div>
-                
-                <div class="form-group">
-                    <label>투여경로:</label>
-                    <div style="padding: 8px; background-color: #f5f5f5; border-radius: 4px;" id="detail-inject-path"></div>
-                </div>
-                
-                <div class="form-group">
-                    <label>보관방법:</label>
-                    <div style="padding: 8px; background-color: #f5f5f5; border-radius: 4px;">
-                        <div><strong>온도:</strong> <span id="detail-storage-temp"></span></div>
-                        <div><strong>용기:</strong> <span id="detail-storage-container"></span></div>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label>급여정보:</label>
-                    <div style="padding: 8px; background-color: #f5f5f5; border-radius: 4px;">
-                        <div><strong>급여타입:</strong> <span id="detail-pay-type"></span></div>
-                        <div><strong>가격:</strong> <span id="detail-price"></span></div>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label>효능효과:</label>
-                    <div style="padding: 8px; background-color: #f5f5f5; border-radius: 4px; max-height: 200px; overflow-y: auto;" id="detail-effects"></div>
-                </div>
-                
-                <div class="form-group">
-                    <label>기타정보:</label>
-                    <div style="padding: 8px; background-color: #f5f5f5; border-radius: 4px;">
-                        <div><strong>전문/일반:</strong> <span id="detail-is-etc"></span></div>
-                        <div><strong>API 조회:</strong> <span id="detail-api-fetched"></span></div>
-                        <div><strong>자동출력:</strong> <span id="detail-auto-print"></span></div>
-                        <div><strong>업데이트일:</strong> <span id="detail-update-date"></span></div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="modal-buttons">
-                <button type="button" class="save-btn" id="medicine-detail-ok">확인</button>
-            </div>
-        </div>
-    </div>
-    
     <!-- 약품설정 모달 -->
     <div id="medicine-modal" class="modal">
         <div class="modal-content" style="width: 700px; max-height: 80vh; overflow-y: auto;">
@@ -688,6 +609,7 @@
             <h1>처방전 정보</h1>
             <div class="header-buttons">
                 <button id="medicine-btn" class="header-btn">약품설정</button>
+                <button id="custom-label-btn" class="header-btn">커스텀라벨</button>
                 <button id="label-info-btn" class="header-btn">라벨정보</button>
                 <button id="settings-btn" class="header-btn">설정</button>
             </div>

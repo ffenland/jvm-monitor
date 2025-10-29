@@ -11,7 +11,10 @@
       "Bash(npm install:*)",
       "Bash(set WIN_CSC_LINK=none)",
       "Bash(npm run dist:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(npm rebuild:*)",
+      "Bash(npx:*)",
+      "Bash(dir:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

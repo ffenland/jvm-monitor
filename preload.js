@@ -24,6 +24,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     checkTemplateFields: (templatePath) => ipcRenderer.invoke('check-template-fields', templatePath),
     // 라벨 편집 창 API
     openLabelEditor: (prescriptionData, medicineCode) => ipcRenderer.invoke('open-label-editor', prescriptionData, medicineCode),
+    // 약품 설정 창 API
+    openMedicineSettings: (medicineCode) => ipcRenderer.invoke('open-medicine-settings', medicineCode),
+    // 커스텀 라벨 편집 창 API
+    openCustomLabelEditor: () => ipcRenderer.invoke('open-custom-label-editor'),
     // 템플릿 미리보기 API
     previewTemplate: (templatePath) => ipcRenderer.invoke('preview-template', templatePath),
     // 약품 정보 조회
@@ -48,5 +52,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // 초기 설정 표시 이벤트
     onShowInitialSetup: (callback) => ipcRenderer.on('show-initial-setup', (_event) => callback()),
     // API 에러 처리
-    onApiError: (callback) => ipcRenderer.on('api-error', (_event, value) => callback(value))
+    onApiError: (callback) => ipcRenderer.on('api-error', (_event, value) => callback(value)),
+    // 약품 정보 업데이트 이벤트
+    onMedicineDataUpdated: (callback) => ipcRenderer.on('medicine-data-updated', (_event) => callback())
 });

@@ -22,8 +22,9 @@
     "medical"
   ],
   "dependencies": {
-    "better-sqlite3": "^12.2.0",
+    "better-sqlite3": "^12.4.1",
     "bytenode": "^1.5.7",
+    "cheerio": "^1.1.2",
     "chokidar": "^4.0.3",
     "iconv-lite": "^0.6.3",
     "xml2js": "^0.6.2"
@@ -32,7 +33,8 @@
     "electron": "^37.2.0",
     "electron-builder": "^25.1.8",
     "electron-rebuild": "^3.2.9",
-    "rcedit": "^4.0.1"
+    "rcedit": "^4.0.1",
+    "tsx": "^4.20.6"
   },
   "build": {
     "appId": "com.cleareach.druglabel",
@@ -58,7 +60,9 @@
       {
         "from": "templates",
         "to": "templates",
-        "filter": ["*.lbx"]
+        "filter": [
+          "*.lbx"
+        ]
       }
     ],
     "win": {

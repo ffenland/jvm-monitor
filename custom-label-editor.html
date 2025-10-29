@@ -3,24 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>라벨 편집</title>
-    
+    <title>커스텀 라벨 편집</title>
+
     <!-- Flatpickr CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    
+
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f5f5f5;
             padding: 10px;
         }
-        
+
         .container {
             background: white;
             border: 1px solid #ddd;
@@ -30,7 +30,7 @@
             max-width: 400px;
             margin: 0 auto;
         }
-        
+
         h1 {
             color: #333;
             margin-bottom: 15px;
@@ -38,18 +38,18 @@
             font-size: 18px;
             font-weight: 600;
         }
-        
+
         .form-group {
             margin-bottom: 10px;
         }
-        
+
         .form-group label {
             display: block;
             font-size: 12px;
             color: #666;
             margin-bottom: 3px;
         }
-        
+
         .form-group input {
             width: 100%;
             padding: 5px 8px;
@@ -57,43 +57,141 @@
             border-radius: 3px;
             font-size: 13px;
         }
-        
+
         .form-group input:focus {
             outline: none;
             border-color: #667eea;
         }
-        
+
         .form-row {
             display: flex;
             gap: 10px;
         }
-        
+
         .form-row .form-group {
             flex: 1;
         }
-        
+
         .section-divider {
             border-top: 1px solid #e0e0e0;
             margin: 15px 0;
         }
-        
+
+        /* 약품검색 드롭다운 스타일 */
+        .medicine-search-container {
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .medicine-search-button {
+            width: 100%;
+            padding: 8px 12px;
+            background: #fd7e14;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+
+        .medicine-search-button:hover {
+            background: #e8590c;
+        }
+
+        .medicine-search-button .arrow {
+            transition: transform 0.2s;
+        }
+
+        .medicine-search-button.active .arrow {
+            transform: rotate(180deg);
+        }
+
+        .medicine-search-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            margin-top: 5px;
+        }
+
+        .medicine-search-dropdown.active {
+            display: block;
+        }
+
+        .medicine-search-input-wrapper {
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .medicine-search-input {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 13px;
+        }
+
+        .medicine-search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .medicine-search-results {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .medicine-search-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 13px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s;
+        }
+
+        .medicine-search-item:hover {
+            background: #f0f8ff;
+        }
+
+        .medicine-search-item:last-child {
+            border-bottom: none;
+        }
+
+        .medicine-search-empty {
+            padding: 20px;
+            text-align: center;
+            color: #999;
+            font-size: 13px;
+        }
+
         .dosage-section {
             margin-bottom: 15px;
         }
-        
+
         .section-title {
             font-size: 13px;
             font-weight: bold;
             color: #444;
             margin-bottom: 8px;
         }
-        
+
         .time-buttons {
             display: flex;
             gap: 5px;
             margin-bottom: 10px;
         }
-        
+
         .time-button {
             flex: 1;
             padding: 6px 10px;
@@ -105,45 +203,45 @@
             font-size: 12px;
             text-align: center;
         }
-        
+
         .time-button:hover {
             background: #f0f0f0;
         }
-        
+
         .time-button.active {
             background: #667eea;
             color: white;
             border-color: #667eea;
         }
-        
+
         .time-button.disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
-        
+
         .special-dosage {
             margin-top: 10px;
         }
-        
+
         .special-dosage-label {
             display: flex;
             align-items: center;
             margin-bottom: 5px;
         }
-        
+
         .special-dosage-label input[type="checkbox"] {
             margin-right: 5px;
             width: 14px;
             height: 14px;
             cursor: pointer;
         }
-        
+
         .special-dosage-label label {
             cursor: pointer;
             font-size: 12px;
             color: #333;
         }
-        
+
         .special-dosage-input {
             width: 100%;
             padding: 5px 8px;
@@ -152,17 +250,17 @@
             font-size: 12px;
             transition: border-color 0.2s;
         }
-        
+
         .special-dosage-input:focus {
             outline: none;
             border-color: #667eea;
         }
-        
+
         .special-dosage-input:disabled {
             background: #f5f5f5;
             cursor: not-allowed;
         }
-        
+
         .dosage-result {
             margin-top: 10px;
             padding: 8px;
@@ -170,25 +268,30 @@
             border-radius: 3px;
             border: 1px solid #b3d9ff;
         }
-        
+
         .dosage-result-label {
             font-size: 11px;
             color: #666;
             margin-bottom: 3px;
         }
-        
+
         .dosage-result-text {
             font-size: 13px;
             font-weight: bold;
             color: #1976d2;
         }
-        
+
+        /* 체크박스 컨테이너 숨김 스타일 */
+        .checkbox-container.hidden {
+            display: none;
+        }
+
         .buttons {
             display: flex;
             gap: 10px;
             margin-top: 15px;
         }
-        
+
         .button {
             flex: 1;
             padding: 8px 20px;
@@ -199,25 +302,25 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-        
+
         .button-primary {
             background: #667eea;
             color: white;
         }
-        
+
         .button-primary:hover {
             background: #5a67d8;
         }
-        
+
         .button-secondary {
             background: #e0e0e0;
             color: #333;
         }
-        
+
         .button-secondary:hover {
             background: #d0d0d0;
         }
-        
+
         .loading {
             display: none;
             position: fixed;
@@ -230,11 +333,11 @@
             justify-content: center;
             align-items: center;
         }
-        
+
         .loading.active {
             display: flex;
         }
-        
+
         .loading-content {
             background: white;
             padding: 30px;
@@ -242,13 +345,13 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             text-align: center;
         }
-        
+
         .loading-content p {
             margin-top: 15px;
             font-size: 14px;
             color: #333;
         }
-        
+
         .spinner {
             display: inline-block;
             width: 40px;
@@ -258,7 +361,7 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
-        
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -267,8 +370,8 @@
 </head>
 <body>
     <div class="container">
-        <h1>라벨 편집</h1>
-        
+        <h1>커스텀 라벨 편집</h1>
+
         <div class="form-row">
             <div class="form-group">
                 <label>환자명</label>
@@ -279,27 +382,43 @@
                 <input type="text" id="receiptDate" value="" placeholder="날짜 선택">
             </div>
         </div>
-        
+
         <div class="section-divider"></div>
-        
+
+        <!-- 약품검색 드롭다운 -->
+        <div class="medicine-search-container">
+            <button type="button" class="medicine-search-button" id="medicineSearchToggle">
+                <span>약품검색</span>
+                <span class="arrow">▼</span>
+            </button>
+            <div class="medicine-search-dropdown" id="medicineSearchDropdown">
+                <div class="medicine-search-input-wrapper">
+                    <input type="text" class="medicine-search-input" id="medicineSearchInput" placeholder="약품명 또는 보험코드로 검색">
+                </div>
+                <div class="medicine-search-results" id="medicineSearchResults">
+                    <div class="medicine-search-empty">검색어를 입력하세요</div>
+                </div>
+            </div>
+        </div>
+
         <div class="form-group">
             <label>약품명</label>
             <input type="text" id="medicineName" value="">
         </div>
-        
-        <div style="margin-top: 5px; margin-bottom: 10px;">
+
+        <div class="checkbox-container hidden" id="medicineNameCheckboxContainer" style="margin-top: 5px; margin-bottom: 10px;">
             <label style="font-size: 11px; display: flex; align-items: center;">
                 <input type="checkbox" id="updateMedicineName" style="margin-right: 5px;">
                 <span>수정한 약품명을 다음번에도 사용</span>
             </label>
         </div>
-        
+
         <div class="form-group">
             <label>약품유형</label>
             <input type="text" id="medicineType" value="">
         </div>
 
-        <div style="margin-top: 5px; margin-bottom: 10px;">
+        <div class="checkbox-container hidden" id="medicineTypeCheckboxContainer" style="margin-top: 5px; margin-bottom: 10px;">
             <label style="font-size: 11px; display: flex; align-items: center;">
                 <input type="checkbox" id="updateMedicineType" style="margin-right: 5px;">
                 <span>수정한 약품 유형을 다음번에도 사용</span>
@@ -311,7 +430,7 @@
             <input type="text" id="medicineUnit" value="" placeholder="예: 정, 캡슐, ml">
         </div>
 
-        <div style="margin-top: 5px; margin-bottom: 10px;">
+        <div class="checkbox-container hidden" id="medicineUnitCheckboxContainer" style="margin-top: 5px; margin-bottom: 10px;">
             <label style="font-size: 11px; display: flex; align-items: center;">
                 <input type="checkbox" id="updateMedicineUnit" style="margin-right: 5px;">
                 <span>수정한 단위를 다음번에도 사용</span>
@@ -328,7 +447,7 @@
                 <input type="number" id="singleDose" value="" min="0.1" max="100" step="0.1">
             </div>
         </div>
-        
+
         <div class="form-row">
             <div class="form-group">
                 <label>하루 복용횟수</label>
@@ -342,9 +461,9 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="section-divider"></div>
-        
+
         <div class="dosage-section">
             <div class="section-title">복용 시간 선택</div>
             <div class="time-buttons">
@@ -353,7 +472,7 @@
                 <button class="time-button" data-time="evening">저녁</button>
                 <button class="time-button" data-time="bedtime">취침전</button>
             </div>
-            
+
             <div class="section-title" style="margin-top: 15px;">식사와의 관계</div>
             <div class="time-buttons" style="margin-bottom: 5px;">
                 <button class="time-button meal-button" data-meal="식후">식후</button>
@@ -364,14 +483,14 @@
             <div class="form-group" style="margin-bottom: 10px;">
                 <input type="text" id="customMealRelation" placeholder="기타 입력 (예: 취침전)" style="font-size: 12px; padding: 5px 8px;">
             </div>
-            
+
             <div class="special-dosage">
                 <div class="special-dosage-label" style="justify-content: space-between;">
                     <div style="display: flex; align-items: center;">
                         <input type="checkbox" id="specialDosageCheck">
                         <label for="specialDosageCheck">특수용법 직접 입력</label>
                     </div>
-                    <div style="display: flex; align-items: center; margin-left: 15px;">
+                    <div class="checkbox-container hidden" id="customUsageCheckboxContainer" style="display: flex; align-items: center; margin-left: 15px;">
                         <input type="checkbox" id="saveCustomUsageCheck" style="width: 14px; height: 14px; margin-right: 5px;">
                         <label for="saveCustomUsageCheck" style="font-size: 12px; color: #333; cursor: pointer;">특수용법 저장</label>
                     </div>
@@ -386,18 +505,18 @@
                     <div style="margin-top: 3px;">예시: "필요시 $x씩 복용" → "필요시 3정씩 복용"</div>
                 </div>
             </div>
-            
+
             <div class="dosage-result">
                 <div class="dosage-result-label">생성된 용법:</div>
                 <div class="dosage-result-text" id="dosageResult">-</div>
             </div>
         </div>
-        
+
         <div class="buttons">
             <button class="button button-primary" id="printButton">출력</button>
             <button class="button button-secondary" id="cancelButton">취소</button>
         </div>
-        
+
         <div class="loading" id="loading">
             <div class="loading-content">
                 <div class="spinner"></div>
@@ -405,12 +524,12 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Flatpickr JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <!-- Flatpickr Korean Locale -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
-    
-    <script src="label-editor-renderer.js"></script>
+
+    <script src="custom-label-editor-renderer.js"></script>
 </body>
 </html>
