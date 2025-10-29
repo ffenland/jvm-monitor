@@ -165,7 +165,7 @@ function restartFileWatcher(newPath) {
 app.whenReady().then(async () => {
     createWindow();
 
-    // 데이터베이스 초기화
+    // 데이터베이스 초기화 (암호화 적용)
     dbManager = new DatabaseManager();
 
     // IPC 핸들러 등록

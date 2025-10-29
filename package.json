@@ -22,7 +22,7 @@
     "medical"
   ],
   "dependencies": {
-    "better-sqlite3": "^12.4.1",
+    "better-sqlite3-multiple-ciphers": "^12.4.1",
     "bytenode": "^1.5.7",
     "cheerio": "^1.1.2",
     "chokidar": "^4.0.3",

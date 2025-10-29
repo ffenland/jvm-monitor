@@ -1,6 +1,7 @@
-const Database = require('better-sqlite3');
+const Database = require('better-sqlite3-multiple-ciphers');
 const path = require('path');
 const fs = require('fs');
+const { getEncryptionKey } = require('./src/utils/encryptionKey');
 
 /**
  * 새로운 데이터베이스 구조
@@ -32,6 +33,11 @@ class DatabaseManager {
 
         this.dbPath = path.join(dbDir, 'pharmacy.db');
         this.db = new Database(this.dbPath);
+
+        // 데이터베이스 암호화 적용
+        const encryptionKey = getEncryptionKey();
+        this.db.pragma(`key = '${encryptionKey}'`);
+        this.db.pragma('cipher = chacha20');
 
         // 성능 최적화 설정
         this.db.pragma('journal_mode = WAL');
