@@ -100,10 +100,6 @@ async function searchMedicineByName(drugName) {
     const response = await fetch("https://www.health.kr/searchDrug/search_detail.asp", requestOptions);
     const html = await response.text();
 
-    // 디버깅: HTML을 파일로 저장
-    fs.writeFileSync('search-result.html', html, 'utf-8');
-    console.log('HTML saved to search-result.html');
-
     const parsedData = parseSearchResults(html);
     return parsedData;
   } catch (error) {
@@ -273,8 +269,6 @@ async function fetchMedicineDetailByYakjungCode(yakjungCode) {
   try {
     const response = await fetch(url, requestOptions);
     const jsonData = await response.json();
-
-    console.log('[fetchMedicineDetailByYakjungCode] API Response:', JSON.stringify(jsonData, null, 2));
 
     // API 응답이 배열이면 첫 번째 요소 사용
     const data = Array.isArray(jsonData) && jsonData.length > 0 ? jsonData[0] : jsonData;

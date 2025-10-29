@@ -28,6 +28,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     openMedicineSettings: (medicineCode) => ipcRenderer.invoke('open-medicine-settings', medicineCode),
     // 커스텀 라벨 편집 창 API
     openCustomLabelEditor: () => ipcRenderer.invoke('open-custom-label-editor'),
+    // 약학정보원 검색 창 API
+    openYakjungSearch: (params) => ipcRenderer.invoke('open-yakjung-search', params),
     // 템플릿 미리보기 API
     previewTemplate: (templatePath) => ipcRenderer.invoke('preview-template', templatePath),
     // 약품 정보 조회

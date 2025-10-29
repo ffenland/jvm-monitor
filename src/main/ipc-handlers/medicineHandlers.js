@@ -316,14 +316,11 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
         }
     });
 
-    // 약품 검색 창 열기
-    ipcMain.handle('open-medicine-search', async (event, params) => {
-        try {
-            // params는 { keyword, oldYakjungCode } 형태
-            const keyword = typeof params === 'string' ? params : params.keyword;
-            const oldYakjungCode = typeof params === 'object' ? params.oldYakjungCode : null;
 
-            // 요청한 창(약품설정 창)을 부모로 설정
+    // 약학정보원 검색 창 열기
+    ipcMain.handle('open-yakjung-search', async (event, params) => {
+        try {
+            // params: { drugName, bohcode, yakjungCode }
             const parentWindow = BrowserWindow.fromWebContents(event.sender);
 
             const searchWindow = new BrowserWindow({
@@ -342,39 +339,36 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
             searchWindow.setMenuBarVisibility(false);
             searchWindow.setMenu(null);
 
-            // keyword와 oldYakjungCode를 URL 파라미터로 전달
-            const htmlPath = path.join(__dirname, '../../../medicine-search.html');
+            const htmlPath = path.join(__dirname, '../../../medicine-yakjung-search.html');
             searchWindow.loadFile(htmlPath, {
                 query: {
-                    keyword: keyword || '',
-                    oldYakjungCode: oldYakjungCode || ''
+                    drugName: params.drugName || '',
+                    bohcode: params.bohcode || '',
+                    yakjungCode: params.yakjungCode || ''
                 }
             });
 
-            // 검색 완료 알림을 부모 창과 메인 창으로 전달하는 핸들러 (일회성)
+            // 검색 완료 알림을 부모 창과 메인 창으로 전달
             const completeHandler = () => {
-                // 약품설정 창(부모) 리프레쉬
                 if (parentWindow && !parentWindow.isDestroyed()) {
-                    parentWindow.webContents.send('medicine-search-complete');
+                    parentWindow.webContents.send('yakjung-search-complete');
                 }
 
-                // 메인 창에도 약품 정보 업데이트 알림
                 const mainWindow = getMainWindow();
                 if (mainWindow && !mainWindow.isDestroyed()) {
                     mainWindow.webContents.send('medicine-data-updated');
                 }
             };
 
-            ipcMain.once('medicine-search-complete', completeHandler);
+            ipcMain.once('yakjung-search-complete', completeHandler);
 
-            // 창이 닫힐 때 핸들러 정리
             searchWindow.on('closed', () => {
-                ipcMain.removeListener('medicine-search-complete', completeHandler);
+                ipcMain.removeListener('yakjung-search-complete', completeHandler);
             });
 
             return { success: true };
         } catch (error) {
-            console.error('Error opening medicine search:', error);
+            console.error('Error opening yakjung search:', error);
             return { success: false, error: error.message };
         }
     });
@@ -394,13 +388,8 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
     // 약학정보원 코드로 상세 정보 조회 및 DB 저장
     ipcMain.handle('fetch-medicine-detail-from-yakjungwon', async (event, oldYakjungCode, newYakjungCode) => {
         try {
-            console.log('[DEBUG] oldYakjungCode:', oldYakjungCode);
-            console.log('[DEBUG] newYakjungCode:', newYakjungCode);
-
             const { fetchMedicineDetailByYakjungCode } = require('../../../scripts/search-by-name');
             const medicineData = await fetchMedicineDetailByYakjungCode(newYakjungCode);
-
-            console.log('[DEBUG] Fetched medicine data:', JSON.stringify(medicineData, null, 2));
 
             // DB에 저장 (yakjung_code 변경하면서 업데이트)
             const result = dbManager.replaceMedicineWithNewYakjungCode(
@@ -408,8 +397,6 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
                 newYakjungCode,
                 medicineData
             );
-
-            console.log('[DEBUG] DB 저장 완료:', result.yakjung_code);
 
             return { success: true, medicine: result };
         } catch (error) {

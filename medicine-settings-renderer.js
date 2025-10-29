@@ -408,14 +408,16 @@ async function searchMedicine() {
     }
 
     try {
-        // 약품 검색 창 열기 (약품명과 현재 yakjung_code 전달)
-        await ipcRenderer.invoke('open-medicine-search', {
-            keyword: drugName,
-            oldYakjungCode: selectedMedicine.yakjung_code
+        // 약학정보원 검색 창 열기
+        await ipcRenderer.invoke('open-yakjung-search', {
+            drugName: drugName,
+            bohcode: selectedMedicine.bohcode || '',
+            yakjungCode: selectedMedicine.yakjung_code
         });
 
-        // 검색 결과 수신 대기 (DB 업데이트 후 리프레쉬)
-        ipcRenderer.once('medicine-search-complete', async () => {
+        // 검색 완료 이벤트 리스너 등록
+        ipcRenderer.once('yakjung-search-complete', async () => {
+            showToast('약품 정보가 업데이트되었습니다!', 'success');
             // 목록 새로고침
             await loadMedicines();
             // 상세 정보 초기화

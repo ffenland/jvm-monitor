@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>약학정보원 약품 검색</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            padding: 20px;
+            color: #1c1e21;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 22px;
+            color: #0056b3;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .search-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .search-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .search-input-group label {
+            font-size: 14px;
+            font-weight: 500;
+            min-width: 80px;
+        }
+
+        .search-input-group input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .search-input-group input:focus {
+            outline: none;
+            border-color: #0056b3;
+        }
+
+        .search-btn {
+            padding: 8px 24px;
+            background: #0056b3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .search-btn:hover {
+            background: #004494;
+        }
+
+        .search-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .results-section {
+            margin-top: 20px;
+        }
+
+        .results-header {
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px 4px 0 0;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+        }
+
+        .results-table-container {
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 0 0 4px 4px;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .results-table thead {
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+        }
+
+        .results-table th {
+            padding: 12px 8px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #ddd;
+            background: #f8f9fa;
+        }
+
+        .results-table td {
+            padding: 12px 8px;
+            font-size: 13px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .results-table tbody tr {
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .results-table tbody tr:hover {
+            background: #f0f8ff;
+        }
+
+        .results-table tbody tr.selected {
+            background: #e3f2fd;
+        }
+
+        .col-image {
+            width: 120px;
+            text-align: center;
+        }
+
+        .col-name {
+            width: 200px;
+            font-weight: 500;
+            color: #0056b3;
+        }
+
+        .col-company {
+            width: 150px;
+        }
+
+        .col-form {
+            width: 100px;
+        }
+
+        .col-type {
+            width: 80px;
+        }
+
+        .drug-image {
+            max-width: 100px;
+            max-height: 55px;
+            border-radius: 4px;
+        }
+
+        .empty-state {
+            padding: 60px 20px;
+            text-align: center;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .loading-state {
+            padding: 60px 20px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #0056b3;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .info-text {
+            margin-top: 10px;
+            padding: 10px;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #856404;
+        }
+
+        .button-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #218838;
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        /* Toast 스타일 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-size: 14px;
+            z-index: 9999;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .toast.success {
+            background: #28a745;
+            color: white;
+        }
+
+        .toast.error {
+            background: #dc3545;
+            color: white;
+        }
+
+        .toast.info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>약학정보원 약품 검색</h1>
+
+        <div class="search-section">
+            <div class="search-input-group">
+                <label>약품명:</label>
+                <input type="text" id="drugNameInput" placeholder="검색할 약품명을 입력하세요" />
+                <button class="search-btn" id="searchBtn">검색</button>
+            </div>
+        </div>
+
+        <div class="info-text" id="currentDrugInfo">
+            <!-- 현재 선택된 약품 정보 표시 -->
+        </div>
+
+        <div class="results-section">
+            <div class="results-header">
+                검색 결과 (<span id="resultCount">0</span>건)
+            </div>
+            <div class="results-table-container">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th class="col-image">식별/포장</th>
+                            <th class="col-name">제품명</th>
+                            <th class="col-company">회사명</th>
+                            <th class="col-form">제형</th>
+                            <th class="col-type">구분</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsBody">
+                        <tr>
+                            <td colspan="5" class="empty-state">
+                                검색어를 입력하고 검색 버튼을 눌러주세요
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-primary" id="selectBtn" disabled>선택한 약품으로 업데이트</button>
+            <button class="btn btn-secondary" id="cancelBtn">취소</button>
+        </div>
+    </div>
+
+    <script src="medicine-yakjung-search-renderer.js"></script>
+</body>
+</html>
