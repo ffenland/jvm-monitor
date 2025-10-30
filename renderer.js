@@ -210,18 +210,27 @@ window.addEventListener('DOMContentLoaded', () => {
                 // parsedAt을 사용하여 파싱 시간 표시
                 const formattedTime = formatTimeKST(data.parsedAt);
 
-                // 접수날짜와 파싱날짜가 다르면 접수날짜 표시
-                let dateInfo = '';
+                // 접수날짜와 파싱날짜가 다르면 아래 줄에 표시
+                let dateInfoLine = '';
                 if (data.receiptDateRaw && data.parsedDate && data.receiptDateRaw !== data.parsedDate) {
-                    // receiptDateRaw: YYYYMMDD 형식을 YYYY년MM월DD일로 변환
+                    // receiptDateRaw: YYYYMMDD 형식을 YYYY년 MM월 DD일로 변환
                     const year = data.receiptDateRaw.substring(0, 4);
                     const month = data.receiptDateRaw.substring(4, 6);
                     const day = data.receiptDateRaw.substring(6, 8);
-                    dateInfo = ` (${year}년${month}월${day}일)`;
+                    dateInfoLine = `<div style="font-size: 11px; color: #666; margin-top: 3px;">최초 접수일: ${year}년 ${month}월 ${day}일</div>`;
                 }
 
-                let html = `<span><strong>환자: ${data.patientName}</strong> (${data.patientId}) / 접수번호: ${data.receiptNum} / 병원: ${data.hospitalName} / 접수시간: ${formattedTime}${dateInfo}</span>`;
+                let html = `
+                    <div style="flex: 1;">
+                        <div><strong>환자: ${data.patientName}</strong> (${data.patientId}) / 접수번호: ${data.receiptNum} / 병원: ${data.hospitalName} / 접수시간: ${formattedTime}</div>
+                        ${dateInfoLine}
+                    </div>
+                    <span class="delete-icon" data-index="${index}" style="cursor: pointer; font-size: 12.6px; color: #d32f2f; padding: 0 10px; user-select: none;" title="삭제">❌</span>
+                `;
                 itemDiv.innerHTML = html;
+                itemDiv.style.display = 'flex';
+                itemDiv.style.alignItems = 'flex-start';
+                itemDiv.style.justifyContent = 'space-between';
             }
             prescriptionListContainer.appendChild(itemDiv); // appendChild to maintain order from DB
         });
@@ -341,6 +350,19 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // Event listener for clicking on a prescription item in the list
     prescriptionListContainer.addEventListener('click', (event) => {
+        // 삭제 아이콘 클릭 체크
+        const deleteIcon = event.target.closest('.delete-icon');
+        if (deleteIcon) {
+            event.stopPropagation();
+            const index = parseInt(deleteIcon.dataset.index, 10);
+            const prescription = prescriptions[index];
+            if (prescription && !prescription.isLoading) {
+                showDeletePrescriptionModal(prescription, index);
+            }
+            return;
+        }
+
+        // 처방전 항목 클릭
         const clickedItem = event.target.closest('.prescription-item');
         if (clickedItem) {
             // Remove 'selected' class from previously selected item
@@ -1202,6 +1224,129 @@ window.addEventListener('DOMContentLoaded', () => {
             showToast('약품 정보가 업데이트되었습니다.', 'success');
         }
     });
+
+    // 처방전 삭제 확인 모달 표시
+    function showDeletePrescriptionModal(prescription, index) {
+        // 모달 생성
+        const modal = document.createElement('div');
+        modal.id = 'delete-prescription-modal';
+        modal.style.cssText = `
+            display: block;
+            position: fixed;
+            z-index: 10001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        `;
+
+        const modalContent = document.createElement('div');
+        modalContent.style.cssText = `
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            border-radius: 8px;
+            width: 400px;
+            max-width: 90%;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        `;
+
+        const title = document.createElement('h3');
+        title.textContent = '처방전 삭제';
+        title.style.cssText = 'margin-top: 0; color: #333;';
+
+        const message = document.createElement('p');
+        message.innerHTML = `
+            해당 처방을 삭제하시겠습니까?<br><br>
+            <strong>환자명:</strong> ${prescription.patientName}<br>
+            <strong>접수번호:</strong> ${prescription.receiptNum}<br>
+            <strong>병원:</strong> ${prescription.hospitalName}<br><br>
+            <p style="color: #d32f2f;">※처방전에 대한 내용이 완전히 삭제되며,<br>&nbsp;&nbsp;&nbsp;&nbsp;삭제된 데이터는 복구할 수 없습니다.</p>
+        `;
+        message.style.cssText = 'margin: 20px 0; line-height: 1.6;';
+
+        const buttonContainer = document.createElement('div');
+        buttonContainer.style.cssText = 'text-align: right; margin-top: 20px;';
+
+        const yesButton = document.createElement('button');
+        yesButton.textContent = '예';
+        yesButton.style.cssText = `
+            padding: 10px 20px;
+            margin-left: 10px;
+            background-color: #d32f2f;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        `;
+        yesButton.onclick = async () => {
+            modal.remove();
+            await deletePrescription(prescription.id, index);
+        };
+
+        const noButton = document.createElement('button');
+        noButton.textContent = '아니오';
+        noButton.style.cssText = `
+            padding: 10px 20px;
+            background-color: #757575;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        `;
+        noButton.onclick = () => {
+            modal.remove();
+        };
+
+        buttonContainer.appendChild(noButton);
+        buttonContainer.appendChild(yesButton);
+
+        modalContent.appendChild(title);
+        modalContent.appendChild(message);
+        modalContent.appendChild(buttonContainer);
+        modal.appendChild(modalContent);
+
+        document.body.appendChild(modal);
+
+        // 모달 외부 클릭 시 닫기
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+
+    // 처방전 삭제 실행
+    async function deletePrescription(prescriptionId, index) {
+        try {
+            const result = await window.electronAPI.deletePrescription(prescriptionId);
+
+            if (result.success) {
+                showToast('처방전이 삭제되었습니다.', 'success');
+
+                // 목록에서 제거
+                prescriptions.splice(index, 1);
+
+                // 선택 인덱스 조정
+                if (selectedPrescriptionIndex >= prescriptions.length) {
+                    selectedPrescriptionIndex = prescriptions.length - 1;
+                }
+
+                // 화면 업데이트
+                renderPrescriptionList();
+                updateDetailView(prescriptions[selectedPrescriptionIndex]);
+            } else {
+                showToast('처방전 삭제 실패: ' + result.message, 'error');
+            }
+        } catch (error) {
+            console.error('처방전 삭제 오류:', error);
+            showToast('처방전 삭제 중 오류가 발생했습니다.', 'error');
+        }
+    }
 
     // Request initial data when the app loads
     window.electronAPI.getInitialData();

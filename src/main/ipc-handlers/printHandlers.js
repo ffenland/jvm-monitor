@@ -182,11 +182,11 @@ function registerPrintHandlers(dbManager, getMainWindow, loadConfig) {
 
             // 라벨 데이터 가공
             // 필요한 값들 추출
-            const singleDose = parseInt(printData.singleDose) || 0;
-            const dailyDose = parseInt(printData.dailyDose) || 0;
-            const prescriptionDays = parseInt(printData.prescriptionDays) || 0;
             const unit = printData.unit || printData.medicineInfo?.unit || '정';
             const storageTemp = printData.medicineInfo?.temperature || '';
+
+            // 총량: 사용자가 입력한 값 그대로 사용
+            const totalAmount = printData.totalAmount || '';
 
             const processedData = {
                 patientName: printData.patientName,
@@ -196,7 +196,7 @@ function registerPrintHandlers(dbManager, getMainWindow, loadConfig) {
                 prescriptionDays: printData.prescriptionDays + '일분',
                 madeDate: `조제일 ${new Date().toLocaleDateString('ko-KR')}`,
                 pharmacy: config.pharmacyName,
-                totalCount: `총${singleDose * dailyDose * prescriptionDays}${unit}`,
+                totalCount: `총${totalAmount}${unit}`,
                 storageTemp: storageTemp
             };
 

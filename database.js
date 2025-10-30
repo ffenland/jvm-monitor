@@ -34,10 +34,10 @@ class DatabaseManager {
         this.dbPath = path.join(dbDir, 'pharmacy.db');
         this.db = new Database(this.dbPath);
 
-        // 데이터베이스 암호화 적용
-        const encryptionKey = getEncryptionKey();
-        this.db.pragma(`key = '${encryptionKey}'`);
-        this.db.pragma('cipher = chacha20');
+        // 데이터베이스 암호화 적용 (임시로 비활성화)
+        // const encryptionKey = getEncryptionKey();
+        // this.db.pragma(`key = '${encryptionKey}'`);
+        // this.db.pragma('cipher = chacha20');
 
         // 성능 최적화 설정
         this.db.pragma('journal_mode = WAL');
@@ -931,6 +931,39 @@ class DatabaseManager {
     }
 
     // ========== 유틸리티 메서드 ==========
+
+    /**
+     * 처방전 삭제 (트랜잭션)
+     * prescription_medicines와 parsing_history는 ON DELETE CASCADE로 자동 삭제됨
+     * @param {number} prescriptionId - 처방전 ID
+     * @returns {Object} { success: boolean, message?: string }
+     */
+    deletePrescription(prescriptionId) {
+        try {
+            const transaction = this.db.transaction((id) => {
+                // 처방전 존재 확인
+                const prescription = this.statements.getPrescriptionById.get(id);
+                if (!prescription) {
+                    return { success: false, message: '처방전을 찾을 수 없습니다.' };
+                }
+
+                // 처방전 삭제 (prescription_medicines와 parsing_history는 ON DELETE CASCADE로 자동 삭제)
+                const deleteStmt = this.db.prepare('DELETE FROM prescriptions WHERE id = ?');
+                const result = deleteStmt.run(id);
+
+                if (result.changes > 0) {
+                    return { success: true, message: '처방전이 삭제되었습니다.' };
+                } else {
+                    return { success: false, message: '처방전 삭제에 실패했습니다.' };
+                }
+            });
+
+            return transaction(prescriptionId);
+        } catch (error) {
+            console.error('[DB] 처방전 삭제 오류:', error);
+            return { success: false, message: error.message };
+        }
+    }
 
     /**
      * 데이터베이스 통계

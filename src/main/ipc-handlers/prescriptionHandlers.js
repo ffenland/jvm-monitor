@@ -63,6 +63,17 @@ function registerPrescriptionHandlers(dbManager, getMainWindow) {
 
         event.sender.send('data-for-date', data);
     });
+
+    // 처방전 삭제
+    ipcMain.handle('delete-prescription', async (event, prescriptionId) => {
+        try {
+            const result = dbManager.deletePrescription(prescriptionId);
+            return result;
+        } catch (error) {
+            console.error('[IPC] 처방전 삭제 오류:', error);
+            return { success: false, message: error.message };
+        }
+    });
 }
 
 module.exports = { registerPrescriptionHandlers };

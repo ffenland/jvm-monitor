@@ -56,5 +56,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // API 에러 처리
     onApiError: (callback) => ipcRenderer.on('api-error', (_event, value) => callback(value)),
     // 약품 정보 업데이트 이벤트
-    onMedicineDataUpdated: (callback) => ipcRenderer.on('medicine-data-updated', (_event) => callback())
+    onMedicineDataUpdated: (callback) => ipcRenderer.on('medicine-data-updated', (_event) => callback()),
+    // 처방전 삭제 API
+    deletePrescription: (prescriptionId) => ipcRenderer.invoke('delete-prescription', prescriptionId)
 });
