@@ -72,13 +72,9 @@ function parseTxtFile(filePath) {
             
             record.patientData = patientData;
             
-            // 6. 약품 정보 파싱
-            const parts = line.split('|');
-            if (parts.length >= 7) {
-                const drugSection = parts[6];
-                const drugInfo = parseDrugInfo(drugSection, ENCODING);
-                record.drugs = drugInfo;
-            }
+            // 6. 약품 정보 파싱 (전체 라인 전달)
+            const drugInfo = parseDrugInfo(line, ENCODING);
+            record.drugs = drugInfo;
             
             result.records.push(record);
         });
@@ -121,138 +117,151 @@ function getStringFromBuffer(buffer, offset, length, encoding) {
 }
 
 /**
- * 약품 정보 파싱 - 10자리 역방향 로직
- * 개선된 파싱 방식:
- * 1. 약품코드(T/E + 9자리)로 정확한 분할
- * 2. 역방향에서 첫 번째 숫자 찾기
- * 3. 최대 10자리 읽어서 파싱: 처방일수(0-3) + 횟수(4) + 복용량(5+)
- * 
- * @param {string} drugSection - 약품 섹션 문자열
+ * 약품 정보 파싱 - 새로운 엄격한 역방향 로직
+ *
+ * 파싱 규칙:
+ * - |JVMHEAD| 이후부터 |JVMEND| 이전까지 약품 정보 파싱
+ * - 약품코드: T 또는 E로 시작하는 10자리
+ * - 복용정보: 뒤에서부터 역방향으로 읽기
+ *   - 맨 마지막 약품: |JVMEND| 문구의 40칸 앞에서부터 10자리
+ *   - 중간 약품: 다음 약품코드의 42칸 앞에서부터 10자리
+ * - 10자리 구조:
+ *   - 앞 3자리: 처방일수 (숫자+공백+공백, 숫자+숫자+공백, 숫자+숫자+숫자)
+ *   - 4번째 자리: 1일복용횟수 (1~9)
+ *   - 5~10자리: 1회복용량 (숫자 또는 온점1개+숫자, 최대 6자리, 앞에서부터 채움)
+ *
+ * @param {string} drugSection - 약품 섹션 문자열 (전체 라인 또는 JVMHEAD 섹션)
  * @param {string} encoding - 인코딩 (ks_c_5601-1987)
  * @returns {Array} 약품 정보 배열
  */
 function parseDrugInfo(drugSection, encoding) {
     const result = [];
-    
-    // 약품코드 패턴으로 약품 찾기 (T/E + 9자리 숫자)
-    const codePattern = /[TE]\d{9}/g;
-    const matches = [...drugSection.matchAll(codePattern)];
-    
-    if (matches.length === 0) {
-        // 약품코드 패턴을 못 찾은 경우 기존 방식으로 폴백
+
+    // JVMHEAD와 JVMEND 위치 찾기
+    const jvmheadStart = drugSection.indexOf('|JVMHEAD|');
+    const jvmendPos = drugSection.indexOf('|JVMEND|');
+
+    if (jvmheadStart === -1 || jvmendPos === -1) {
+        // JVMHEAD/JVMEND가 없으면 레거시 방식으로 폴백
         return parseDrugInfoLegacy(drugSection, encoding);
     }
-    
-    // 각 약품별로 처리
-    matches.forEach((match, i) => {
-        const drugCode = match[0];
-        const startPos = match.index;
-        
-        // 약품의 끝 위치 결정
-        // 마지막 약품이면 전체 섹션 끝까지, 아니면 다음 약품 코드 직전까지
-        const endPos = i + 1 < matches.length ? matches[i + 1].index : drugSection.length;
-        
-        // 현재 약품 텍스트 추출
-        const drugText = drugSection.substring(startPos, endPos);
-        const drugBytes = iconv.encode(drugText, encoding);
-        
-        // 약품코드 (T/E 제거)
-        const drugcode = drugCode.substring(1);
-        
-        // 약품명 (15-65 바이트)
-        let drugname = '';
-        if (drugBytes.length >= 65) {
-            drugname = getStringFromBuffer(drugBytes, 15, 50, encoding);
-        } else if (drugBytes.length > 15) {
-            drugname = getStringFromBuffer(drugBytes, 15, Math.min(50, drugBytes.length - 15), encoding);
+
+    // 약품 섹션만 추출
+    const medicineSection = drugSection.substring(jvmheadStart + 9, jvmendPos);
+
+    // 약품코드 패턴 찾기: T 또는 E로 시작하는 10자리
+    const codePattern = /[TE]\d{9}/g;
+    const matches = [...medicineSection.matchAll(codePattern)];
+
+    if (matches.length === 0) {
+        return [];
+    }
+
+    // 각 약품 처리
+    for (let i = 0; i < matches.length; i++) {
+        const match = matches[i];
+        const medicineCode = match[0];
+        const medicineStartPos = jvmheadStart + 9 + match.index;
+
+        // 약품명 추출 (약품코드 뒤 50자)
+        const medicineNameStart = medicineStartPos + 10;
+        let drugname = drugSection.substring(medicineNameStart, medicineNameStart + 50).trim();
+
+        // 약품명에서 특수문자나 불필요한 부분 제거
+        drugname = drugname.split(/[\n\r|]/)[0].trim();
+
+        // 복용정보 추출 위치 계산
+        let usageInfoStart;
+
+        if (i === matches.length - 1) {
+            // 마지막 약품: |JVMEND|의 40칸 앞
+            usageInfoStart = jvmendPos - 40;
+        } else {
+            // 중간 약품: 다음 약품코드의 42칸 앞
+            const nextMedicinePos = jvmheadStart + 9 + matches[i + 1].index;
+            usageInfoStart = nextMedicinePos - 42;
         }
-        
-        // ====== 10자리 역방향 투약 정보 추출 ======
-        let tday = '', thoi = '', tuse = '';
-        
-        // 1단계: 끝에서부터 역방향으로 첫 번째 숫자 찾기
-        let firstDigitIndex = -1;
-        for (let j = drugText.length - 1; j >= 0; j--) {
-            if (/\d/.test(drugText[j])) {
-                firstDigitIndex = j;
-                break;
-            }
-        }
-        
-        if (firstDigitIndex !== -1) {
-            // 2단계: 첫 번째 숫자부터 역방향으로 최대 10자리 읽기
-            const start = Math.max(0, firstDigitIndex - 9); // 10자리 범위 시작점
-            const end = firstDigitIndex + 1; // 첫 번째 숫자 다음까지
-            
-            const tenDigitBlock = drugText.substring(start, end);
-            
-            // 3단계: 앞에서부터 파싱
-            // 첫 번째 숫자의 위치 찾기
-            let firstNumberStart = -1;
-            for (let k = 0; k < tenDigitBlock.length; k++) {
-                if (/\d/.test(tenDigitBlock[k])) {
-                    firstNumberStart = k;
-                    break;
-                }
-            }
-            
-            if (firstNumberStart !== -1) {
-                // 첫 번째 숫자부터 끝까지의 문자열
-                const numberPart = tenDigitBlock.substring(firstNumberStart);
-                
-                // 처방일수 (0-3자리): 첫 숫자부터 최대 3자리
-                let daysPart = '';
-                let currentIndex = 0;
-                
-                // 처방일수 추출 (최대 3자리 숫자)
-                while (currentIndex < numberPart.length && daysPart.length < 3) {
-                    if (/\d/.test(numberPart[currentIndex])) {
-                        daysPart += numberPart[currentIndex];
-                    } else if (daysPart.length > 0) {
-                        // 숫자가 시작된 후 공백을 만나면 일수 부분 종료
-                        break;
-                    }
-                    currentIndex++;
-                }
-                
-                tday = daysPart;
-                
-                // 공백 건너뛰기
-                while (currentIndex < numberPart.length && !/\d/.test(numberPart[currentIndex])) {
-                    currentIndex++;
-                }
-                
-                // 1일 복용횟수 (4번째 자리)
-                if (currentIndex < numberPart.length && /\d/.test(numberPart[currentIndex])) {
-                    thoi = numberPart[currentIndex];
-                    currentIndex++;
-                }
-                
-                // 1회 복용량 (5번째 이후)
-                let dosePart = '';
-                while (currentIndex < numberPart.length) {
-                    if (/[\d.]/.test(numberPart[currentIndex])) {
-                        dosePart += numberPart[currentIndex];
-                    } else if (dosePart.length > 0) {
-                        // 숫자가 시작된 후 공백을 만나면 복용량 부분 종료
-                        break;
-                    }
-                    currentIndex++;
-                }
-                
-                tuse = dosePart || '1'; // 기본값 1
-            }
-        }
-        
+
+        // 10자리 복용정보 추출
+        const usageInfo10Chars = drugSection.substring(usageInfoStart, usageInfoStart + 10);
+
+        // 복용정보 파싱
+        const usageData = parseUsageInfo10Chars(usageInfo10Chars);
+
         result.push({
-            drugcode,
-            drugname,
-            tday,
-            thoi,
-            tuse
+            drugcode: medicineCode.substring(1), // T/E 제거
+            drugname: drugname,
+            tday: usageData.tday,
+            thoi: usageData.thoi,
+            tuse: usageData.tuse
         });
-    });
-    
+    }
+
+    return result;
+}
+
+/**
+ * 10자리 복용정보 파싱
+ * @param {string} chars10 - 10자리 문자열
+ * @returns {Object} { tday, thoi, tuse }
+ */
+function parseUsageInfo10Chars(chars10) {
+    const result = {
+        tday: '',
+        thoi: '',
+        tuse: ''
+    };
+
+    if (!chars10 || chars10.length < 10) {
+        return result;
+    }
+
+    // 앞 3자리: 처방일수
+    const days3Chars = chars10.substring(0, 3);
+
+    // 4번째 자리: 1일복용횟수
+    const dailyDoseChar = chars10.charAt(3);
+
+    // 5~10자리: 1회복용량 (6자리)
+    const singleDose6Chars = chars10.substring(4, 10);
+
+    // 처방일수 파싱 (공백 제거)
+    const prescriptionDays = days3Chars.trim();
+
+    // 1일복용횟수 검증 (1~9 사이의 숫자)
+    if (!/^[1-9]$/.test(dailyDoseChar)) {
+        return result;
+    }
+
+    // 1회복용량 파싱 (공백 제거)
+    const singleDose = singleDose6Chars.trim();
+
+    // 1회복용량 검증 (숫자 또는 온점 포함 숫자)
+    if (!/^[\d.]+$/.test(singleDose) || singleDose === '') {
+        return result;
+    }
+
+    // 처방일수 검증 (1~999)
+    const daysNum = parseInt(prescriptionDays);
+    if (isNaN(daysNum) || daysNum < 1 || daysNum > 999) {
+        return result;
+    }
+
+    // 1회복용량 검증 (양수, 온점 최대 1개)
+    const dotCount = (singleDose.match(/\./g) || []).length;
+    if (dotCount > 1) {
+        return result;
+    }
+
+    const doseNum = parseFloat(singleDose);
+    if (isNaN(doseNum) || doseNum <= 0) {
+        return result;
+    }
+
+    result.tday = prescriptionDays;
+    result.thoi = dailyDoseChar;
+    result.tuse = singleDose;
+
     return result;
 }
 
