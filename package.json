@@ -9,11 +9,11 @@
   "scripts": {
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "electron-rebuild",
+    "postinstall": "pnpm exec electron-rebuild -f -w better-sqlite3-multiple-ciphers",
     "compile": "node compile.js",
     "build:win": "electron-builder --win",
     "dist": "electron-builder",
-    "dist-secure": "npm run compile && electron-builder"
+    "dist-secure": "pnpm run compile && electron-builder"
   },
   "keywords": [
     "pharmacy",
@@ -22,10 +22,12 @@
     "medical"
   ],
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "better-sqlite3-multiple-ciphers": "^12.4.1",
     "bytenode": "^1.5.7",
     "cheerio": "^1.1.2",
     "chokidar": "^4.0.3",
+    "firebase": "^12.5.0",
     "iconv-lite": "^0.6.3",
     "xml2js": "^0.6.2"
   },

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog } = require('electron');
+const { app, BrowserWindow, dialog, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const chokidar = require('chokidar');
@@ -7,6 +7,8 @@ const { fetchAndSaveMedicine } = require('./medicine-fetcher');
 const DatabaseManager = require('./database');
 const { spawn } = require('child_process');
 const { registerAllHandlers } = require('./src/main/ipc-handlers');
+const { checkLicenseOnStartup } = require('./src/services/authService');
+const { registerAuthHandlers } = require('./src/ipc/authHandlers');
 let monitorPath = 'C:\\atc'; // Default directory to monitor (can be changed in config)
 
 /**
@@ -36,6 +38,7 @@ function getPowerShellPath() {
 }
 
 let mainWindow;
+let authWindow; // 인증 창
 let currentAvailableDates = new Set(); // To keep track of dates for dynamic updates
 let currentConfig = {}; // Store current configuration
 let watcher = null; // File watcher instance
@@ -48,6 +51,7 @@ function createWindow() {
         title: 'DrugLabel - PM프로그램 연동 약품 라벨 출력 시스템',
         icon: path.join(__dirname, 'build', 'icon.ico'), // ICO 아이콘 사용
         autoHideMenuBar: true, // 메뉴바 숨기기
+        show: false, // 인증 완료 전까지 숨김
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'), // Using a preload script for security
             contextIsolation: true, // Recommended for security
@@ -63,6 +67,44 @@ function createWindow() {
 
     // Open DevTools for debugging
     // mainWindow.webContents.openDevTools();
+}
+
+/**
+ * 인증 창 생성
+ */
+function createAuthWindow() {
+    authWindow = new BrowserWindow({
+        width: 600,
+        height: 750,
+        title: '프로그램 인증',
+        icon: path.join(__dirname, 'build', 'icon.ico'),
+        autoHideMenuBar: true,
+        resizable: false,
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+            nodeIntegration: false
+        }
+    });
+
+    authWindow.setMenuBarVisibility(false);
+    authWindow.setMenu(null);
+
+    authWindow.loadFile(path.join(__dirname, 'src', 'auth.html'));
+
+    // 인증 창 닫기 방지
+    authWindow.on('close', (e) => {
+        e.preventDefault();
+        dialog.showMessageBox(authWindow, {
+            type: 'warning',
+            title: '인증 필요',
+            message: '프로그램을 사용하려면 인증이 필요합니다.',
+            buttons: ['확인']
+        });
+    });
+
+    // Open DevTools for debugging
+    // authWindow.webContents.openDevTools();
 }
 
 // 설정 파일 읽기/쓰기 함수
@@ -102,7 +144,6 @@ function loadConfig() {
             }
             
             currentConfig = {
-                pharmacyName: "",
                 templatePath: defaultTemplatePath,
                 atcPath: "C:\\atc",
                 isFirstRun: true  // 첫 실행 플래그
@@ -129,7 +170,6 @@ function loadConfig() {
         }
         
         currentConfig = {
-            pharmacyName: "",
             templatePath: defaultTemplatePath,
             atcPath: "C:\\atc",
             isFirstRun: true
@@ -163,10 +203,40 @@ function restartFileWatcher(newPath) {
 
 
 app.whenReady().then(async () => {
-    createWindow();
-
-    // 데이터베이스 초기화 (암호화 적용)
+    // 데이터베이스 초기화
     dbManager = new DatabaseManager();
+
+    // 인증 핸들러 등록 (가장 먼저)
+    registerAuthHandlers(dbManager);
+
+    // 인증 성공 이벤트 리스너
+    ipcMain.on('auth:success', () => {
+        // 인증 창 닫기
+        if (authWindow && !authWindow.isDestroyed()) {
+            authWindow.removeAllListeners('close');
+            authWindow.destroy();
+            authWindow = null;
+        }
+
+        // 메인 창 표시
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.show();
+            mainWindow.focus();
+        }
+    });
+
+    // 라이선스 체크
+    const licenseCheck = await checkLicenseOnStartup(dbManager);
+
+    if (licenseCheck.needsAuth) {
+        // 인증 필요 - 인증 창만 표시
+        createAuthWindow();
+        createWindow(); // 메인 창은 숨겨진 상태로 생성
+    } else {
+        // 인증 불필요 - 메인 창 바로 표시
+        createWindow();
+        mainWindow.show();
+    }
 
     // IPC 핸들러 등록
     registerAllHandlers({
@@ -180,22 +250,12 @@ app.whenReady().then(async () => {
 
     // 설정 파일 로드
     const config = loadConfig();
-    
-    // 첫 실행 확인 (약국명이 비어있으면 첫 실행으로 간주)
-    if (!config.pharmacyName || config.pharmacyName === "") {
-        // 첫 실행 시 설정 창 자동 표시
-        setTimeout(() => {
-            if (mainWindow) {
-                mainWindow.webContents.send('show-initial-setup');
-            }
-        }, 1000); // 창이 완전히 로드된 후 표시
-    }
 
     // Send initial log message to renderer
     mainWindow.webContents.on('did-finish-load', () => {
         mainWindow.webContents.send('log-message', `Monitoring directory: ${monitorPath}`);
         mainWindow.webContents.send('log-message', `Data will be saved to SQLite database`);
-        
+
         // B-PAC SDK는 이미 작동 확인됨
         setTimeout(() => {
             console.log('B-PAC SDK is ready');

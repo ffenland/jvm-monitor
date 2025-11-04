@@ -111,7 +111,6 @@ window.addEventListener('DOMContentLoaded', () => {
     const closeBtn = document.querySelector('.close');
     const cancelBtn = document.getElementById('cancel-btn');
     const settingsForm = document.getElementById('settings-form');
-    const pharmacyNameInput = document.getElementById('pharmacy-name');
     const templatePathSelect = document.getElementById('template-path');
     
     // 라벨정보 관련 요소
@@ -149,6 +148,7 @@ window.addEventListener('DOMContentLoaded', () => {
     let prescriptions = []; // This will hold the list of prescriptions for the selected date
     let selectedPrescriptionIndex = -1;
     let currentConfig = {}; // 현재 설정 저장
+    let isFirstRun = false; // 첫 실행 여부
     
     // Brother 프린터 목록 로드
     async function loadBrotherPrinters() {
@@ -168,15 +168,6 @@ window.addEventListener('DOMContentLoaded', () => {
                 option.value = '';
                 option.textContent = 'Brother 프린터를 찾을 수 없습니다';
                 printerSelect.appendChild(option);
-                
-                // 진단 실행
-                try {
-                    const diagnosis = await window.electronAPI.diagnoseBPac();
-                    if (diagnosis.success) {
-                    }
-                } catch (diagError) {
-                    console.error('진단 실행 실패:', diagError);
-                }
             }
         } catch (error) {
             console.error('프린터 목록 로드 실패:', error);
@@ -492,8 +483,7 @@ window.addEventListener('DOMContentLoaded', () => {
     async function loadConfig() {
         try {
             currentConfig = await window.electronAPI.getConfig();
-            pharmacyNameInput.value = currentConfig.pharmacyName || '';
-            
+
             // ATC 서버 경로 설정
             const atcPathInput = document.getElementById('atc-path');
             if (atcPathInput) {
@@ -598,11 +588,11 @@ window.addEventListener('DOMContentLoaded', () => {
     closeBtn.addEventListener('click', () => {
         settingsModal.style.display = 'none';
     });
-    
+
     cancelBtn.addEventListener('click', () => {
         settingsModal.style.display = 'none';
     });
-    
+
     // 모달 외부 클릭시 닫기
     window.addEventListener('click', (event) => {
         if (event.target === settingsModal) {
@@ -619,34 +609,27 @@ window.addEventListener('DOMContentLoaded', () => {
     // 설정 저장
     settingsForm.addEventListener('submit', async (event) => {
         event.preventDefault();
-        
-        // 약국명 확인
-        if (!pharmacyNameInput.value || pharmacyNameInput.value.trim() === '') {
-            alert('약국명을 반드시 입력해주세요.');
-            pharmacyNameInput.focus();
-            return;
-        }
-        
+
         const atcPathInput = document.getElementById('atc-path');
         const config = {
-            pharmacyName: pharmacyNameInput.value.trim(),
             templatePath: templatePathSelect.value || './templates/default.lbx',
             atcPath: atcPathInput ? atcPathInput.value : 'C:\\atc'
         };
-        
+
         try {
             const result = await window.electronAPI.saveConfig(config);
             if (result.success) {
                 currentConfig = config;
-                
+
+                // 첫 실행 플래그 리셋
+                isFirstRun = false;
+
                 // 경고 메시지 제거
                 const warningDiv = settingsModal.querySelector('.initial-warning');
                 if (warningDiv) {
                     warningDiv.remove();
                 }
-                pharmacyNameInput.style.borderColor = '';
-                pharmacyNameInput.style.borderWidth = '';
-                
+
                 alert('설정이 저장되었습니다.');
                 settingsModal.style.display = 'none';
             } else {
@@ -1143,56 +1126,11 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // 초기 설정 표시 이벤트 리스너
-    window.electronAPI.onShowInitialSetup(() => {
-        showInitialSetup();
-    });
-    
-    // 초기 설정 표시 함수
+    // 초기 설정 표시 함수 (설정 버튼 클릭 시에만 사용)
     async function showInitialSetup() {
         await loadConfig();
         await loadTemplates();
-        
-        // 약국명이 없으면 경고 메시지 표시
-        if (!currentConfig.pharmacyName || currentConfig.pharmacyName === "") {
-            // 설정 모달에 경고 메시지 추가
-            const warningDiv = document.createElement('div');
-            warningDiv.style.cssText = `
-                background-color: #fff3cd;
-                border: 1px solid #ffc107;
-                color: #856404;
-                padding: 10px;
-                margin-bottom: 15px;
-                border-radius: 4px;
-                font-weight: bold;
-            `;
-            warningDiv.innerHTML = '⚠️ 처음 실행하셨습니다. 약국명을 반드시 입력해주세요.';
-            
-            const modalContent = settingsModal.querySelector('.modal-content');
-            const existingWarning = modalContent.querySelector('.initial-warning');
-            if (existingWarning) {
-                existingWarning.remove();
-            }
-            warningDiv.className = 'initial-warning';
-            modalContent.insertBefore(warningDiv, modalContent.firstChild);
-            
-            // 약국명 입력 필드에 포커스
-            pharmacyNameInput.focus();
-            pharmacyNameInput.style.borderColor = '#ffc107';
-            pharmacyNameInput.style.borderWidth = '2px';
-        }
-        
         settingsModal.style.display = 'block';
-    }
-    
-    // 첫 실행 체크
-    async function checkFirstRun() {
-        const isFirstRun = await window.electronAPI.checkFirstRun();
-        if (isFirstRun) {
-            setTimeout(() => {
-                showInitialSetup();
-            }, 500); // 화면이 완전히 로드된 후 표시
-        }
     }
     
     // API 에러 메시지 수신 처리
@@ -1353,5 +1291,4 @@ window.addEventListener('DOMContentLoaded', () => {
     loadBrotherPrinters();
     loadConfig(); // 설정 로드
     updateMedicineFailBadge(); // 미완성 약품 뱃지 업데이트
-    checkFirstRun(); // 첫 실행 체크
 });

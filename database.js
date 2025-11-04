@@ -164,6 +164,20 @@ class DatabaseManager {
             CREATE INDEX IF NOT EXISTS idx_parsing_history_parsedDate ON parsing_history(parsedDate);
             CREATE INDEX IF NOT EXISTS idx_parsing_history_prescriptionId ON parsing_history(prescriptionId);
         `);
+
+        // 7. license 테이블 (라이선스 정보)
+        this.db.exec(`
+            CREATE TABLE IF NOT EXISTS license (
+                id INTEGER PRIMARY KEY CHECK (id = 1),
+                pharmacyName TEXT NOT NULL,
+                ownerName TEXT NOT NULL,
+                email TEXT NOT NULL,
+                licenseKey TEXT NOT NULL,
+                isActivated INTEGER DEFAULT 0,
+                createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+                lastVerifiedAt TEXT
+            )
+        `);
     }
 
     prepareStatements() {
@@ -976,6 +990,59 @@ class DatabaseManager {
             medicines: this.db.prepare('SELECT COUNT(*) as count FROM medicines').get().count,
             prescription_medicines: this.db.prepare('SELECT COUNT(*) as count FROM prescription_medicines').get().count
         };
+    }
+
+    /**
+     * 라이선스 정보 저장
+     */
+    saveLicense(data) {
+        try {
+            const stmt = this.db.prepare(`
+                INSERT OR REPLACE INTO license (id, pharmacyName, ownerName, email, licenseKey, isActivated, lastVerifiedAt)
+                VALUES (1, @pharmacyName, @ownerName, @email, @licenseKey, @isActivated, @lastVerifiedAt)
+            `);
+
+            stmt.run({
+                pharmacyName: data.pharmacyName,
+                ownerName: data.ownerName,
+                email: data.email,
+                licenseKey: data.licenseKey,
+                isActivated: data.isActivated || 1,
+                lastVerifiedAt: data.lastVerifiedAt || this.getKSTTimestamp()
+            });
+
+            return true;
+        } catch (error) {
+            console.error('[DB] 라이선스 저장 실패:', error);
+            return false;
+        }
+    }
+
+    /**
+     * 라이선스 정보 조회
+     */
+    getLicense() {
+        try {
+            const stmt = this.db.prepare('SELECT * FROM license WHERE id = 1');
+            return stmt.get();
+        } catch (error) {
+            console.error('[DB] 라이선스 조회 실패:', error);
+            return null;
+        }
+    }
+
+    /**
+     * 마지막 인증 시간 업데이트
+     */
+    updateLastVerified() {
+        try {
+            const stmt = this.db.prepare('UPDATE license SET lastVerifiedAt = ? WHERE id = 1');
+            stmt.run(this.getKSTTimestamp());
+            return true;
+        } catch (error) {
+            console.error('[DB] 마지막 인증 시간 업데이트 실패:', error);
+            return false;
+        }
     }
 
     /**

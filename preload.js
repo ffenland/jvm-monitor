@@ -16,7 +16,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // 새로운 Brother 프린터 API
     getBrotherPrinters: () => ipcRenderer.invoke('get-brother-printers'),
     printPrescription: (prescriptionData, printerName) => ipcRenderer.invoke('print-prescription', prescriptionData, printerName),
-    diagnoseBPac: () => ipcRenderer.invoke('diagnose-bpac'),
     // 설정 관련 API
     getConfig: () => ipcRenderer.invoke('get-config'),
     saveConfig: (config) => ipcRenderer.invoke('save-config', config),
@@ -59,4 +58,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onMedicineDataUpdated: (callback) => ipcRenderer.on('medicine-data-updated', (_event) => callback()),
     // 처방전 삭제 API
     deletePrescription: (prescriptionId) => ipcRenderer.invoke('delete-prescription', prescriptionId)
+});
+
+// 인증 관련 API (별도 노출)
+contextBridge.exposeInMainWorld('authAPI', {
+    verifyLicense: (data) => ipcRenderer.invoke('auth:verify-license', data),
+    getLocalLicense: () => ipcRenderer.invoke('auth:get-local-license'),
+    authSuccess: () => ipcRenderer.send('auth:success')
 });

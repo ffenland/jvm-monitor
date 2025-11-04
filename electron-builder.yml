@@ -16,6 +16,8 @@ files:
   - "!*-original.js"
   - "!compile.js"
   - "**/*.jsc"
+  - "!license-generator/**"
+  - "!src/config/firebase-config.js"
 
 asarUnpack:
   - "templates/**/*.lbx"

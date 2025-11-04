@@ -38,3 +38,8 @@ Thumbs.db
 /samples
 /originFiles
 
+/firebase
+
+# License management (DO NOT commit to repository)
+/license-generator
+/src/config/firebase-config.js
