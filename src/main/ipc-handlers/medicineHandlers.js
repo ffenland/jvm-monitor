@@ -50,7 +50,7 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
         try {
             const mainWindow = getMainWindow();
             const settingsWindow = new BrowserWindow({
-                width: 1200,
+                width: 800,
                 height: 800,
                 parent: mainWindow,
                 icon: path.join(__dirname, '../../../build', 'icon.ico'),
@@ -89,16 +89,17 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
         try {
             const medicines = dbManager.getAllMedicineFails();
 
-            // bohcode 정보 추가
-            const medicinesWithBohcode = medicines.map(medicine => {
+            // bohcode 목록 추가
+            const medicinesWithBohcodes = medicines.map(medicine => {
                 const bohcodes = dbManager.getBohcodesByYakjungCode(medicine.yakjung_code);
                 return {
                     ...medicine,
-                    bohcode: bohcodes.length > 0 ? bohcodes[0] : null
+                    bohcode: bohcodes.length > 0 ? bohcodes[0] : null,  // 첫 번째 bohcode (하위 호환성)
+                    bohcodes: bohcodes  // 전체 bohcode 배열
                 };
             });
 
-            return { success: true, medicines: medicinesWithBohcode };
+            return { success: true, medicines: medicinesWithBohcodes };
         } catch (error) {
             console.error('Error getting incomplete medicines:', error);
             return { success: false, error: error.message };
@@ -257,12 +258,13 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
                 LIMIT 100
             `).all(`%${searchTerm}%`);
 
-            // 각 약품에 bohcode 정보 추가
-            const nameResultsWithBohcode = nameResults.map(medicine => {
+            // 각 약품에 bohcode 목록 추가
+            const nameResultsWithBohcodes = nameResults.map(medicine => {
                 const bohcodes = dbManager.getBohcodesByYakjungCode(medicine.yakjung_code);
                 return {
                     ...medicine,
-                    bohcode: bohcodes.length > 0 ? bohcodes[0] : null
+                    bohcode: bohcodes.length > 0 ? bohcodes[0] : null,  // 첫 번째 bohcode (하위 호환성)
+                    bohcodes: bohcodes  // 전체 bohcode 배열
                 };
             });
 
@@ -280,14 +282,18 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
             const resultMap = new Map();
 
             // 약품명 검색 결과 추가
-            nameResultsWithBohcode.forEach(item => {
+            nameResultsWithBohcodes.forEach(item => {
                 resultMap.set(item.yakjung_code, item);
             });
 
             // bohcode 검색 결과 추가 (중복되지 않는 것만)
             bohcodeResults.forEach(item => {
                 if (!resultMap.has(item.yakjung_code)) {
-                    resultMap.set(item.yakjung_code, item);
+                    const bohcodes = dbManager.getBohcodesByYakjungCode(item.yakjung_code);
+                    resultMap.set(item.yakjung_code, {
+                        ...item,
+                        bohcodes: bohcodes
+                    });
                 }
             });
 
@@ -324,8 +330,8 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
             const parentWindow = BrowserWindow.fromWebContents(event.sender);
 
             const searchWindow = new BrowserWindow({
-                width: 900,
-                height: 700,
+                width: 800,
+                height: 800,
                 parent: parentWindow,
                 modal: true,
                 icon: path.join(__dirname, '../../../build', 'icon.ico'),
@@ -401,6 +407,73 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
             return { success: true, medicine: result };
         } catch (error) {
             console.error('약품 상세정보 조회 및 저장 실패:', error);
+            return { success: false, error: error.message };
+        }
+    });
+
+    // 신규약품 추가 창 열기
+    ipcMain.handle('open-add-new-medicine', async () => {
+        try {
+            const mainWindow = getMainWindow();
+            const addMedicineWindow = new BrowserWindow({
+                width: 800,
+                height: 800,
+                parent: mainWindow,
+                icon: path.join(__dirname, '../../../build', 'icon.ico'),
+                autoHideMenuBar: true,
+                webPreferences: {
+                    nodeIntegration: true,
+                    contextIsolation: false
+                }
+            });
+
+            addMedicineWindow.setMenuBarVisibility(false);
+            addMedicineWindow.setMenu(null);
+            addMedicineWindow.loadFile(path.join(__dirname, '../../../add-new-medicine.html'));
+
+            return { success: true };
+        } catch (error) {
+            console.error('Error opening add new medicine window:', error);
+            return { success: false, error: error.message };
+        }
+    });
+
+    // 약학정보원에서 약품 추가
+    ipcMain.handle('add-medicine-from-yakjung', async (event, yakjungCode) => {
+        try {
+            // yakjungCode로 약학정보원에서 정보 가져와서 DB에 저장
+            const { fetchAndSaveMedicineByYakjungCode } = require('../../../medicine-fetcher.js');
+            const result = await fetchAndSaveMedicineByYakjungCode(yakjungCode, dbManager);
+
+            if (result.success) {
+                return {
+                    success: true,
+                    message: '약품이 성공적으로 추가되었습니다',
+                    medicine: result.medicine,
+                    bohcodes: result.bohcodes || []
+                };
+            } else {
+                return {
+                    success: false,
+                    error: result.error || '약품 정보를 가져오는데 실패했습니다'
+                };
+            }
+        } catch (error) {
+            console.error('약품 추가 실패:', error);
+            return {
+                success: false,
+                error: '약품 추가 중 오류가 발생했습니다'
+            };
+        }
+    });
+
+    // 용법 우선순위만 업데이트
+    ipcMain.handle('update-medicine-priority', async (event, { yakjungCode, usagePriority }) => {
+        try {
+            dbManager.updateMedicineUsagePriority(yakjungCode, usagePriority);
+            return { success: true };
+        } catch (error) {
+            console.error('Failed to update priority:', error);
             return { success: false, error: error.message };
         }
     });

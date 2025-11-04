@@ -143,6 +143,93 @@ async function fetchAndSaveMedicine(bohcode, drugNameFromParsing = null, dbInsta
 }
 
 /**
+ * yakjungCode로 약품 정보 수집 및 저장 (신규약품 추가용)
+ * @param {string} yakjungCode - 약학정보원 코드
+ * @param {DatabaseManager} dbInstance - 데이터베이스 인스턴스 (선택적)
+ * @returns {Promise<Object>} { success, medicine, bohcodes }
+ */
+async function fetchAndSaveMedicineByYakjungCode(yakjungCode, dbInstance = null) {
+    const db = dbInstance || new DatabaseManager();
+
+    try {
+        // 1. 이미 존재하는지 확인 (yakjung_code로 조회)
+        const existing = db.getMedicine(yakjungCode);
+        if (existing) {
+            // 이미 존재하는 약품
+            return {
+                success: false,
+                error: '이미 등록된 약품입니다',
+                alreadyExists: true,
+                medicine: existing
+            };
+        }
+
+        // 2. 약학정보원 API 호출
+        const { fetchMedicineDetailByYakjungCode, fetchBohCodesFromYakjung } = require('./scripts/medicine-api.js');
+        const medicineInfo = await fetchMedicineDetailByYakjungCode(yakjungCode);
+
+        if (!medicineInfo) {
+            return {
+                success: false,
+                error: '약품 정보를 가져올 수 없습니다'
+            };
+        }
+
+        // 3. bohcode 목록 조회
+        const bohcodes = await fetchBohCodesFromYakjung(yakjungCode);
+
+        // 4. 데이터 가공 (bohcode 없이 저장)
+        const processedData = {
+            bohcode: bohcodes.length > 0 ? bohcodes[0] : null, // 첫 번째 bohcode를 기본값으로
+            ...medicineInfo,
+            custom_usage: null,
+            usage_priority: '1324'
+        };
+
+        // 5. DB 저장 (트랜잭션 시작)
+        const transaction = db.db.transaction(() => {
+            // 5-1. medicine 테이블에 약품 정보 저장
+            const savedMedicine = db.saveMedicine(processedData);
+
+            // 5-2. medicine_bohcodes 테이블에 보험코드 저장
+            if (bohcodes.length > 0) {
+                for (const bohcode of bohcodes) {
+                    try {
+                        db.statements.insertBohcode.run({
+                            yakjung_code: yakjungCode,
+                            bohcode: bohcode
+                        });
+                    } catch (error) {
+                        // UNIQUE 제약조건 위반 시 무시 (이미 존재하는 bohcode)
+                        if (!error.message.includes('UNIQUE constraint failed')) {
+                            throw error;
+                        }
+                    }
+                }
+            }
+
+            return savedMedicine;
+        });
+
+        const savedMedicine = transaction();
+
+        return {
+            success: true,
+            medicine: savedMedicine,
+            bohcodes: bohcodes,
+            cached: false
+        };
+
+    } catch (error) {
+        console.error('약품 저장 실패:', error);
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+}
+
+/**
  * upso_name에서 제조사명만 추출
  */
 function parseUpsoName(upsoName) {
@@ -151,4 +238,4 @@ function parseUpsoName(upsoName) {
     return parts[0].trim() || null;
 }
 
-module.exports = { fetchAndSaveMedicine };
+module.exports = { fetchAndSaveMedicine, fetchAndSaveMedicineByYakjungCode };

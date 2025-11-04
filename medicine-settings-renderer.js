@@ -5,14 +5,14 @@ const { ipcRenderer } = require('electron');
 const medicineList = document.getElementById('medicine-list');
 const medicineDetail = document.getElementById('medicine-detail');
 const medicineCount = document.getElementById('medicine-count');
-const refreshListBtn = document.getElementById('refresh-list-btn');
+const addNewMedicineBtn = document.getElementById('add-new-medicine-btn');
 const searchInput = document.getElementById('search-input');
 const searchBtn = document.getElementById('search-btn');
 const showIncompleteBtn = document.getElementById('show-incomplete-btn');
 
 let medicines = [];
 let selectedMedicine = null;
-let isSearchMode = false; // 검색 모드인지 미완성 목록 모드인지
+let currentViewMode = 'incomplete'; // 'incomplete', 'search'
 
 /**
  * 토스트 메시지 표시 함수
@@ -106,7 +106,7 @@ async function init() {
     await loadMedicines();
 
     // 이벤트 리스너
-    refreshListBtn.addEventListener('click', loadMedicines);
+    addNewMedicineBtn.addEventListener('click', openAddNewMedicine);
     searchBtn.addEventListener('click', performSearch);
     showIncompleteBtn.addEventListener('click', showIncompleteMedicines);
 
@@ -168,7 +168,7 @@ async function performSearch() {
 
         if (result.success) {
             medicines = result.medicines;
-            isSearchMode = true;
+            currentViewMode = 'search';
             renderMedicineList();
         } else {
             console.error('Failed to search medicines:', result.error);
@@ -185,7 +185,6 @@ async function performSearch() {
  */
 async function showIncompleteMedicines() {
     searchInput.value = ''; // 검색어 초기화
-    isSearchMode = false;
     await loadMedicines();
 }
 
@@ -198,7 +197,7 @@ async function loadMedicines() {
 
         if (result.success) {
             medicines = result.medicines;
-            isSearchMode = false;
+            currentViewMode = 'incomplete';
             renderMedicineList();
         } else {
             console.error('Failed to load medicines:', result.error);
@@ -214,13 +213,15 @@ async function loadMedicines() {
  * 약품 목록 렌더링
  */
 function renderMedicineList() {
-    const listTitle = isSearchMode ? '검색 결과' : '약품 정보 미완성 약품 목록';
-    document.querySelector('.medicine-list-section h2').textContent = listTitle;
-
     medicineCount.textContent = `총 ${medicines.length}개`;
 
     if (medicines.length === 0) {
-        const message = isSearchMode ? '검색 결과가 없습니다' : '약품 정보 미완성 약품이 없습니다';
+        let message = '약품이 없습니다';
+        if (currentViewMode === 'search') {
+            message = '검색 결과가 없습니다';
+        } else if (currentViewMode === 'incomplete') {
+            message = '약품 정보 미완성 약품이 없습니다';
+        }
         medicineList.innerHTML = `<div class="no-data">${message}</div>`;
         return;
     }
@@ -277,72 +278,104 @@ function selectMedicine(index) {
  * 약품 상세 정보 렌더링
  */
 function renderMedicineDetail(medicine) {
+    // bohcodes 배열이 있으면 사용, 없으면 bohcode 단일값 사용
+    const bohcodes = medicine.bohcodes || (medicine.bohcode ? [medicine.bohcode] : []);
+    const bohcodeDisplay = bohcodes.length > 0
+        ? bohcodes.map(code => `<span style="display: inline-block; padding: 4px 8px; margin: 2px; background: #e3f2fd; border-radius: 4px; font-size: 13px;">${code}</span>`).join('')
+        : '<span style="color: #999;">없음</span>';
+
     medicineDetail.innerHTML = `
         <div class="form-group">
-            <label>약학정보원 코드 (yakjung_code):</label>
-            <input type="text" value="${medicine.yakjung_code}" readonly>
+            <label>보험코드${bohcodes.length > 1 ? ` (${bohcodes.length}개)` : ''}:</label>
+            <div style="padding: 8px; background: #f8f9fa; border-radius: 4px; min-height: 36px; display: flex; align-items: center; flex-wrap: wrap; gap: 4px;">
+                ${bohcodeDisplay}
+            </div>
         </div>
 
         <div class="form-group">
-            <label>보험코드 (bohcode):</label>
-            <input type="text" value="${medicine.bohcode || '없음'}" readonly>
-        </div>
-
-        <div class="form-group">
-            <label>약품명 (drug_name):</label>
+            <label>약품명:</label>
             <input type="text" id="edit-drug-name" value="${medicine.drug_name || ''}">
         </div>
 
         <div class="form-group">
-            <label>제형 (drug_form):</label>
+            <label>제형:</label>
             <input type="text" id="edit-drug-form" value="${medicine.drug_form || ''}">
             <small style="color: #666; font-size: 12px;">예: 정제, 캡슐제, 시럽제, 주사제</small>
         </div>
 
         <div class="form-group">
-            <label>투여경로 (dosage_route):</label>
+            <label>투여경로:</label>
             <input type="text" id="edit-dosage-route" value="${medicine.dosage_route || ''}">
             <small style="color: #666; font-size: 12px;">예: 경구, 주사, 외용</small>
         </div>
 
         <div class="form-group">
-            <label>약효분류 (cls_code):</label>
+            <label>약효분류:</label>
             <input type="text" id="edit-cls-code" value="${medicine.cls_code || ''}">
             <small style="color: #666; font-size: 12px;">예: 해열진통소염제, 소화기관용약</small>
         </div>
 
         <div class="form-group">
-            <label>제조사 (upso_name):</label>
+            <label>제조사:</label>
             <input type="text" id="edit-upso-name" value="${medicine.upso_name || ''}">
         </div>
 
         <div class="form-group">
-            <label>의약품목 (medititle):</label>
+            <label>의약품목:</label>
             <input type="text" id="edit-medititle" value="${medicine.medititle || ''}">
         </div>
 
         <div class="form-group">
-            <label>보관온도 (temperature):</label>
+            <label>보관온도:</label>
             <input type="text" id="edit-temperature" value="${medicine.temperature || ''}">
             <small style="color: #666; font-size: 12px;">예: 실온, 냉장보관(2-8℃)</small>
         </div>
 
         <div class="form-group">
-            <label>단위 (unit):</label>
+            <label>단위:</label>
             <input type="text" id="edit-unit" value="${medicine.unit || ''}">
             <small style="color: #666; font-size: 12px;">예: 정, 캡슐, ml, 포</small>
         </div>
 
         <div class="form-group">
-            <label>사용자 정의 용법 (custom_usage):</label>
+            <label>사용자 정의 용법:</label>
             <textarea id="edit-custom-usage">${medicine.custom_usage || ''}</textarea>
             <small style="color: #666; font-size: 12px;">선택사항: 특별한 복용 방법이 있다면 입력</small>
         </div>
 
         <div class="form-group">
-            <label>용법 우선순위 (usage_priority):</label>
-            <input type="text" id="edit-usage-priority" value="${medicine.usage_priority || '1324'}" maxlength="4">
-            <small style="color: #666; font-size: 12px;">4자리 숫자로 복용 시간 우선순위 (예: 1324 = 아침/점심/저녁/취침 전)</small>
+            <label>용법 우선순위:</label>
+            <div class="priority-info">
+                <p><strong>처방 횟수에 따른 용법 우선순위를 설정합니다.</strong></p>
+                <p>예를 들어 "아침","저녁","점심","취침전" 순의 경우:</p>
+                <ul>
+                    <li>하루 1번이면 "아침"</li>
+                    <li>하루 2번이면 "아침, 저녁"</li>
+                    <li>하루 3번이면 "아침, 저녁, 점심"</li>
+                    <li>하루 4번이면 "아침, 저녁, 점심, 취침전"</li>
+                </ul>
+                <p>하루 복용 횟수의 값에 따라 우선순위대로 추가됩니다.</p>
+            </div>
+
+            <!-- 현재 우선순위 표시 -->
+            <div class="priority-display" id="priority-display"></div>
+
+            <!-- 수정 모드 -->
+            <div class="priority-edit-mode" id="priority-edit-mode" style="display: none;">
+                <div class="priority-buttons">
+                    <button type="button" class="priority-btn" data-value="1">아침</button>
+                    <button type="button" class="priority-btn" data-value="2">점심</button>
+                    <button type="button" class="priority-btn" data-value="3">저녁</button>
+                    <button type="button" class="priority-btn" data-value="4">취침전</button>
+                </div>
+                <div class="priority-result" id="priority-result"></div>
+            </div>
+
+            <div class="priority-actions">
+                <button type="button" class="btn btn-primary" id="edit-priority-btn">수정하기</button>
+                <button type="button" class="btn btn-success" id="save-priority-btn" style="display: none;">저장</button>
+                <button type="button" class="btn btn-secondary" id="cancel-priority-btn" style="display: none;">취소</button>
+            </div>
         </div>
 
         <div class="detail-buttons">
@@ -354,6 +387,9 @@ function renderMedicineDetail(medicine) {
     // 버튼 이벤트 리스너
     document.getElementById('save-medicine-btn').addEventListener('click', saveMedicine);
     document.getElementById('search-medicine-btn').addEventListener('click', searchMedicine);
+
+    // 우선순위 초기화 및 이벤트 리스너
+    initializePriorityUI(medicine.usage_priority || '1324');
 }
 
 /**
@@ -429,6 +465,172 @@ async function searchMedicine() {
     }
 }
 
+/**
+ * 신규약품 추가 창 열기
+ */
+async function openAddNewMedicine() {
+    try {
+        const result = await ipcRenderer.invoke('open-add-new-medicine');
+        if (!result.success) {
+            showToast('신규약품 추가 창을 열 수 없습니다', 'error');
+        }
+    } catch (error) {
+        console.error('신규약품 추가 창 열기 실패:', error);
+        showToast('신규약품 추가 창을 열 수 없습니다', 'error');
+    }
+}
+
+/**
+ * ========================================
+ * Usage Priority 관련 함수들
+ * ========================================
+ */
+
+// 우선순위 매핑
+const PRIORITY_MAP = {
+    '1': '아침',
+    '2': '점심',
+    '3': '저녁',
+    '4': '취침전'
+};
+
+const PRIORITY_REVERSE_MAP = {
+    '아침': '1',
+    '점심': '2',
+    '저녁': '3',
+    '취침전': '4'
+};
+
+let currentPriority = '1324'; // 현재 우선순위
+let editingPriority = []; // 수정 중인 우선순위
+
+/**
+ * 우선순위 UI 초기화
+ */
+function initializePriorityUI(priority) {
+    currentPriority = priority || '1324';
+    updatePriorityDisplay(currentPriority);
+
+    // 이벤트 리스너 설정
+    document.getElementById('edit-priority-btn').addEventListener('click', enterEditMode);
+    document.getElementById('save-priority-btn').addEventListener('click', savePriority);
+    document.getElementById('cancel-priority-btn').addEventListener('click', exitEditMode);
+
+    // 우선순위 버튼 클릭 이벤트
+    document.querySelectorAll('.priority-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const value = btn.dataset.value;
+            if (!editingPriority.includes(value)) {
+                editingPriority.push(value);
+                btn.disabled = true;
+                updatePriorityResult();
+            }
+        });
+    });
+}
+
+/**
+ * 우선순위 표시 업데이트
+ */
+function updatePriorityDisplay(priority) {
+    const display = document.getElementById('priority-display');
+    if (!display) return;
+
+    display.innerHTML = '';
+
+    for (let i = 0; i < priority.length; i++) {
+        const box = document.createElement('div');
+        box.className = 'priority-box';
+        box.textContent = PRIORITY_MAP[priority[i]];
+        display.appendChild(box);
+    }
+}
+
+/**
+ * 수정 모드 진입
+ */
+function enterEditMode() {
+    document.getElementById('priority-display').style.display = 'none';
+    document.getElementById('priority-edit-mode').style.display = 'block';
+    document.getElementById('edit-priority-btn').style.display = 'none';
+    document.getElementById('save-priority-btn').style.display = 'inline-block';
+    document.getElementById('cancel-priority-btn').style.display = 'inline-block';
+
+    editingPriority = [];
+    updatePriorityResult();
+    resetPriorityButtons();
+}
+
+/**
+ * 결과창 업데이트
+ */
+function updatePriorityResult() {
+    const result = document.getElementById('priority-result');
+    if (!result) return;
+
+    result.innerHTML = '';
+
+    editingPriority.forEach((value, index) => {
+        const item = document.createElement('div');
+        item.className = 'priority-result-item';
+        item.dataset.index = index + 1;
+        item.textContent = PRIORITY_MAP[value];
+        result.appendChild(item);
+    });
+}
+
+/**
+ * 버튼 초기화
+ */
+function resetPriorityButtons() {
+    document.querySelectorAll('.priority-btn').forEach(btn => {
+        btn.disabled = false;
+    });
+}
+
+/**
+ * 우선순위 저장
+ */
+async function savePriority() {
+    if (editingPriority.length !== 4) {
+        showToast('모든 시간대를 선택해주세요 (4개)', 'error');
+        return;
+    }
+
+    const newPriority = editingPriority.join('');
+
+    try {
+        const result = await ipcRenderer.invoke('update-medicine-priority', {
+            yakjungCode: selectedMedicine.yakjung_code,
+            usagePriority: newPriority
+        });
+
+        if (result.success) {
+            currentPriority = newPriority;
+            selectedMedicine.usage_priority = newPriority;
+            exitEditMode();
+            showToast('용법 우선순위가 저장되었습니다', 'success');
+        } else {
+            showToast('저장 실패: ' + result.error, 'error');
+        }
+    } catch (error) {
+        console.error('우선순위 저장 실패:', error);
+        showToast('저장 중 오류 발생', 'error');
+    }
+}
+
+/**
+ * 수정 모드 종료
+ */
+function exitEditMode() {
+    document.getElementById('priority-display').style.display = 'flex';
+    document.getElementById('priority-edit-mode').style.display = 'none';
+    document.getElementById('edit-priority-btn').style.display = 'inline-block';
+    document.getElementById('save-priority-btn').style.display = 'none';
+    document.getElementById('cancel-priority-btn').style.display = 'none';
+
+    updatePriorityDisplay(currentPriority);
+}
 
 // 초기화 실행
 init();

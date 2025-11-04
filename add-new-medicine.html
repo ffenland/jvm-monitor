@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>약학정보원 약품 검색</title>
+    <title>신규약품 추가</title>
     <style>
         * {
             box-sizing: border-box;
@@ -209,11 +209,11 @@
         .info-text {
             margin-top: 10px;
             padding: 10px;
-            background: #fff3cd;
-            border: 1px solid #ffc107;
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
             border-radius: 4px;
             font-size: 13px;
-            color: #856404;
+            color: #0c5460;
         }
 
         .button-group {
@@ -298,18 +298,18 @@
 </head>
 <body>
     <div class="container">
-        <h1>약학정보원 약품 검색</h1>
+        <h1>신규약품 추가</h1>
 
         <div class="search-section">
             <div class="search-input-group">
                 <label>약품명:</label>
-                <input type="text" id="drugNameInput" placeholder="검색할 약품명을 입력하세요" />
+                <input type="text" id="searchInput" placeholder="검색할 약품명 또는 약품코드를 입력하세요" />
                 <button class="search-btn" id="searchBtn">검색</button>
             </div>
         </div>
 
-        <div class="info-text" id="currentDrugInfo">
-            <!-- 현재 선택된 약품 정보 표시 -->
+        <div class="info-text">
+            약학정보원에서 약품을 검색하여 DB에 추가합니다. 검색 후 원하는 약품을 선택하고 'DB에 추가' 버튼을 클릭하세요.
         </div>
 
         <div class="results-section">
@@ -339,11 +339,11 @@
         </div>
 
         <div class="button-group">
-            <button class="btn btn-primary" id="selectBtn" disabled>선택한 약품으로 업데이트</button>
-            <button class="btn btn-secondary" id="cancelBtn">취소</button>
+            <button class="btn btn-primary" id="addBtn" disabled>DB에 추가</button>
+            <button class="btn btn-secondary" id="closeBtn">닫기</button>
         </div>
     </div>
 
-    <script src="medicine-yakjung-search-renderer.js"></script>
+    <script src="add-new-medicine-renderer.js"></script>
 </body>
 </html>

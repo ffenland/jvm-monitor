@@ -1,7 +1,7 @@
-const cheerio = require('cheerio');
-const fs = require('fs');
-const { extractTemperature } = require('./extract-temperature.js');
-const { getUnitFromDrugForm } = require('./drug-form-unit-map.js');
+const cheerio = require("cheerio");
+const fs = require("fs");
+const { extractTemperature } = require("./extract-temperature.js");
+const { getUnitFromDrugForm } = require("./drug-form-unit-map.js");
 
 /**
  * bohcode(9자리 보험코드)로 약학정보원에서 약품 검색
@@ -53,7 +53,7 @@ async function searchMedicineByBohcode(bohcode) {
   urlencoded.append("movefrom", "drug");
   urlencoded.append("proTabState", "0");
   urlencoded.append("proYN", "");
-  urlencoded.append("search_bohcode", bohcode);  // 보험코드로 검색
+  urlencoded.append("search_bohcode", bohcode); // 보험코드로 검색
   urlencoded.append("search_detail", "Y");
   urlencoded.append("search_drugnm_initial", "");
   urlencoded.append("search_drugnm_initial", "");
@@ -80,13 +80,16 @@ async function searchMedicineByBohcode(bohcode) {
   const requestOptions = {
     method: "POST",
     headers: {
-      "sec-ch-ua": '"Google Chrome";v="141", "Not?A_Brand";v="8", "Chromium";v="141"',
+      "sec-ch-ua":
+        '"Google Chrome";v="141", "Not?A_Brand";v="8", "Chromium";v="141"',
       "sec-ch-ua-mobile": "?0",
       "sec-ch-ua-platform": '"Windows"',
       "Content-Type": "application/x-www-form-urlencoded",
       "Upgrade-Insecure-Requests": "1",
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
-      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+      Accept:
+        "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
       "Sec-Fetch-Site": "same-origin",
       "Sec-Fetch-Mode": "navigate",
       "Sec-Fetch-User": "?1",
@@ -96,7 +99,10 @@ async function searchMedicineByBohcode(bohcode) {
   };
 
   try {
-    const response = await fetch("https://www.health.kr/searchDrug/search_detail.asp", requestOptions);
+    const response = await fetch(
+      "https://www.health.kr/searchDrug/search_detail.asp",
+      requestOptions
+    );
     const html = await response.text();
 
     // HTML 파싱
@@ -104,8 +110,8 @@ async function searchMedicineByBohcode(bohcode) {
 
     // onclick="javascript:drug_detailHref('2020071600007')" 형식에서 yakjung_code 추출
     let yakjungCode = null;
-    $('#tbl_proY td[onclick]').each((index, element) => {
-      const onclickAttr = $(element).attr('onclick');
+    $("#tbl_proY td[onclick]").each((index, element) => {
+      const onclickAttr = $(element).attr("onclick");
       if (onclickAttr) {
         const match = onclickAttr.match(/drug_detailHref\('([^']+)'\)/);
         if (match) {
@@ -119,9 +125,8 @@ async function searchMedicineByBohcode(bohcode) {
       return { icode: yakjungCode };
     }
     return null; // 결과 없음
-
   } catch (error) {
-    console.error('Error searching by bohcode:', error);
+    console.error("Error searching by bohcode:", error);
     return null;
   }
 }
@@ -162,10 +167,10 @@ async function searchMedicineByName(drugName) {
   urlencoded.append("cbx_narcotic_mode", "0");
   urlencoded.append("cbx_sunbcnt", "0");
   urlencoded.append("cbx_sunbcnt_mode", "0");
-  urlencoded.append("drug_nm", drugName);  // 약품명으로 검색
+  urlencoded.append("drug_nm", drugName); // 약품명으로 검색
   urlencoded.append("drug_nm_mode", "field");
   urlencoded.append("icode", "");
-  urlencoded.append("input_drug_nm", drugName);  // 약품명 입력
+  urlencoded.append("input_drug_nm", drugName); // 약품명 입력
   urlencoded.append("input_hiraingdcd", "");
   urlencoded.append("input_upsoNm", "");
   urlencoded.append("kpic_atc_nm", "");
@@ -176,7 +181,7 @@ async function searchMedicineByName(drugName) {
   urlencoded.append("movefrom", "drug");
   urlencoded.append("proTabState", "0");
   urlencoded.append("proYN", "");
-  urlencoded.append("search_bohcode", "");  // bohcode는 비움
+  urlencoded.append("search_bohcode", ""); // bohcode는 비움
   urlencoded.append("search_detail", "Y");
   urlencoded.append("search_drugnm_initial", "");
   urlencoded.append("search_drugnm_initial", "");
@@ -203,30 +208,35 @@ async function searchMedicineByName(drugName) {
   const requestOptions = {
     method: "POST",
     headers: {
-      "sec-ch-ua": '"Google Chrome";v="141", "Not?A_Brand";v="8", "Chromium";v="141"',
+      "sec-ch-ua":
+        '"Google Chrome";v="141", "Not?A_Brand";v="8", "Chromium";v="141"',
       "sec-ch-ua-mobile": "?0",
       "sec-ch-ua-platform": '"macOS"',
       "Content-Type": "application/x-www-form-urlencoded",
       "Upgrade-Insecure-Requests": "1",
-      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
-      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+      "User-Agent":
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+      Accept:
+        "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
       "Sec-Fetch-Site": "same-origin",
       "Sec-Fetch-Mode": "navigate",
       "Sec-Fetch-User": "?1",
       "Sec-Fetch-Dest": "document",
-      "Cookie": "ASPSESSIONIDQQRSASSB=MOLPNFMCHGCEEGHBJADBLBMB; ASPSESSIONIDSSQTDRQC=MHHLCBJDJLJPAJLFJCIAIDHP; ASPSESSIONIDSSTQARSA=DCGELNFAOKLDCAGPBFOGEGEC; NCPVPCLBTG=0c3b0e0eaa56ce7ace3b7eb96b733317e791e439a5e6f5246ea6af3cec1c49f0",
     },
     body: urlencoded.toString(),
   };
 
   try {
-    const response = await fetch("https://www.health.kr/searchDrug/search_detail.asp", requestOptions);
+    const response = await fetch(
+      "https://www.health.kr/searchDrug/search_detail.asp",
+      requestOptions
+    );
     const html = await response.text();
 
     const parsedData = parseSearchResults(html);
     return parsedData;
   } catch (error) {
-    console.error('Error fetching medicine data:', error);
+    console.error("Error fetching medicine data:", error);
     throw error;
   }
 }
@@ -249,15 +259,15 @@ function parseSearchResults(html) {
   const results = [];
 
   // 테이블의 각 데이터 행을 순회 (thead 제외)
-  $('#tbl_proY tr').each((index, element) => {
+  $("#tbl_proY tr").each((index, element) => {
     const tr = $(element);
 
     // 헤더 행은 건너뛰기
-    if (tr.find('th').length > 0) {
+    if (tr.find("th").length > 0) {
       return;
     }
 
-    const tds = tr.find('td');
+    const tds = tr.find("td");
 
     // 최소한의 td가 있는지 확인
     if (tds.length < 9) {
@@ -266,21 +276,29 @@ function parseSearchResults(html) {
 
     // 1. 식별/포장 이미지 (td[0])
     const imgTd = tds.eq(0);
-    const imgElement = imgTd.find('img');
-    const imageUrl = imgElement.attr('src') || null;
-    const photoId = imgTd.attr('id') || '';
-    const yakjungCodeFromImg = photoId.replace('photo', '');
+    const imgElement = imgTd.find("img");
+    const imageUrl = imgElement.attr("src") || null;
+    const photoId = imgTd.attr("id") || "";
+    const yakjungCodeFromImg = photoId.replace("photo", "");
 
     // 2. 제품명 및 yakjungCode (td[1])
     const nameTd = tds.eq(1);
     const name = nameTd.text().trim();
-    const onclickAttr = nameTd.attr('onclick') || '';
+    const onclickAttr = nameTd.attr("onclick") || "";
     const yakjungCodeMatch = onclickAttr.match(/drug_detailHref\('([^']+)'\)/);
-    const yakjungCode = yakjungCodeMatch ? yakjungCodeMatch[1] : yakjungCodeFromImg;
+    const yakjungCode = yakjungCodeMatch
+      ? yakjungCodeMatch[1]
+      : yakjungCodeFromImg;
 
     // 3. 성분/함량 (td[2]) - 팝업 내용 제외하고 메인 텍스트만
     const ingredientTd = tds.eq(2);
-    const ingredient = ingredientTd.clone().children().remove().end().text().trim();
+    const ingredient = ingredientTd
+      .clone()
+      .children()
+      .remove()
+      .end()
+      .text()
+      .trim();
 
     // 4. 효능 (td[3]) - 스킵
     // const effect = tds.eq(3).text().trim();
@@ -305,15 +323,15 @@ function parseSearchResults(html) {
 
     if (yakjungCode && name) {
       results.push({
-        yakjungCode,      // yakjung_code (icode)
-        name,             // 제품명
-        imageUrl,         // 식별 이미지 URL
-        ingredient,       // 성분/함량
-        formulation,      // 제형
-        company,          // 회사명
-        classification,   // 전문/일반
-        price,            // 약가
-        supply            // 공급유무
+        yakjungCode, // yakjung_code (icode)
+        name, // 제품명
+        imageUrl, // 식별 이미지 URL
+        ingredient, // 성분/함량
+        formulation, // 제형
+        company, // 회사명
+        classification, // 전문/일반
+        price, // 약가
+        supply, // 공급유무
       });
     }
   });
@@ -328,47 +346,8 @@ function parseSearchResults(html) {
  */
 function parseUpsoName(upsoName) {
   if (!upsoName) return null;
-  const parts = upsoName.split('|');
+  const parts = upsoName.split("|");
   return parts[0].trim() || null;
-}
-
-// 테스트 코드
-async function test() {
-  console.log('Testing searchMedicineByName...\n');
-
-  // 테스트할 약품명 (실제 존재하는 약품명으로 테스트)
-  const testDrugName = '타이레놀';
-
-  console.log(`Searching for: ${testDrugName}`);
-
-  try {
-    const results = await searchMedicineByName(testDrugName);
-
-    console.log(`\nFound ${results.length} result(s):\n`);
-
-    results.forEach((result, index) => {
-      console.log(`[${index + 1}]`);
-      console.log(`  yakjungCode: ${result.yakjungCode}`);
-      console.log(`  제품명: ${result.name}`);
-      console.log(`  성분/함량: ${result.ingredient}`);
-      console.log(`  제형: ${result.formulation}`);
-      console.log(`  회사명: ${result.company}`);
-      console.log(`  구분: ${result.classification}`);
-      console.log(`  약가: ${result.price}`);
-      console.log(`  공급유무: ${result.supply}`);
-      if (result.imageUrl) {
-        console.log(`  이미지: ${result.imageUrl}`);
-      }
-      console.log('');
-    });
-
-    // JSON으로도 저장
-    fs.writeFileSync('search-results.json', JSON.stringify(results, null, 2), 'utf-8');
-    console.log('Results saved to search-results.json');
-
-  } catch (error) {
-    console.error('Test failed:', error);
-  }
 }
 
 /**
@@ -383,8 +362,9 @@ async function fetchMedicineDetailByYakjungCode(yakjungCode) {
   const requestOptions = {
     method: "GET",
     headers: {
-      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
-      "Accept": "application/json, text/javascript, */*; q=0.01",
+      "User-Agent":
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+      Accept: "application/json, text/javascript, */*; q=0.01",
       "X-Requested-With": "XMLHttpRequest",
     },
   };
@@ -394,10 +374,11 @@ async function fetchMedicineDetailByYakjungCode(yakjungCode) {
     const jsonData = await response.json();
 
     // API 응답이 배열이면 첫 번째 요소 사용
-    const data = Array.isArray(jsonData) && jsonData.length > 0 ? jsonData[0] : jsonData;
+    const data =
+      Array.isArray(jsonData) && jsonData.length > 0 ? jsonData[0] : jsonData;
 
     if (!data) {
-      throw new Error('약품 정보를 찾을 수 없습니다');
+      throw new Error("약품 정보를 찾을 수 없습니다");
     }
 
     const drugForm = data.drug_form || null;
@@ -405,20 +386,97 @@ async function fetchMedicineDetailByYakjungCode(yakjungCode) {
 
     return {
       yakjung_code: yakjungCode,
-      drug_name: data.drug_name || '',
+      drug_name: data.drug_name || "",
       drug_form: drugForm,
-      dosage_route: data.dosage_route || '',
-      cls_code: data.cls_code || '',
-      upso_name: parseUpsoName(data.upso_name),  // 제조사명만 추출
-      medititle: data.medititle || '',
+      dosage_route: data.dosage_route || "",
+      cls_code: data.cls_code || "",
+      upso_name: parseUpsoName(data.upso_name), // 제조사명만 추출
+      medititle: data.medititle || "",
       stmt: stmt,
-      temperature: stmt ? extractTemperature(stmt) : null,  // stmt에서 온도 추출
-      unit: getUnitFromDrugForm(drugForm),  // drug_form에서 단위 유추
-      api_fetched: 1
+      temperature: stmt ? extractTemperature(stmt) : null, // stmt에서 온도 추출
+      unit: getUnitFromDrugForm(drugForm), // drug_form에서 단위 유추
+      api_fetched: 1,
     };
   } catch (error) {
-    console.error('Error fetching medicine detail:', error);
+    console.error("Error fetching medicine detail:", error);
     throw error;
+  }
+}
+
+/**
+ * yakjungCode로 유효한 보험코드(bohcode) 목록 조회
+ * @param {string} yakjungCode - 약학정보원 코드
+ * @returns {Promise<string[]>} 유효한 보험코드 배열 (빈 배열 가능)
+ */
+async function fetchBohCodesFromYakjung(yakjungCode) {
+  const url = `https://www.health.kr/searchDrug/ajax/ajax_boh_history2.asp?drug_cd=${yakjungCode}`;
+
+  const requestOptions = {
+    method: "GET",
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "Accept": "application/json, text/javascript, */*; q=0.01",
+      "X-Requested-With": "XMLHttpRequest",
+    },
+  };
+
+  try {
+    const response = await fetch(url, requestOptions);
+
+    if (!response.ok) {
+      console.error(`bohcode API 응답 오류: ${response.status}`);
+      return [];
+    }
+
+    const jsonData = await response.json();
+
+    if (!jsonData || jsonData.length === 0 || !jsonData[0].boh_history2) {
+      // 보험코드 정보가 없음
+      return [];
+    }
+
+    const bohHistory = jsonData[0].boh_history2;
+    const bohCodes = [];
+
+    // ! 로 구분된 각 보험코드 그룹 처리
+    const groups = bohHistory.split('!');
+
+    for (const group of groups) {
+      if (!group.trim()) continue;
+
+      // odt 다음의 보험코드 추출
+      const bohCodeMatch = group.match(/odt(\d+)@/);
+      if (!bohCodeMatch) continue;
+
+      const bohCode = bohCodeMatch[1];
+
+      // @ 이후의 이력들 추출
+      const historyPart = group.split('@')[1];
+      if (!historyPart) continue;
+
+      // # 으로 구분된 각 이력
+      const histories = historyPart.split('#');
+
+      // 가장 최근 이력 (마지막 항목)
+      const latestHistory = histories[histories.length - 1];
+
+      // 상태 추출 (탭으로 구분된 3번째 항목)
+      const parts = latestHistory.split('\t');
+      if (parts.length >= 3) {
+        const status = parts[2].trim();
+
+        // 상태가 "급여"인 경우만 유효한 보험코드로 추가
+        if (status === '급여') {
+          bohCodes.push(bohCode);
+        }
+      }
+    }
+
+    return bohCodes;
+
+  } catch (error) {
+    console.error('bohcode 조회 실패:', error);
+    return [];
   }
 }
 
@@ -427,10 +485,6 @@ module.exports = {
   searchMedicineByName,
   parseSearchResults,
   searchMedicineByBohcode,
-  fetchMedicineDetailByYakjungCode
+  fetchMedicineDetailByYakjungCode,
+  fetchBohCodesFromYakjung,
 };
-
-// 직접 실행 시 테스트
-if (require.main === module) {
-  test();
-}

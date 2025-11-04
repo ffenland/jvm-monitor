@@ -37,17 +37,17 @@
             overflow: hidden;
         }
         .medicine-list-section {
-            flex: 1;
+            flex: 4;
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             padding: 20px;
             display: flex;
             flex-direction: column;
-            min-width: 400px;
+            min-width: 300px;
         }
         .medicine-detail-section {
-            flex: 1;
+            flex: 6;
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -189,6 +189,110 @@
             padding: 40px;
             color: #999;
         }
+        /* Usage Priority Styles */
+        .priority-info {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        .priority-info ul {
+            margin: 5px 0 0 20px;
+            padding: 0;
+        }
+        .priority-info li {
+            margin: 3px 0;
+        }
+        .priority-display {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        .priority-box {
+            padding: 8px 16px;
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+            border-radius: 20px;
+            font-weight: bold;
+            color: #1565c0;
+            font-size: 14px;
+        }
+        .priority-edit-mode {
+            margin-top: 10px;
+        }
+        .priority-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .priority-btn {
+            flex: 1;
+            padding: 10px;
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .priority-btn:hover:not(:disabled) {
+            background: #f0f0f0;
+            border-color: #2196f3;
+        }
+        .priority-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #e0e0e0;
+        }
+        .priority-result {
+            display: flex;
+            gap: 10px;
+            min-height: 50px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border: 2px dashed #ddd;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .priority-result:empty::before {
+            content: '위 버튼을 클릭하여 순서를 정해주세요';
+            color: #999;
+            font-size: 13px;
+        }
+        .priority-result-item {
+            padding: 8px 16px;
+            background: #4caf50;
+            color: white;
+            border-radius: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+        }
+        .priority-result-item::before {
+            content: attr(data-index);
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background: white;
+            color: #4caf50;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .priority-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -199,22 +303,24 @@
     <div class="main-container">
         <!-- 왼쪽: 약품 목록 -->
         <div class="medicine-list-section">
-            <h2>약품 정보 미완성 약품 목록</h2>
+            <h2>약품 목록</h2>
 
             <div class="button-group">
-                <button class="btn btn-primary" id="refresh-list-btn">목록 새로고침</button>
+                <button class="btn btn-success" id="add-new-medicine-btn">➕ 신규약품 추가</button>
                 <span id="medicine-count" style="line-height: 34px; margin-left: auto; color: #666; font-size: 14px;">
                     총 0개
                 </span>
             </div>
 
-            <!-- 검색 기능 -->
+            <!-- 검색 및 필터 -->
             <div class="form-group" style="margin-bottom: 15px;">
-                <label>약품 검색 (약품명 또는 약품코드)</label>
-                <div style="display: flex; gap: 8px;">
-                    <input type="text" id="search-input" placeholder="검색어를 입력하세요..." style="flex: 1;">
+                <label>약품 검색</label>
+                <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                    <input type="text" id="search-input" placeholder="약품명 또는 약품코드 입력..." style="flex: 1;">
                     <button class="btn btn-primary" id="search-btn">검색</button>
-                    <button class="btn btn-primary" id="show-incomplete-btn">미완성만</button>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-primary" id="show-incomplete-btn" style="flex: 1;">약품정보 미완성 약품 목록</button>
                 </div>
             </div>
 

@@ -25,6 +25,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     openLabelEditor: (prescriptionData, medicineCode) => ipcRenderer.invoke('open-label-editor', prescriptionData, medicineCode),
     // 약품 설정 창 API
     openMedicineSettings: (medicineCode) => ipcRenderer.invoke('open-medicine-settings', medicineCode),
+    // 신규약품 추가 창 API
+    openAddNewMedicine: () => ipcRenderer.invoke('open-add-new-medicine'),
     // 커스텀 라벨 편집 창 API
     openCustomLabelEditor: () => ipcRenderer.invoke('open-custom-label-editor'),
     // 약학정보원 검색 창 API
