@@ -51,7 +51,7 @@ function createWindow() {
     mainWindow = new BrowserWindow({
         width: 800,
         height: 800,
-        title: 'DrugLabel - PM프로그램 연동 약품 라벨 출력 시스템',
+        title: 'Labelix - 약국 전문 라벨 출력 솔루션',
         icon: path.join(__dirname, 'build', 'icon.ico'), // ICO 아이콘 사용
         autoHideMenuBar: true, // 메뉴바 숨기기
         show: false, // 인증 완료 전까지 숨김
@@ -95,15 +95,13 @@ function createAuthWindow() {
 
     authWindow.loadFile(path.join(__dirname, 'src', 'auth.html'));
 
-    // 인증 창 닫기 방지
-    authWindow.on('close', (e) => {
-        e.preventDefault();
-        dialog.showMessageBox(authWindow, {
-            type: 'warning',
-            title: '인증 필요',
-            message: '프로그램을 사용하려면 인증이 필요합니다.',
-            buttons: ['확인']
-        });
+    // 인증 창이 닫히면 앱 종료
+    authWindow.on('closed', () => {
+        authWindow = null;
+        // 인증 없이 창을 닫으면 앱 종료
+        if (!mainWindow || !mainWindow.isVisible()) {
+            app.quit();
+        }
     });
 
     // Open DevTools for debugging
@@ -152,11 +150,11 @@ function createUpdateWindow(versionInfo) {
 
 // 설정 파일 읽기/쓰기 함수
 function loadConfig() {
-    const appDataDir = path.join(app.getPath('documents'), 'DrugLabel');
+    const appDataDir = DatabaseManager.getAppDataDir();
     if (!fs.existsSync(appDataDir)) {
         fs.mkdirSync(appDataDir, { recursive: true });
     }
-    const configPath = path.join(appDataDir, 'config.json');
+    const configPath = DatabaseManager.getConfigPath();
     try {
         if (fs.existsSync(configPath)) {
             const configData = fs.readFileSync(configPath, 'utf8');
@@ -222,8 +220,8 @@ function loadConfig() {
 }
 
 function saveConfig(config) {
-    const appDataDir = path.join(app.getPath('documents'), 'DrugLabel');
-    const configPath = path.join(appDataDir, 'config.json');
+    const appDataDir = DatabaseManager.getAppDataDir();
+    const configPath = DatabaseManager.getConfigPath();
 
     try {
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf8');
@@ -551,7 +549,7 @@ async function checkBpacInstallation() {
             const { response } = await dialog.showMessageBox(mainWindow, {
                 type: 'warning',
                 title: 'Brother b-PAC 구성 요소 필요',
-                message: 'DrugLabel을 사용하려면 Brother b-PAC Client Component가 필요합니다.',
+                message: 'Labelix를 사용하려면 Brother b-PAC Client Component가 필요합니다.',
                 detail: '라벨 출력 기능을 사용하려면 Brother b-PAC Client Component(32비트)를 설치해야 합니다.\n\n지금 다운로드 페이지로 이동하시겠습니까?',
                 buttons: ['다운로드 페이지 열기', '나중에'],
                 defaultId: 0,
@@ -567,7 +565,7 @@ async function checkBpacInstallation() {
                     type: 'info',
                     title: '설치 안내',
                     message: 'b-PAC Client Component 설치 안내',
-                    detail: '1. 열린 페이지에서 "b-PAC Client Component" 선택\n2. "32-bit ver." 다운로드\n3. 다운로드한 파일 실행하여 설치\n4. 설치 완료 후 DrugLabel 재시작\n\n자세한 내용은 프로그램 폴더의 INSTALLATION.md 파일을 참조하세요.',
+                    detail: '1. 열린 페이지에서 "b-PAC Client Component" 선택\n2. "32-bit ver." 다운로드\n3. 다운로드한 파일 실행하여 설치\n4. 설치 완료 후 Labelix 재시작\n\n자세한 내용은 프로그램 폴더의 INSTALLATION.md 파일을 참조하세요.',
                     buttons: ['확인']
                 });
             }

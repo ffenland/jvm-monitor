@@ -51,7 +51,7 @@ exports.default = async function(context) {
         const commands = [
             `"${rceditPath}" "${exePath}" --set-icon "${iconPath}"`,
             `"${rceditPath}" "${exePath}" --set-version-string "ProductName" "${productName}"`,
-            `"${rceditPath}" "${exePath}" --set-version-string "FileDescription" "PM프로그램과 연동된 약품 라벨 출력 시스템"`,
+            `"${rceditPath}" "${exePath}" --set-version-string "FileDescription" "약국 전문 라벨 출력 솔루션"`,
             `"${rceditPath}" "${exePath}" --set-version-string "CompanyName" "CleaReach System"`,
             `"${rceditPath}" "${exePath}" --set-version-string "LegalCopyright" "Copyright © 2024 CleaReach System"`,
             `"${rceditPath}" "${exePath}" --set-version-string "FileVersion" "${version}"`,

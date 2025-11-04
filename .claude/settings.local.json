@@ -16,7 +16,8 @@
       "Bash(npx:*)",
       "Bash(dir:*)",
       "Bash(del \"C:\\Users\\BoramATDPS\\Documents\\dev\\electron-file-monitor\\druginfo.js\")",
-      "Bash(del \"C:\\Users\\BoramATDPS\\Documents\\dev\\electron-file-monitor\\simpleSecureConfig.js\")"
+      "Bash(del \"C:\\Users\\BoramATDPS\\Documents\\dev\\electron-file-monitor\\simpleSecureConfig.js\")",
+      "Bash(npm run dist:win:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

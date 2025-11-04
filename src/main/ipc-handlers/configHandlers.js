@@ -4,6 +4,7 @@ const fs = require('fs');
 const { app, shell } = require('electron');
 const { spawn } = require('child_process');
 const { previewTemplate } = require('../../../print_brother');
+const DatabaseManager = require('../../../database');
 
 /**
  * 설정 및 템플릿 관련 IPC 핸들러
@@ -61,8 +62,7 @@ function registerConfigHandlers(getMainWindow, loadConfig, saveConfig, getPowerS
     ipcMain.handle('get-templates', async () => {
         try {
             // Documents\DrugLabel\templates 폴더에서 템플릿 읽기
-            const appDataDir = path.join(app.getPath('documents'), 'DrugLabel');
-            const templatesDir = path.join(appDataDir, 'templates');
+            const templatesDir = DatabaseManager.getTemplatesDir();
 
             // 템플릿 폴더가 없으면 생성
             if (!fs.existsSync(templatesDir)) {
@@ -104,7 +104,7 @@ function registerConfigHandlers(getMainWindow, loadConfig, saveConfig, getPowerS
 
             // 상대 경로를 절대 경로로 변환 (템플릿은 이미 절대 경로로 저장됨)
             if (!path.isAbsolute(templatePath)) {
-                const appDataDir = path.join(app.getPath('documents'), 'DrugLabel');
+                const appDataDir = path.join(app.getPath('documents'), 'Labelix');
                 const templatesDir = path.join(appDataDir, 'templates');
                 fullPath = path.join(templatesDir, path.basename(templatePath));
             }
@@ -169,7 +169,7 @@ function registerConfigHandlers(getMainWindow, loadConfig, saveConfig, getPowerS
             // 상대 경로를 절대 경로로 변환 (템플릿은 이미 절대 경로로 저장됨)
             let fullPath = templatePath;
             if (!path.isAbsolute(templatePath)) {
-                const appDataDir = path.join(app.getPath('documents'), 'DrugLabel');
+                const appDataDir = path.join(app.getPath('documents'), 'Labelix');
                 const templatesDir = path.join(appDataDir, 'templates');
                 fullPath = path.join(templatesDir, path.basename(templatePath));
             }

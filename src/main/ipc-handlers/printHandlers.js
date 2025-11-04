@@ -4,6 +4,7 @@ const fs = require('fs');
 const { app } = require('electron');
 const { printWithBrother, getBrotherPrinters } = require('../../../print_brother');
 const { processPrescriptionData } = require('../../../dataProcessor');
+const DatabaseManager = require('../../../database');
 
 /**
  * 프린터 및 출력 관련 IPC 핸들러
@@ -61,9 +62,9 @@ function registerPrintHandlers(dbManager, getMainWindow, loadConfig) {
             // 데이터 가공 - dataProcessor 모듈 사용
             const processedData = processPrescriptionData(prescriptionData);
 
-            // 템플릿 파일 경로 (Documents\DrugLabel\templates)
-            const appDataDir = path.join(app.getPath('documents'), 'DrugLabel');
-            const templatePath = path.join(appDataDir, 'templates', 'prescription_label.lbx');
+            // 템플릿 파일 경로
+            const templatesDir = DatabaseManager.getTemplatesDir();
+            const templatePath = path.join(templatesDir, 'prescription_label.lbx');
 
             const printData = {
                 templatePath,
@@ -133,8 +134,7 @@ function registerPrintHandlers(dbManager, getMainWindow, loadConfig) {
 
             // templatePath가 없거나 존재하지 않는 경우 기본 템플릿 사용
             if (!templatePath || !fs.existsSync(templatePath)) {
-                const appDataDir = path.join(app.getPath('documents'), 'DrugLabel');
-                const templatesDir = path.join(appDataDir, 'templates');
+                const templatesDir = DatabaseManager.getTemplatesDir();
                 templatePath = path.join(templatesDir, 'default.lbx');
             }
 

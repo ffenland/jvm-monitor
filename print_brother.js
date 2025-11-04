@@ -171,9 +171,8 @@ catch {
         const BOM = '\ufeff';
         let tempDir;
         try {
-            const { app } = require('electron');
-            const appDataDir = path.join(app.getPath('documents'), 'DrugLabel');
-            tempDir = path.join(appDataDir, 'temp');
+            const DatabaseManager = require('./database');
+            tempDir = DatabaseManager.getTempDir();
             if (!fs.existsSync(tempDir)) {
                 fs.mkdirSync(tempDir, { recursive: true });
             }
@@ -345,9 +344,8 @@ try {
         const BOM = '\ufeff';
         let tempDir;
         try {
-            const { app } = require('electron');
-            const appDataDir = path.join(app.getPath('documents'), 'DrugLabel');
-            tempDir = path.join(appDataDir, 'temp');
+            const DatabaseManager = require('./database');
+            tempDir = DatabaseManager.getTempDir();
             if (!fs.existsSync(tempDir)) {
                 fs.mkdirSync(tempDir, { recursive: true });
             }
@@ -420,9 +418,8 @@ async function previewTemplate(params = {}) {
         // 임시 BMP 파일 경로
         let tempDir;
         try {
-            const { app } = require('electron');
-            const appDataDir = path.join(app.getPath('documents'), 'DrugLabel');
-            tempDir = path.join(appDataDir, 'temp');
+            const DatabaseManager = require('./database');
+            tempDir = DatabaseManager.getTempDir();
         } catch (e) {
             tempDir = path.join(__dirname, 'temp');
         }
@@ -515,7 +512,7 @@ try {
         let tempDirForScript;
         try {
             const { app } = require('electron');
-            const appDataDir = path.join(app.getPath('documents'), 'DrugLabel');
+            const appDataDir = path.join(app.getPath('documents'), 'Labelix');
             tempDirForScript = path.join(appDataDir, 'temp');
             if (!fs.existsSync(tempDirForScript)) {
                 fs.mkdirSync(tempDirForScript, { recursive: true });

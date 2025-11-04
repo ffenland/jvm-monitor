@@ -14,19 +14,56 @@ const { getEncryptionKey } = require('./src/utils/encryptionKey');
  */
 
 class DatabaseManager {
-    constructor() {
-        // Electron 환경 체크
-        let dbDir;
+    /**
+     * 앱 데이터 디렉토리 경로를 반환합니다.
+     * 모든 앱 데이터(DB, 설정, 템플릿 등)는 이 디렉토리 아래에 저장됩니다.
+     * @returns {string} 앱 데이터 디렉토리 경로 (예: C:\Users\username\Documents\Labelix)
+     */
+    static getAppDataDir() {
         try {
             const { app } = require('electron');
-            // Documents\DrugLabel 디렉토리
-            const appDataDir = path.join(app.getPath('documents'), 'DrugLabel');
-            dbDir = path.join(appDataDir, 'db');
+            return path.join(app.getPath('documents'), 'Labelix');
         } catch (e) {
             // 개발 환경이나 Electron 컨텍스트가 없는 경우
-            dbDir = path.join(__dirname, 'db');
+            return path.join(__dirname);
         }
+    }
 
+    /**
+     * DB 디렉토리 경로를 반환합니다.
+     * @returns {string} DB 디렉토리 경로 (예: C:\Users\username\Documents\Labelix\db)
+     */
+    static getDbDir() {
+        return path.join(DatabaseManager.getAppDataDir(), 'db');
+    }
+
+    /**
+     * 템플릿 디렉토리 경로를 반환합니다.
+     * @returns {string} 템플릿 디렉토리 경로 (예: C:\Users\username\Documents\Labelix\templates)
+     */
+    static getTemplatesDir() {
+        return path.join(DatabaseManager.getAppDataDir(), 'templates');
+    }
+
+    /**
+     * 설정 파일 경로를 반환합니다.
+     * @returns {string} 설정 파일 경로 (예: C:\Users\username\Documents\Labelix\config.json)
+     */
+    static getConfigPath() {
+        return path.join(DatabaseManager.getAppDataDir(), 'config.json');
+    }
+
+    /**
+     * 임시 파일 디렉토리 경로를 반환합니다.
+     * @returns {string} 임시 파일 디렉토리 경로 (예: C:\Users\username\Documents\Labelix\temp)
+     */
+    static getTempDir() {
+        return path.join(DatabaseManager.getAppDataDir(), 'temp');
+    }
+
+    constructor() {
+        // DB 디렉토리 생성
+        const dbDir = DatabaseManager.getDbDir();
         if (!fs.existsSync(dbDir)) {
             fs.mkdirSync(dbDir, { recursive: true });
         }
@@ -34,10 +71,10 @@ class DatabaseManager {
         this.dbPath = path.join(dbDir, 'pharmacy.db');
         this.db = new Database(this.dbPath);
 
-        // 데이터베이스 암호화 적용 (임시로 비활성화)
-        // const encryptionKey = getEncryptionKey();
-        // this.db.pragma(`key = '${encryptionKey}'`);
-        // this.db.pragma('cipher = chacha20');
+        // 데이터베이스 암호화 적용
+        const encryptionKey = getEncryptionKey();
+        this.db.pragma(`key = '${encryptionKey}'`);
+        this.db.pragma('cipher = chacha20');
 
         // 성능 최적화 설정
         this.db.pragma('journal_mode = WAL');
