@@ -1,4 +1,4 @@
-const { doc, getDoc } = require('firebase/firestore');
+const { doc, getDoc, updateDoc, serverTimestamp } = require('firebase/firestore');
 const bcrypt = require('bcryptjs');
 const { getDb } = require('./firebaseService');
 
@@ -63,6 +63,18 @@ async function verifyLicense(pharmacyName, ownerName, email, licenseKey) {
                 success: false,
                 message: '인증키가 일치하지 않습니다.'
             };
+        }
+
+        // 인증 성공 - Firebase에 인증 시점 기록
+        try {
+            await updateDoc(docRef, {
+                lastAuthenticatedAt: serverTimestamp(),
+                authenticationCount: (licenseData.authenticationCount || 0) + 1
+            });
+            console.log('[AuthService] Firebase에 인증 시점 기록 완료');
+        } catch (updateError) {
+            console.error('[AuthService] Firebase 인증 시점 기록 실패:', updateError);
+            // 기록 실패해도 인증은 성공으로 처리
         }
 
         return {
@@ -162,6 +174,7 @@ async function checkLicenseOnStartup(db) {
 
         if (result.success) {
             // 재인증 성공 - lastVerifiedAt 업데이트
+            // verifyLicense 함수에서 이미 Firebase에 인증 시점 기록됨
             db.updateLastVerified();
             return {
                 needsAuth: false,

@@ -9,6 +9,8 @@ const { spawn } = require('child_process');
 const { registerAllHandlers } = require('./src/main/ipc-handlers');
 const { checkLicenseOnStartup } = require('./src/services/authService');
 const { registerAuthHandlers } = require('./src/ipc/authHandlers');
+const { registerUpdateHandlers } = require('./src/ipc/updateHandlers');
+const { checkVersion } = require('./src/services/versionService');
 let monitorPath = 'C:\\atc'; // Default directory to monitor (can be changed in config)
 
 /**
@@ -39,6 +41,7 @@ function getPowerShellPath() {
 
 let mainWindow;
 let authWindow; // 인증 창
+let updateWindow; // 업데이트 창
 let currentAvailableDates = new Set(); // To keep track of dates for dynamic updates
 let currentConfig = {}; // Store current configuration
 let watcher = null; // File watcher instance
@@ -105,6 +108,46 @@ function createAuthWindow() {
 
     // Open DevTools for debugging
     // authWindow.webContents.openDevTools();
+}
+
+/**
+ * 업데이트 필요 창 생성
+ */
+function createUpdateWindow(versionInfo) {
+    updateWindow = new BrowserWindow({
+        width: 600,
+        height: 800,
+        title: '업데이트 필요',
+        icon: path.join(__dirname, 'build', 'icon.ico'),
+        autoHideMenuBar: true,
+        resizable: false,
+        webPreferences: {
+            preload: path.join(__dirname, 'preload.js'),
+            contextIsolation: true,
+            nodeIntegration: false
+        }
+    });
+
+    updateWindow.setMenuBarVisibility(false);
+    updateWindow.setMenu(null);
+
+    updateWindow.loadFile(path.join(__dirname, 'src', 'update.html'));
+
+    // 업데이트 창 닫기 방지
+    updateWindow.on('close', (e) => {
+        e.preventDefault();
+        dialog.showMessageBox(updateWindow, {
+            type: 'warning',
+            title: '업데이트 필요',
+            message: '프로그램을 사용하려면 업데이트가 필요합니다.',
+            buttons: ['확인']
+        });
+    });
+
+    // 버전 정보 저장 (IPC로 전달하기 위함)
+    global.versionInfo = versionInfo;
+
+    console.log('[Main] Update window created');
 }
 
 // 설정 파일 읽기/쓰기 함수
@@ -206,8 +249,9 @@ app.whenReady().then(async () => {
     // 데이터베이스 초기화
     dbManager = new DatabaseManager();
 
-    // 인증 핸들러 등록 (가장 먼저)
+    // 핸들러 등록 (가장 먼저)
     registerAuthHandlers(dbManager);
+    registerUpdateHandlers();
 
     // 인증 성공 이벤트 리스너
     ipcMain.on('auth:success', () => {
@@ -225,7 +269,19 @@ app.whenReady().then(async () => {
         }
     });
 
-    // 라이선스 체크
+    // ========== 버전 체크 (최우선!) ==========
+    console.log('[Main] Checking app version...');
+    const versionCheck = await checkVersion();
+
+    if (versionCheck.needsUpdate) {
+        // 업데이트 필요 - 업데이트 창만 표시하고 앱 차단
+        console.log('[Main] Update required! Showing update window...');
+        createUpdateWindow(versionCheck.versionInfo);
+        return; // 다른 창은 생성하지 않음
+    }
+    console.log('[Main] Version check passed');
+
+    // ========== 라이선스 체크 ==========
     const licenseCheck = await checkLicenseOnStartup(dbManager);
 
     if (licenseCheck.needsAuth) {

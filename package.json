@@ -1,25 +1,46 @@
 {
-  "name": "druglabel",
-  "productName": "DrugLabel",
+  "name": "labelix",
+  "productName": "Labelix",
   "version": "1.0.0",
   "main": "main.js",
-  "description": "PM프로그램과 연동된 약품 라벨 출력 시스템",
-  "author": "CleaReach System",
-  "license": "ISC",
+  "description": "약국 전문 라벨 출력 솔루션 - PM 프로그램 연동 약품 라벨 자동화 시스템",
+  "author": {
+    "name": "CleaReach System",
+    "email": "support@clearreach.com"
+  },
+  "license": "UNLICENSED",
+  "private": true,
+  "homepage": "https://clearreach.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/clearreach/labelix.git"
+  },
+  "bugs": {
+    "url": "https://github.com/clearreach/labelix/issues",
+    "email": "support@clearreach.com"
+  },
   "scripts": {
     "start": "electron .",
+    "dev": "electron . --inspect=5858",
     "test": "echo \"Error: no test specified\" && exit 1",
     "postinstall": "pnpm exec electron-rebuild -f -w better-sqlite3-multiple-ciphers",
     "compile": "node compile.js",
-    "build:win": "electron-builder --win",
+    "build": "electron-builder --win",
+    "build:dir": "electron-builder --win --dir",
     "dist": "electron-builder",
-    "dist-secure": "pnpm run compile && electron-builder"
+    "dist:win": "electron-builder --win --x64 --ia32",
+    "dist:secure": "pnpm run compile && electron-builder"
   },
   "keywords": [
+    "labelix",
     "pharmacy",
-    "label",
-    "printer",
-    "medical"
+    "label-printer",
+    "prescription",
+    "medication",
+    "healthcare",
+    "automation",
+    "brother-printer",
+    "clearreach"
   ],
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -39,8 +60,8 @@
     "tsx": "^4.20.6"
   },
   "build": {
-    "appId": "com.cleareach.druglabel",
-    "productName": "DrugLabel",
+    "appId": "com.clearreach.labelix",
+    "productName": "Labelix",
     "copyright": "Copyright © 2024 CleaReach System",
     "directories": {
       "output": "dist",
@@ -81,7 +102,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "DrugLabel",
+      "shortcutName": "Labelix",
       "installerIcon": "build/icon.ico",
       "uninstallerIcon": "build/icon.ico",
       "installerHeaderIcon": "build/icon.ico",

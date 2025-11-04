@@ -59,7 +59,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // 약품 정보 업데이트 이벤트
     onMedicineDataUpdated: (callback) => ipcRenderer.on('medicine-data-updated', (_event) => callback()),
     // 처방전 삭제 API
-    deletePrescription: (prescriptionId) => ipcRenderer.invoke('delete-prescription', prescriptionId)
+    deletePrescription: (prescriptionId) => ipcRenderer.invoke('delete-prescription', prescriptionId),
+    // 업데이트 관련 API
+    getUpdateInfo: () => ipcRenderer.invoke('update:get-info'),
+    openDownloadPage: () => ipcRenderer.invoke('update:open-download'),
+    quitApp: () => ipcRenderer.invoke('update:quit-app')
 });
 
 // 인증 관련 API (별도 노출)
