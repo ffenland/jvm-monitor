@@ -3,9 +3,10 @@
  * bohcode로 약학정보원에서 약품 상세정보 조회 및 DB 저장
  */
 
+const path = require('path');
 const DatabaseManager = require('./database.js');
-const { extractTemperature } = require('../../scripts/extract-temperature.js');
-const { getUnitFromDrugForm } = require('../../scripts/drug-form-unit-map.js');
+const { extractTemperature } = require(path.join(__dirname, '../../scripts/extract-temperature.js'));
+const { getUnitFromDrugForm } = require(path.join(__dirname, '../../scripts/drug-form-unit-map.js'));
 
 /**
  * 중복되지 않는 랜덤 4자리 숫자 생성
@@ -45,7 +46,7 @@ async function fetchAndSaveMedicine(bohcode, drugNameFromParsing = null, dbInsta
         }
 
         // 2. yakjung_code(icode) 조회
-        const { searchMedicineByBohcode } = require('../../scripts/medicine-api.js');
+        const { searchMedicineByBohcode } = require(path.join(__dirname, '../../scripts/medicine-api.js'));
         const searchResult = await searchMedicineByBohcode(bohcode);
 
         if (!searchResult || !searchResult.icode) {
@@ -75,7 +76,7 @@ async function fetchAndSaveMedicine(bohcode, drugNameFromParsing = null, dbInsta
         const yakjungCode = searchResult.icode;
 
         // 3. 약학정보원 API 호출
-        const { fetchMedicineDetailByYakjungCode } = require('../../scripts/medicine-api.js');
+        const { fetchMedicineDetailByYakjungCode } = require(path.join(__dirname, '../../scripts/medicine-api.js'));
         const medicineInfo = await fetchMedicineDetailByYakjungCode(yakjungCode);
 
         if (!medicineInfo) {
@@ -169,7 +170,7 @@ async function fetchAndSaveMedicineByYakjungCode(yakjungCode, dbInstance = null)
         }
 
         // 2. 약학정보원 API 호출
-        const { fetchMedicineDetailByYakjungCode, fetchBohCodesFromYakjung } = require('../../scripts/medicine-api.js');
+        const { fetchMedicineDetailByYakjungCode, fetchBohCodesFromYakjung } = require(path.join(__dirname, '../../scripts/medicine-api.js'));
         const medicineInfo = await fetchMedicineDetailByYakjungCode(yakjungCode);
 
         if (!medicineInfo) {

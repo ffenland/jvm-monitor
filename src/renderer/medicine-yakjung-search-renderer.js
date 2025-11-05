@@ -61,6 +61,7 @@ function setupEventListeners() {
 // 검색 수행
 async function performSearch() {
     const drugName = drugNameInput.value.trim();
+    console.log('[Renderer] performSearch 시작 - drugName:', drugName);
 
     if (!drugName) {
         showToast('약품명을 입력하세요', 'error');
@@ -79,8 +80,10 @@ async function performSearch() {
             </tr>
         `;
 
+        console.log('[Renderer] IPC 호출 시작 - search-medicine-by-name');
         // 약학정보원 검색 API 호출
         const result = await ipcRenderer.invoke('search-medicine-by-name', drugName);
+        console.log('[Renderer] IPC 응답 받음:', result);
 
         if (!result.success || !result.medicines || result.medicines.length === 0) {
             resultsBody.innerHTML = `

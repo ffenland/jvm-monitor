@@ -9,6 +9,7 @@ const { getUnitFromDrugForm } = require("./drug-form-unit-map.js");
  * @returns {Promise<Object|null>} { icode: yakjung_code } 또는 null (결과 없음)
  */
 async function searchMedicineByBohcode(bohcode) {
+  console.log('[MedicineAPI] searchMedicineByBohcode 호출 시작 - bohcode:', bohcode);
   const urlencoded = new URLSearchParams();
   urlencoded.append("NoProTabState", "0");
   urlencoded.append("anchor_dosage_route_hidden", "");
@@ -99,11 +100,14 @@ async function searchMedicineByBohcode(bohcode) {
   };
 
   try {
+    console.log('[MedicineAPI] API 요청 시작 - URL:', "https://www.health.kr/searchDrug/search_detail.asp");
     const response = await fetch(
       "https://www.health.kr/searchDrug/search_detail.asp",
       requestOptions
     );
+    console.log('[MedicineAPI] API 응답 받음 - Status:', response.status);
     const html = await response.text();
+    console.log('[MedicineAPI] HTML 파싱 시작');
 
     // HTML 파싱
     const $ = cheerio.load(html);
@@ -122,11 +126,13 @@ async function searchMedicineByBohcode(bohcode) {
     });
 
     if (yakjungCode) {
+      console.log('[MedicineAPI] yakjungCode 찾음:', yakjungCode);
       return { icode: yakjungCode };
     }
+    console.log('[MedicineAPI] yakjungCode를 찾지 못함');
     return null; // 결과 없음
   } catch (error) {
-    console.error("Error searching by bohcode:", error);
+    console.error("[MedicineAPI] Error searching by bohcode:", error);
     return null;
   }
 }
@@ -137,6 +143,7 @@ async function searchMedicineByBohcode(bohcode) {
  * @returns {Promise<Array>} 검색 결과 배열 [{ icode, name, manufacturer, etc }, ...]
  */
 async function searchMedicineByName(drugName) {
+  console.log('[MedicineAPI] searchMedicineByName 호출 시작 - drugName:', drugName);
   const urlencoded = new URLSearchParams();
   urlencoded.append("NoProTabState", "0");
   urlencoded.append("anchor_dosage_route_hidden", "");
@@ -227,16 +234,20 @@ async function searchMedicineByName(drugName) {
   };
 
   try {
+    console.log('[MedicineAPI] API 요청 시작 - URL:', "https://www.health.kr/searchDrug/search_detail.asp");
     const response = await fetch(
       "https://www.health.kr/searchDrug/search_detail.asp",
       requestOptions
     );
+    console.log('[MedicineAPI] API 응답 받음 - Status:', response.status);
     const html = await response.text();
+    console.log('[MedicineAPI] HTML 파싱 시작');
 
     const parsedData = parseSearchResults(html);
+    console.log('[MedicineAPI] 검색 결과:', parsedData.length, '개');
     return parsedData;
   } catch (error) {
-    console.error("Error fetching medicine data:", error);
+    console.error("[MedicineAPI] Error fetching medicine data:", error);
     throw error;
   }
 }
@@ -357,6 +368,7 @@ function parseUpsoName(upsoName) {
  * @returns {Promise<Object>} 약품 상세 정보
  */
 async function fetchMedicineDetailByYakjungCode(yakjungCode) {
+  console.log('[MedicineAPI] fetchMedicineDetailByYakjungCode 호출 시작 - yakjungCode:', yakjungCode);
   const url = `https://www.health.kr/searchDrug/ajax/ajax_result_drug2.asp?drug_cd=${yakjungCode}`;
 
   const requestOptions = {
@@ -370,8 +382,11 @@ async function fetchMedicineDetailByYakjungCode(yakjungCode) {
   };
 
   try {
+    console.log('[MedicineAPI] API 요청 시작 - URL:', url);
     const response = await fetch(url, requestOptions);
+    console.log('[MedicineAPI] API 응답 받음 - Status:', response.status);
     const jsonData = await response.json();
+    console.log('[MedicineAPI] JSON 파싱 완료');
 
     // API 응답이 배열이면 첫 번째 요소 사용
     const data =
