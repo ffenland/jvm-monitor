@@ -393,20 +393,12 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
 
     // 약품명으로 검색 (약학정보원 API)
     ipcMain.handle('search-medicine-by-name', async (event, medicineName) => {
-        console.log('[IPC Handler] search-medicine-by-name 호출됨 - medicineName:', medicineName);
         try {
-            console.log('[IPC Handler] medicine-api 모듈 로드 시작');
             const { searchMedicineByName } = require(path.join(__dirname, '../../../scripts/medicine-api'));
-            console.log('[IPC Handler] medicine-api 모듈 로드 완료');
-
-            console.log('[IPC Handler] searchMedicineByName 함수 호출 시작');
             const results = await searchMedicineByName(medicineName);
-            console.log('[IPC Handler] searchMedicineByName 함수 호출 완료 - 결과 개수:', results ? results.length : 0);
-
             return { success: true, medicines: results };
         } catch (error) {
-            console.error('[IPC Handler] 약품명 검색 실패:', error);
-            console.error('[IPC Handler] 오류 스택:', error.stack);
+            console.error('약품명 검색 실패:', error);
             return { success: false, error: error.message, medicines: [] };
         }
     });

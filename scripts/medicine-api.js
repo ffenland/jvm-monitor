@@ -1,4 +1,3 @@
-const cheerio = require("cheerio");
 const fs = require("fs");
 const { extractTemperature } = require("./extract-temperature.js");
 const { getUnitFromDrugForm } = require("./drug-form-unit-map.js");
@@ -9,7 +8,6 @@ const { getUnitFromDrugForm } = require("./drug-form-unit-map.js");
  * @returns {Promise<Object|null>} { icode: yakjung_code } 또는 null (결과 없음)
  */
 async function searchMedicineByBohcode(bohcode) {
-  console.log('[MedicineAPI] searchMedicineByBohcode 호출 시작 - bohcode:', bohcode);
   const urlencoded = new URLSearchParams();
   urlencoded.append("NoProTabState", "0");
   urlencoded.append("anchor_dosage_route_hidden", "");
@@ -100,36 +98,20 @@ async function searchMedicineByBohcode(bohcode) {
   };
 
   try {
-    console.log('[MedicineAPI] API 요청 시작 - URL:', "https://www.health.kr/searchDrug/search_detail.asp");
     const response = await fetch(
       "https://www.health.kr/searchDrug/search_detail.asp",
       requestOptions
     );
-    console.log('[MedicineAPI] API 응답 받음 - Status:', response.status);
     const html = await response.text();
-    console.log('[MedicineAPI] HTML 파싱 시작');
 
-    // HTML 파싱
-    const $ = cheerio.load(html);
-
-    // onclick="javascript:drug_detailHref('2020071600007')" 형식에서 yakjung_code 추출
-    let yakjungCode = null;
-    $("#tbl_proY td[onclick]").each((index, element) => {
-      const onclickAttr = $(element).attr("onclick");
-      if (onclickAttr) {
-        const match = onclickAttr.match(/drug_detailHref\('([^']+)'\)/);
-        if (match) {
-          yakjungCode = match[1];
-          return false; // break loop
-        }
-      }
-    });
+    // HTML에서 onclick="javascript:drug_detailHref('2020071600007')" 형식의 yakjung_code 추출
+    // 순수 JavaScript 정규식 사용 (cheerio 불필요)
+    const match = html.match(/drug_detailHref\('([^']+)'\)/);
+    const yakjungCode = match ? match[1] : null;
 
     if (yakjungCode) {
-      console.log('[MedicineAPI] yakjungCode 찾음:', yakjungCode);
       return { icode: yakjungCode };
     }
-    console.log('[MedicineAPI] yakjungCode를 찾지 못함');
     return null; // 결과 없음
   } catch (error) {
     console.error("[MedicineAPI] Error searching by bohcode:", error);
@@ -143,7 +125,6 @@ async function searchMedicineByBohcode(bohcode) {
  * @returns {Promise<Array>} 검색 결과 배열 [{ icode, name, manufacturer, etc }, ...]
  */
 async function searchMedicineByName(drugName) {
-  console.log('[MedicineAPI] searchMedicineByName 호출 시작 - drugName:', drugName);
   const urlencoded = new URLSearchParams();
   urlencoded.append("NoProTabState", "0");
   urlencoded.append("anchor_dosage_route_hidden", "");
@@ -234,17 +215,13 @@ async function searchMedicineByName(drugName) {
   };
 
   try {
-    console.log('[MedicineAPI] API 요청 시작 - URL:', "https://www.health.kr/searchDrug/search_detail.asp");
     const response = await fetch(
       "https://www.health.kr/searchDrug/search_detail.asp",
       requestOptions
     );
-    console.log('[MedicineAPI] API 응답 받음 - Status:', response.status);
     const html = await response.text();
-    console.log('[MedicineAPI] HTML 파싱 시작');
 
     const parsedData = parseSearchResults(html);
-    console.log('[MedicineAPI] 검색 결과:', parsedData.length, '개');
     return parsedData;
   } catch (error) {
     console.error("[MedicineAPI] Error fetching medicine data:", error);
@@ -266,86 +243,129 @@ async function searchMedicineByName(drugName) {
  * - 회사명
  */
 function parseSearchResults(html) {
-  const $ = cheerio.load(html);
   const results = [];
 
-  // 테이블의 각 데이터 행을 순회 (thead 제외)
-  $("#tbl_proY tr").each((index, element) => {
-    const tr = $(element);
+  // id="tbl_proY" 테이블 찾기
+  const tableMatch = html.match(/<table[^>]*id="tbl_proY"[^>]*>([\s\S]*?)<\/table>/i);
+  if (!tableMatch) {
+    return results;
+  }
 
-    // 헤더 행은 건너뛰기
-    if (tr.find("th").length > 0) {
-      return;
+  const tableContent = tableMatch[1];
+
+  // <tr>...</tr> 블록들을 모두 추출
+  const trMatches = tableContent.match(/<tr[^>]*>([\s\S]*?)<\/tr>/gi);
+  if (!trMatches) {
+    return results;
+  }
+
+  // 각 행 처리
+  for (const tr of trMatches) {
+    // 헤더 행(<th> 포함) 건너뛰기
+    if (/<th[^>]*>/i.test(tr)) {
+      continue;
     }
 
-    const tds = tr.find("td");
-
-    // 최소한의 td가 있는지 확인
-    if (tds.length < 9) {
-      return;
+    // <td>...</td> 셀들을 모두 추출
+    const tdMatches = tr.match(/<td[^>]*>([\s\S]*?)<\/td>/gi);
+    if (!tdMatches || tdMatches.length < 9) {
+      continue; // 최소 9개의 td가 필요
     }
 
-    // 1. 식별/포장 이미지 (td[0])
-    const imgTd = tds.eq(0);
-    const imgElement = imgTd.find("img");
-    const imageUrl = imgElement.attr("src") || null;
-    const photoId = imgTd.attr("id") || "";
-    const yakjungCodeFromImg = photoId.replace("photo", "");
+    // 헬퍼 함수: HTML 태그 제거 및 텍스트 추출
+    const extractText = (tdHtml) => {
+      return tdHtml
+        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '') // script 태그 제거
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')   // style 태그 제거
+        .replace(/<div[^>]*class="[^"]*popup[^"]*"[^>]*>[\s\S]*?<\/div>/gi, '') // popup div 제거
+        .replace(/<[^>]*>/g, '') // 모든 HTML 태그 제거
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&')
+        .replace(/&quot;/g, '"')
+        .trim();
+    };
 
-    // 2. 제품명 및 yakjungCode (td[1])
-    const nameTd = tds.eq(1);
-    const name = nameTd.text().trim();
-    const onclickAttr = nameTd.attr("onclick") || "";
-    const yakjungCodeMatch = onclickAttr.match(/drug_detailHref\('([^']+)'\)/);
-    const yakjungCode = yakjungCodeMatch
-      ? yakjungCodeMatch[1]
-      : yakjungCodeFromImg;
+    // 헬퍼 함수: 속성값 추출
+    const extractAttr = (tdHtml, attrName) => {
+      const attrMatch = tdHtml.match(new RegExp(`${attrName}="([^"]*)"`, 'i'));
+      return attrMatch ? attrMatch[1] : null;
+    };
 
-    // 3. 성분/함량 (td[2]) - 팝업 내용 제외하고 메인 텍스트만
-    const ingredientTd = tds.eq(2);
-    const ingredient = ingredientTd
-      .clone()
-      .children()
-      .remove()
-      .end()
-      .text()
-      .trim();
+    try {
+      // 1. 식별/포장 이미지 (td[0])
+      const td0 = tdMatches[0];
 
-    // 4. 효능 (td[3]) - 스킵
-    // const effect = tds.eq(3).text().trim();
+      // <td class="img"><img class="anchor_img" 패턴으로 이미지 URL 추출
+      let imageUrl = null;
+      const imgMatch = td0.match(/<img\s+class="anchor_img"[^>]+src=['"]([^'"]+)['"]/i);
+      if (imgMatch) {
+        imageUrl = imgMatch[1];
+        // 이미 절대 경로인 경우가 많지만, 혹시 상대 경로면 변환
+        if (imageUrl && !imageUrl.startsWith('http')) {
+          imageUrl = imageUrl.startsWith('/')
+            ? `https://www.health.kr${imageUrl}`
+            : `https://www.health.kr/${imageUrl}`;
+        }
+      }
 
-    // 5. 회사명 (td[4])
-    const company = tds.eq(4).text().trim();
+      // onclick="show_idfypop('2020071600007')" 에서 yakjungCode 추출 (fallback)
+      const onclickImgMatch = td0.match(/show_idfypop\(['"]([^'"]+)['"]\)/);
+      const yakjungCodeFromImg = onclickImgMatch ? onclickImgMatch[1] : '';
 
-    // 6. 분류 (td[5]) - 스킵
-    // const category = tds.eq(5).text().trim();
+      // 2. 제품명 및 yakjungCode (td[1])
+      const td1 = tdMatches[1];
+      const name = extractText(td1);
+      const onclickAttr = extractAttr(td1, 'onclick') || '';
+      const yakjungCodeMatch = onclickAttr.match(/drug_detailHref\('([^']+)'\)/);
+      const yakjungCode = yakjungCodeMatch ? yakjungCodeMatch[1] : yakjungCodeFromImg;
 
-    // 7. 제형 (td[6])
-    const formulation = tds.eq(6).text().trim();
+      // 3. 성분/함량 (td[2])
+      const td2 = tdMatches[2];
+      const ingredient = extractText(td2);
 
-    // 8. 구분 (td[7]) - 전문/일반
-    const classification = tds.eq(7).text().trim();
+      // 4. 효능 (td[3]) - 스킵
 
-    // 9. 약가 (td[8])
-    const price = tds.eq(8).text().trim();
+      // 5. 회사명 (td[4])
+      const td4 = tdMatches[4];
+      const company = extractText(td4);
 
-    // 10. 공급유무 (td[9])
-    const supply = tds.eq(9).text().trim();
+      // 6. 분류 (td[5]) - 스킵
 
-    if (yakjungCode && name) {
-      results.push({
-        yakjungCode, // yakjung_code (icode)
-        name, // 제품명
-        imageUrl, // 식별 이미지 URL
-        ingredient, // 성분/함량
-        formulation, // 제형
-        company, // 회사명
-        classification, // 전문/일반
-        price, // 약가
-        supply, // 공급유무
-      });
+      // 7. 제형 (td[6])
+      const td6 = tdMatches[6];
+      const formulation = extractText(td6);
+
+      // 8. 구분 (td[7]) - 전문/일반
+      const td7 = tdMatches[7];
+      const classification = extractText(td7);
+
+      // 9. 약가 (td[8])
+      const td8 = tdMatches[8];
+      const price = extractText(td8);
+
+      // 10. 공급유무 (td[9])
+      const td9 = tdMatches[9] || '';
+      const supply = extractText(td9);
+
+      if (yakjungCode && name) {
+        results.push({
+          yakjungCode, // yakjung_code (icode)
+          name, // 제품명
+          imageUrl, // 식별 이미지 URL
+          ingredient, // 성분/함량
+          formulation, // 제형
+          company, // 회사명
+          classification, // 전문/일반
+          price, // 약가
+          supply, // 공급유무
+        });
+      }
+    } catch (error) {
+      continue; // 이 행은 건너뛰고 다음 행 처리
     }
-  });
+  }
 
   return results;
 }
@@ -368,7 +388,6 @@ function parseUpsoName(upsoName) {
  * @returns {Promise<Object>} 약품 상세 정보
  */
 async function fetchMedicineDetailByYakjungCode(yakjungCode) {
-  console.log('[MedicineAPI] fetchMedicineDetailByYakjungCode 호출 시작 - yakjungCode:', yakjungCode);
   const url = `https://www.health.kr/searchDrug/ajax/ajax_result_drug2.asp?drug_cd=${yakjungCode}`;
 
   const requestOptions = {
@@ -382,11 +401,8 @@ async function fetchMedicineDetailByYakjungCode(yakjungCode) {
   };
 
   try {
-    console.log('[MedicineAPI] API 요청 시작 - URL:', url);
     const response = await fetch(url, requestOptions);
-    console.log('[MedicineAPI] API 응답 받음 - Status:', response.status);
     const jsonData = await response.json();
-    console.log('[MedicineAPI] JSON 파싱 완료');
 
     // API 응답이 배열이면 첫 번째 요소 사용
     const data =

@@ -42,7 +42,6 @@
     "bcryptjs": "^3.0.3",
     "better-sqlite3-multiple-ciphers": "^12.4.1",
     "bytenode": "^1.5.7",
-    "cheerio": "^1.1.2",
     "chokidar": "^4.0.3",
     "firebase": "^12.5.0",
     "iconv-lite": "^0.6.3",
@@ -64,14 +63,6 @@
       "buildResources": "build"
     },
     "afterPack": "./scripts/afterPack.js",
-    "asarUnpack": [
-      "**/node_modules/cheerio/**/*",
-      "**/node_modules/entities/**/*",
-      "**/node_modules/htmlparser2/**/*",
-      "**/node_modules/dom-serializer/**/*",
-      "**/node_modules/domhandler/**/*",
-      "**/node_modules/domutils/**/*"
-    ],
     "files": [
       "**/*",
       "!**/*.ts",
