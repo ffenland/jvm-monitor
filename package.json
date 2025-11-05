@@ -10,16 +10,15 @@
   },
   "license": "UNLICENSED",
   "private": true,
-  "homepage":"https://blog.naver.com/cleareach",
+  "homepage": "https://blog.naver.com/cleareach",
   "bugs": {
-    "url":"https://blog.naver.com/cleareach",
+    "url": "https://blog.naver.com/cleareach",
     "email": "cleareach@naver.com"
   },
   "scripts": {
     "start": "electron .",
     "dev": "electron . --inspect=5858",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "pnpm exec electron-rebuild -f -w better-sqlite3-multiple-ciphers",
     "compile": "node compile.js",
     "build": "electron-builder --win",
     "build:dir": "electron-builder --win --dir",
@@ -50,7 +49,6 @@
   "devDependencies": {
     "electron": "^37.2.0",
     "electron-builder": "^25.1.8",
-    "electron-rebuild": "^3.2.9",
     "rcedit": "^4.0.1",
     "tsx": "^4.20.6"
   },

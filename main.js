@@ -58,7 +58,8 @@ function createWindow() {
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'), // Using a preload script for security
             contextIsolation: true, // Recommended for security
-            nodeIntegration: false // Recommended for security
+            nodeIntegration: false, // Recommended for security
+            devTools: false // 개발자 도구 비활성화
         }
     });
 
@@ -67,9 +68,6 @@ function createWindow() {
     mainWindow.setMenu(null);
 
     mainWindow.loadFile('index.html');
-
-    // Open DevTools for debugging
-    mainWindow.webContents.openDevTools();
 }
 
 /**
@@ -86,7 +84,8 @@ function createAuthWindow() {
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
-            nodeIntegration: false
+            nodeIntegration: false,
+            devTools: false // 개발자 도구 비활성화
         }
     });
 
@@ -109,9 +108,6 @@ function createAuthWindow() {
     ipcMain.once('auth:success-flag', () => {
         authSucceeded = true;
     });
-
-    // Open DevTools for debugging
-    // authWindow.webContents.openDevTools();
 }
 
 /**
@@ -128,7 +124,8 @@ function createUpdateWindow(versionInfo) {
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
-            nodeIntegration: false
+            nodeIntegration: false,
+            devTools: false // 개발자 도구 비활성화
         }
     });
 
@@ -136,9 +133,6 @@ function createUpdateWindow(versionInfo) {
     updateWindow.setMenu(null);
 
     updateWindow.loadFile(path.join(__dirname, 'src', 'views', 'update.html'));
-
-    // Open DevTools for debugging
-    // updateWindow.webContents.openDevTools();
 
     // 업데이트 창 닫기 시 경고 및 종료 확인
     updateWindow.on('close', (e) => {

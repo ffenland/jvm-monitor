@@ -99,7 +99,8 @@ function registerPrintHandlers(dbManager, getMainWindow, loadConfig) {
                 autoHideMenuBar: true, // 메뉴바 숨기기
                 webPreferences: {
                     nodeIntegration: true,
-                    contextIsolation: false
+                    contextIsolation: false,
+                    devTools: false
                 }
             });
 

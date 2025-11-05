@@ -30,7 +30,8 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
                 autoHideMenuBar: true,
                 webPreferences: {
                     nodeIntegration: true,
-                    contextIsolation: false
+                    contextIsolation: false,
+                    devTools: false
                 }
             });
 
@@ -57,7 +58,8 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
                 autoHideMenuBar: true,
                 webPreferences: {
                     nodeIntegration: true,
-                    contextIsolation: false
+                    contextIsolation: false,
+                    devTools: false
                 }
             });
 
@@ -76,9 +78,6 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
             } else {
                 settingsWindow.loadFile(htmlPath);
             }
-
-            // 개발자 도구 열기
-            settingsWindow.webContents.openDevTools();
 
             return { success: true };
         } catch (error) {
@@ -347,7 +346,8 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
                 autoHideMenuBar: true,
                 webPreferences: {
                     nodeIntegration: true,
-                    contextIsolation: false
+                    contextIsolation: false,
+                    devTools: false
                 }
             });
 
@@ -362,9 +362,6 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
                     yakjungCode: params.yakjungCode || ''
                 }
             });
-
-            // 개발자 도구 열기
-            searchWindow.webContents.openDevTools();
 
             // 검색 완료 알림을 부모 창과 메인 창으로 전달
             const completeHandler = () => {
@@ -435,16 +432,14 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
                 autoHideMenuBar: true,
                 webPreferences: {
                     nodeIntegration: true,
-                    contextIsolation: false
+                    contextIsolation: false,
+                    devTools: false
                 }
             });
 
             addMedicineWindow.setMenuBarVisibility(false);
             addMedicineWindow.setMenu(null);
             addMedicineWindow.loadFile(path.join(__dirname, '../../views/add-new-medicine.html'));
-
-            // 개발자 도구 열기
-            addMedicineWindow.webContents.openDevTools();
 
             return { success: true };
         } catch (error) {
