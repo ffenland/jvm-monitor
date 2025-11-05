@@ -49,6 +49,7 @@
   "devDependencies": {
     "electron": "^37.2.0",
     "electron-builder": "^25.1.8",
+    "javascript-obfuscator": "^4.1.1",
     "rcedit": "^4.0.1",
     "tsx": "^4.20.6"
   },
@@ -71,6 +72,8 @@
       "!license-generator/**",
       "!*-original.js",
       "!compile.js",
+      "!obfuscate.js",
+      "!restore.js",
       "**/*.jsc"
     ],
     "extraResources": [
