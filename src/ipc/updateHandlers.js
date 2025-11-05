@@ -74,6 +74,12 @@ function registerUpdateHandlers() {
      */
     ipcMain.handle('update:quit-app', () => {
         console.log('[UpdateHandlers] Quitting app...');
+        // 업데이트 창의 close 이벤트 리스너 제거 (종료 시 경고창 안뜨게)
+        const { BrowserWindow } = require('electron');
+        const allWindows = BrowserWindow.getAllWindows();
+        allWindows.forEach(win => {
+            win.removeAllListeners('close');
+        });
         app.quit();
     });
 

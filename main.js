@@ -137,14 +137,27 @@ function createUpdateWindow(versionInfo) {
 
     updateWindow.loadFile(path.join(__dirname, 'src', 'views', 'update.html'));
 
-    // 업데이트 창 닫기 방지
+    // Open DevTools for debugging
+    // updateWindow.webContents.openDevTools();
+
+    // 업데이트 창 닫기 시 경고 및 종료 확인
     updateWindow.on('close', (e) => {
         e.preventDefault();
+
         dialog.showMessageBox(updateWindow, {
             type: 'warning',
             title: '업데이트 필요',
-            message: '프로그램을 사용하려면 업데이트가 필요합니다.',
-            buttons: ['확인']
+            message: '업데이트하지 않으면 프로그램을 사용할 수 없습니다.\n정말 종료하시겠습니까?',
+            buttons: ['종료', '취소'],
+            defaultId: 1,  // 기본 선택: 취소
+            cancelId: 1     // ESC/X 클릭 시: 취소
+        }).then(result => {
+            if (result.response === 0) {
+                // "종료" 버튼 선택 시
+                updateWindow.removeAllListeners('close');
+                app.quit();
+            }
+            // "취소" 버튼 선택 시 - 아무것도 안 함 (창이 그대로 유지됨)
         });
     });
 
