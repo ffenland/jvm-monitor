@@ -6,18 +6,14 @@
   "description": "약국 전문 라벨 출력 솔루션 - PM 프로그램 연동 약품 라벨 자동화 시스템",
   "author": {
     "name": "CleaReach System",
-    "email": "support@clearreach.com"
+    "email": "cleareach@naver.com"
   },
   "license": "UNLICENSED",
   "private": true,
-  "homepage": "https://clearreach.com",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/clearreach/labelix.git"
-  },
+  "homepage":"https://blog.naver.com/cleareach",
   "bugs": {
-    "url": "https://github.com/clearreach/labelix/issues",
-    "email": "support@clearreach.com"
+    "url":"https://blog.naver.com/cleareach",
+    "email": "cleareach@naver.com"
   },
   "scripts": {
     "start": "electron .",
