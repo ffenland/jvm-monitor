@@ -75,6 +75,7 @@
       "!dist",
       "!originFiles/**",
       "!scripts/archive/**",
+      "!license-generator/**",
       "!*-original.js",
       "!compile.js",
       "**/*.jsc"

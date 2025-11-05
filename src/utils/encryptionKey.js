@@ -9,7 +9,7 @@
 const crypto = require('crypto');
 
 // 고정 암호구문
-// "이걸 알 정도면 당신은 저를 도와줄 수 있습니다. 연락 주세요!"
+
 const SECRET_PHRASE = 'IfYouKnowThisPleaseContactMeToHelp!';
 
 /**
