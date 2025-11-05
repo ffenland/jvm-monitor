@@ -88,6 +88,21 @@
         .btn-success:hover {
             background-color: #218838;
         }
+        .btn-amber {
+            background-color: #ffc107;
+            color: #333;
+            font-weight: 500;
+        }
+        .btn-amber:hover {
+            background-color: #e0a800;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
         .medicine-list-container {
             flex: 1;
             overflow-y: auto;
@@ -181,8 +196,15 @@
             padding-top: 20px;
             border-top: 1px solid #ddd;
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
             gap: 10px;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
         }
         .no-data {
             text-align: center;
@@ -341,6 +363,6 @@
         </div>
     </div>
 
-    <script src="./medicine-settings-renderer.js"></script>
+    <script src="../renderer/medicine-settings-renderer.js"></script>
 </body>
 </html>

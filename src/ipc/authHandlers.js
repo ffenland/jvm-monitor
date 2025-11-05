@@ -1,4 +1,4 @@
-const { ipcMain } = require('electron');
+const { ipcMain, app } = require('electron');
 const { verifyLicense, saveLicenseToLocal } = require('../services/authService');
 
 /**
@@ -60,6 +60,13 @@ function registerAuthHandlers(db) {
                 message: error.message
             };
         }
+    });
+
+    /**
+     * 앱 종료
+     */
+    ipcMain.on('auth:close-app', () => {
+        app.quit();
     });
 }
 

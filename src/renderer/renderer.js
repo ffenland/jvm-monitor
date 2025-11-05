@@ -112,9 +112,9 @@ window.addEventListener('DOMContentLoaded', () => {
     const cancelBtn = document.getElementById('cancel-btn');
     const settingsForm = document.getElementById('settings-form');
     const templatePathSelect = document.getElementById('template-path');
-    
+
     // 라벨정보 관련 요소
-    const labelInfoBtn = document.getElementById('label-info-btn');
+    const labelTemplateInfoBtn = document.getElementById('label-template-info-btn');
     const labelInfoModal = document.getElementById('label-info-modal');
     const labelInfoClose = document.getElementById('label-info-close');
     const labelInfoOk = document.getElementById('label-info-ok');
@@ -469,16 +469,22 @@ window.addEventListener('DOMContentLoaded', () => {
             // ATC 서버 경로 설정
             const atcPathInput = document.getElementById('atc-path');
             if (atcPathInput) {
-                atcPathInput.value = currentConfig.atcPath || 'C:\\atc';
+                atcPathInput.value = currentConfig.atcPath || 'C:\\ATDPS\\Data';
             }
-            
+
+            // 원본 파일 자동 삭제 체크박스 설정
+            const deleteOriginalFileCheckbox = document.getElementById('delete-original-file');
+            if (deleteOriginalFileCheckbox) {
+                deleteOriginalFileCheckbox.checked = currentConfig.deleteOriginalFile || false;
+            }
+
             // 템플릿 선택 상태 업데이트
             if (currentConfig.templatePath) {
                 // 템플릿 목록이 비어있으면 먼저 로드
                 if (templatePathSelect.options.length === 0) {
                     await loadTemplates();
                 }
-                
+
                 // 템플릿 선택
                 let templateFound = false;
                 for (let i = 0; i < templatePathSelect.options.length; i++) {
@@ -488,7 +494,7 @@ window.addEventListener('DOMContentLoaded', () => {
                         break;
                     }
                 }
-                
+
                 // 템플릿을 찾지 못한 경우 기본 템플릿 선택
                 if (!templateFound && templatePathSelect.options.length > 0) {
                     templatePathSelect.selectedIndex = 0;
@@ -583,9 +589,6 @@ window.addEventListener('DOMContentLoaded', () => {
         if (event.target === labelInfoModal) {
             labelInfoModal.style.display = 'none';
         }
-        if (event.target === medicineModal) {
-            medicineModal.style.display = 'none';
-        }
     });
     
     // 설정 저장
@@ -593,9 +596,11 @@ window.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
 
         const atcPathInput = document.getElementById('atc-path');
+        const deleteOriginalFileCheckbox = document.getElementById('delete-original-file');
         const config = {
             templatePath: templatePathSelect.value || './templates/default.lbx',
-            atcPath: atcPathInput ? atcPathInput.value : 'C:\\atc'
+            atcPath: atcPathInput ? atcPathInput.value : 'C:\\ATDPS\\Data',
+            deleteOriginalFile: deleteOriginalFileCheckbox ? deleteOriginalFileCheckbox.checked : false
         };
 
         try {
@@ -623,15 +628,15 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // 라벨정보 버튼 이벤트
-    labelInfoBtn.addEventListener('click', () => {
+    // 라벨템플릿정보 버튼 이벤트 (설정 모달 내부)
+    labelTemplateInfoBtn.addEventListener('click', () => {
         labelInfoModal.style.display = 'block';
     });
-    
+
     labelInfoClose.addEventListener('click', () => {
         labelInfoModal.style.display = 'none';
     });
-    
+
     labelInfoOk.addEventListener('click', () => {
         labelInfoModal.style.display = 'none';
     });
@@ -786,7 +791,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // 약품 정보 업데이트 이벤트 처리
     window.electronAPI.onMedicineDataUpdated(() => {
-        console.log('[renderer] 약품 정보가 업데이트되었습니다. 화면을 갱신합니다.');
+        console.log('[renderer] 약품 정보가 업데이트되었습니다. 뱃지와 화면을 갱신합니다.');
+
+        // 뱃지 업데이트
+        updateMedicineFailBadge();
 
         // 현재 선택된 처방전이 있으면 다시 로드
         if (selectedPrescriptionIndex >= 0 && prescriptions[selectedPrescriptionIndex]) {
@@ -798,6 +806,86 @@ window.addEventListener('DOMContentLoaded', () => {
 
             // 토스트 메시지 표시
             showToast('약품 정보가 업데이트되었습니다.', 'success');
+        }
+    });
+
+    // 자동 인쇄 이벤트 처리
+    window.electronAPI.onAutoPrintMedicines(async (data) => {
+        const { prescription, medicines } = data;
+        const selectedPrinter = printerSelect.value;
+
+        if (!selectedPrinter) {
+            showToast('자동 인쇄 실패: 프린터를 선택해주세요', 'error');
+            return;
+        }
+
+        try {
+            let successCount = 0;
+            let failCount = 0;
+
+            // 각 약품에 대해 순차적으로 인쇄
+            for (const medicine of medicines) {
+                try {
+                    const medicineName = medicine.drug_name || medicine.name || '약품명 없음';
+
+                    // 복용법 텍스트 생성 (용법 우선순위 기반)
+                    const dailyDose = parseInt(medicine.dailyDose) || 0;
+                    const singleDose = medicine.singleDose || '1';
+                    const prescriptionDays = medicine.prescriptionDays || '0';
+                    const unit = medicine.unit || '정';
+
+                    // 용법 우선순위에서 시간 추출
+                    const usagePriority = medicine.usage_priority || '1324';
+                    const timeMapping = { '1': '아침', '2': '점심', '3': '저녁', '4': '취침전' };
+                    const times = usagePriority.substring(0, dailyDose).split('').map(t => timeMapping[t]).join(',');
+
+                    const dosageText = `하루 ${dailyDose}번 ${times} 식후 ${singleDose}${unit}씩`;
+
+                    // print-from-editor 방식으로 데이터 구성
+                    const printData = {
+                        patientName: prescription.patientName,
+                        name: medicineName,
+                        receiptDate: prescription.receiptDate,
+                        prescriptionDays: prescriptionDays,
+                        singleDose: singleDose,
+                        dailyDose: dailyDose.toString(),
+                        totalAmount: (parseInt(singleDose) * dailyDose * parseInt(prescriptionDays)).toString(),
+                        unit: unit,
+                        medicineInfo: {
+                            drug_name: medicineName,
+                            cls_code: medicine.cls_code || medicine.drug_form || '정제',
+                            unit: unit,
+                            temperature: medicine.temperature || '실온',
+                            custom_usage: medicine.custom_usage
+                        },
+                        dosageText: dosageText,
+                        medicineType: medicine.cls_code || medicine.drug_form || '정제',
+                        medicineCode: medicine.bohcode || medicine.medicineCode
+                    };
+
+                    const result = await window.electronAPI.printFromEditor(printData);
+
+                    if (result.success) {
+                        successCount++;
+                    } else {
+                        failCount++;
+                    }
+                } catch (error) {
+                    failCount++;
+                }
+            }
+
+            // 결과 토스트 메시지
+            if (failCount === 0) {
+                showToast(`자동 인쇄 완료: ${successCount}개 약품`, 'success');
+            } else if (successCount > 0) {
+                showToast(`자동 인쇄 일부 완료: 성공 ${successCount}개, 실패 ${failCount}개`, 'info');
+            } else {
+                showToast(`자동 인쇄 실패: ${failCount}개 약품`, 'error');
+            }
+        } catch (error) {
+            console.error('[자동인쇄] 처리 오류:', error);
+            showToast('자동 인쇄 중 오류가 발생했습니다.', 'error');
         }
     });
 

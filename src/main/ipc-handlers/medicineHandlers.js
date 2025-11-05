@@ -1,6 +1,6 @@
 const { ipcMain, BrowserWindow } = require('electron');
 const path = require('path');
-const { fetchAndSaveMedicine } = require('../../../medicine-fetcher');
+const { fetchAndSaveMedicine } = require('../../services/medicine-fetcher');
 
 /**
  * 약품 관련 IPC 핸들러
@@ -36,7 +36,7 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
 
             customLabelWindow.setMenuBarVisibility(false);
             customLabelWindow.setMenu(null);
-            customLabelWindow.loadFile(path.join(__dirname, '../../../custom-label-editor.html'));
+            customLabelWindow.loadFile(path.join(__dirname, '../../views/custom-label-editor.html'));
 
             return { success: true };
         } catch (error) {
@@ -64,7 +64,7 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
             settingsWindow.setMenuBarVisibility(false);
             settingsWindow.setMenu(null);
 
-            const htmlPath = path.join(__dirname, '../../../medicine-settings.html');
+            const htmlPath = path.join(__dirname, '../../views/medicine-settings.html');
 
             // medicineCode가 제공되면 query parameter로 전달
             if (medicineCode) {
@@ -76,6 +76,9 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
             } else {
                 settingsWindow.loadFile(htmlPath);
             }
+
+            // 개발자 도구 열기
+            // settingsWindow.webContents.openDevTools();
 
             return { success: true };
         } catch (error) {
@@ -114,6 +117,12 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
                 medicineData.yakjung_code,
                 medicineData
             );
+
+            // 메인 창에 데이터 업데이트 알림
+            const mainWindow = getMainWindow();
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('medicine-data-updated');
+            }
 
             return { success: true, medicine: result };
         } catch (error) {
@@ -345,7 +354,7 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
             searchWindow.setMenuBarVisibility(false);
             searchWindow.setMenu(null);
 
-            const htmlPath = path.join(__dirname, '../../../medicine-yakjung-search.html');
+            const htmlPath = path.join(__dirname, '../../views/medicine-yakjung-search.html');
             searchWindow.loadFile(htmlPath, {
                 query: {
                     drugName: params.drugName || '',
@@ -429,7 +438,7 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
 
             addMedicineWindow.setMenuBarVisibility(false);
             addMedicineWindow.setMenu(null);
-            addMedicineWindow.loadFile(path.join(__dirname, '../../../add-new-medicine.html'));
+            addMedicineWindow.loadFile(path.join(__dirname, '../../views/add-new-medicine.html'));
 
             return { success: true };
         } catch (error) {
@@ -442,7 +451,7 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
     ipcMain.handle('add-medicine-from-yakjung', async (event, yakjungCode) => {
         try {
             // yakjungCode로 약학정보원에서 정보 가져와서 DB에 저장
-            const { fetchAndSaveMedicineByYakjungCode } = require('../../../medicine-fetcher.js');
+            const { fetchAndSaveMedicineByYakjungCode } = require('../../services/medicine-fetcher.js');
             const result = await fetchAndSaveMedicineByYakjungCode(yakjungCode, dbManager);
 
             if (result.success) {
@@ -475,6 +484,24 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
         } catch (error) {
             console.error('Failed to update priority:', error);
             return { success: false, error: error.message };
+        }
+    });
+
+    // 약품 삭제 (연결된 bohcode와 처방전도 함께 삭제)
+    ipcMain.handle('delete-medicine', async (event, { yakjungCode }) => {
+        try {
+            const result = dbManager.deleteMedicine(yakjungCode);
+
+            // 메인 창에 데이터 업데이트 알림
+            const mainWindow = getMainWindow();
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('medicine-data-updated');
+            }
+
+            return result;
+        } catch (error) {
+            console.error('약품 삭제 실패:', error);
+            return { success: false, message: error.message };
         }
     });
 }

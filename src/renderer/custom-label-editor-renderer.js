@@ -241,6 +241,12 @@ async function selectMedicineAndFill(medicineCode) {
         document.getElementById('medicineUnit').value = selectedMedicineInfo.unit || '정';
         document.getElementById('totalAmountUnit').textContent = selectedMedicineInfo.unit || '정';
 
+        // 자동출력 체크박스 설정
+        const autoPrintCheck = document.getElementById('autoPrintCheck');
+        if (autoPrintCheck && selectedMedicineInfo) {
+            autoPrintCheck.checked = selectedMedicineInfo.autoPrint === 1;
+        }
+
         // 체크박스 표시
         showCheckboxes();
 
@@ -259,6 +265,7 @@ function showCheckboxes() {
     document.getElementById('medicineTypeCheckboxContainer').classList.remove('hidden');
     document.getElementById('medicineUnitCheckboxContainer').classList.remove('hidden');
     document.getElementById('customUsageCheckboxContainer').classList.remove('hidden');
+    document.getElementById('autoPrintCheckboxContainer').classList.remove('hidden');
 }
 
 // 체크박스 숨김
@@ -267,6 +274,7 @@ function hideCheckboxes() {
     document.getElementById('medicineTypeCheckboxContainer').classList.add('hidden');
     document.getElementById('medicineUnitCheckboxContainer').classList.add('hidden');
     document.getElementById('customUsageCheckboxContainer').classList.add('hidden');
+    document.getElementById('autoPrintCheckboxContainer').classList.add('hidden');
 }
 
 // 총량 계산
@@ -405,61 +413,57 @@ async function printLabel() {
         return;
     }
 
-    // 로딩 표시
-    document.getElementById('loading').classList.add('active');
-    document.getElementById('printButton').disabled = true;
+    const medicineNameValue = document.getElementById('medicineName').value;
+    const medicineTypeValue = document.getElementById('medicineType').value;
+    const medicineUnitValue = document.getElementById('medicineUnit').value;
+    const shouldUpdateMedicineName = document.getElementById('updateMedicineName').checked;
+    const shouldUpdateMedicineType = document.getElementById('updateMedicineType').checked;
+    const shouldUpdateUnit = document.getElementById('updateMedicineUnit').checked;
 
-    try {
-        const medicineNameValue = document.getElementById('medicineName').value;
-        const medicineTypeValue = document.getElementById('medicineType').value;
-        const medicineUnitValue = document.getElementById('medicineUnit').value;
-        const shouldUpdateMedicineName = document.getElementById('updateMedicineName').checked;
-        const shouldUpdateMedicineType = document.getElementById('updateMedicineType').checked;
-        const shouldUpdateUnit = document.getElementById('updateMedicineUnit').checked;
+    const shouldSaveCustomUsage = document.getElementById('saveCustomUsageCheck').checked;
+    const specialDosageInput = document.getElementById('specialDosageInput').value.trim();
+    const customUsageValue = (isSpecialDosage && shouldSaveCustomUsage && specialDosageInput) ? specialDosageInput : null;
 
-        const shouldSaveCustomUsage = document.getElementById('saveCustomUsageCheck').checked;
-        const specialDosageInput = document.getElementById('specialDosageInput').value.trim();
-        const customUsageValue = (isSpecialDosage && shouldSaveCustomUsage && specialDosageInput) ? specialDosageInput : null;
+    // 자동출력 체크
+    const autoPrintCheckbox = document.getElementById('autoPrintCheck');
+    const autoPrintValue = autoPrintCheckbox ? autoPrintCheckbox.checked : false;
+    const shouldUpdateAutoPrint = selectedMedicineInfo && (autoPrintValue !== (selectedMedicineInfo.autoPrint === 1));
 
-        const printData = {
-            patientName: document.getElementById('patientName').value,
-            name: medicineNameValue,
-            receiptDate: document.getElementById('receiptDate').value,
-            prescriptionDays: document.getElementById('prescriptionDays').value,
-            singleDose: document.getElementById('singleDose').value,
-            dailyDose: document.getElementById('dailyDose').value,
-            totalAmount: document.getElementById('totalAmount').value,
-            unit: medicineUnitValue,
-            medicineInfo: selectedMedicineInfo || {
-                drug_name: medicineNameValue,
-                cls_code: medicineTypeValue,
-                unit: medicineUnitValue
-            },
-            dosageText: dosageText,
-            medicineType: medicineTypeValue,
-            updateMedicineType: shouldUpdateMedicineType,
-            updateMedicineName: shouldUpdateMedicineName,
-            updateUnit: shouldUpdateUnit,
-            saveCustomUsage: shouldSaveCustomUsage && customUsageValue !== null,
-            customUsage: customUsageValue,
-            medicineCode: selectedMedicineInfo?.bohcode || selectedMedicineInfo?.yakjung_code || null
-        };
+    const printData = {
+        patientName: document.getElementById('patientName').value,
+        name: medicineNameValue,
+        receiptDate: document.getElementById('receiptDate').value,
+        prescriptionDays: document.getElementById('prescriptionDays').value,
+        singleDose: document.getElementById('singleDose').value,
+        dailyDose: document.getElementById('dailyDose').value,
+        totalAmount: document.getElementById('totalAmount').value,
+        unit: medicineUnitValue,
+        medicineInfo: selectedMedicineInfo || {
+            drug_name: medicineNameValue,
+            cls_code: medicineTypeValue,
+            unit: medicineUnitValue
+        },
+        dosageText: dosageText,
+        medicineType: medicineTypeValue,
+        updateMedicineType: shouldUpdateMedicineType,
+        updateMedicineName: shouldUpdateMedicineName,
+        updateUnit: shouldUpdateUnit,
+        saveCustomUsage: shouldSaveCustomUsage && customUsageValue !== null,
+        customUsage: customUsageValue,
+        updateAutoPrint: shouldUpdateAutoPrint,
+        autoPrint: autoPrintValue,
+        medicineCode: selectedMedicineInfo?.bohcode || selectedMedicineInfo?.yakjung_code || null
+    };
 
-        // 메인 프로세스에 출력 요청
-        const result = await ipcRenderer.invoke('print-from-editor', printData);
-
-        if (result.success) {
-            window.close();
-        } else {
-            throw new Error(result.error || '출력 실패');
-        }
-    } catch (error) {
+    // Fire-and-forget: 메인 프로세스에 출력 요청을 보내고 바로 창 닫기
+    // 인쇄는 백그라운드에서 처리됨
+    ipcRenderer.invoke('print-from-editor', printData).catch(error => {
         console.error('Print error:', error);
-        alert(`출력 중 오류가 발생했습니다: ${error.message}`);
-    } finally {
-        document.getElementById('loading').classList.remove('active');
-        document.getElementById('printButton').disabled = false;
-    }
+        // 에러는 로그만 남기고 사용자에게는 알리지 않음 (이미 창이 닫힌 후일 수 있음)
+    });
+
+    // 즉시 창 닫기 (인쇄 완료를 기다리지 않음)
+    window.close();
 }
 
 // 날짜 선택기 초기화

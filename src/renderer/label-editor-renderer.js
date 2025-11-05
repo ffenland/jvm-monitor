@@ -56,6 +56,12 @@ function displayInfo() {
     const unit = medicineInfo?.unit || '정';
     document.getElementById('totalAmountUnit').textContent = unit;
 
+    // 자동출력 체크박스 설정
+    const autoPrintCheck = document.getElementById('autoPrintCheck');
+    if (autoPrintCheck && medicineInfo) {
+        autoPrintCheck.checked = medicineInfo.autoPrint === 1;
+    }
+
     // 총량 초기 계산
     updateTotalAmount();
 }
@@ -380,71 +386,66 @@ async function printLabel() {
         return;
     }
     
-    // 로딩 표시
-    document.getElementById('loading').classList.add('active');
-    document.getElementById('printButton').disabled = true;
-    
-    try {
-        // input 필드에서 수정된 값 가져오기
-        const medicineNameValue = document.getElementById('medicineName').value;
-        const medicineTypeValue = document.getElementById('medicineType').value;
-        const medicineUnitValue = document.getElementById('medicineUnit').value;
-        const shouldUpdateMedicineName = document.getElementById('updateMedicineName').checked;
-        const shouldUpdateMedicineType = document.getElementById('updateMedicineType').checked;
-        const shouldUpdateUnit = document.getElementById('updateMedicineUnit').checked;
+    // input 필드에서 수정된 값 가져오기
+    const medicineNameValue = document.getElementById('medicineName').value;
+    const medicineTypeValue = document.getElementById('medicineType').value;
+    const medicineUnitValue = document.getElementById('medicineUnit').value;
+    const shouldUpdateMedicineName = document.getElementById('updateMedicineName').checked;
+    const shouldUpdateMedicineType = document.getElementById('updateMedicineType').checked;
+    const shouldUpdateUnit = document.getElementById('updateMedicineUnit').checked;
 
-        // 특수용법 저장 체크
-        const shouldSaveCustomUsage = document.getElementById('saveCustomUsageCheck').checked;
-        const specialDosageInput = document.getElementById('specialDosageInput').value.trim();
-        const customUsageValue = (isSpecialDosage && shouldSaveCustomUsage && specialDosageInput) ? specialDosageInput : null;
+    // 특수용법 저장 체크
+    const shouldSaveCustomUsage = document.getElementById('saveCustomUsageCheck').checked;
+    const specialDosageInput = document.getElementById('specialDosageInput').value.trim();
+    const customUsageValue = (isSpecialDosage && shouldSaveCustomUsage && specialDosageInput) ? specialDosageInput : null;
 
-        const updatedData = {
-            ...prescriptionData,
-            patientName: document.getElementById('patientName').value,
-            name: medicineNameValue,
-            receiptDate: document.getElementById('receiptDate').value, // 수정된 처방일 포함
-            prescriptionDays: document.getElementById('prescriptionDays').value,
-            singleDose: document.getElementById('singleDose').value,
-            dailyDose: document.getElementById('dailyDose').value, // 하루 복용횟수 추가
-            totalAmount: document.getElementById('totalAmount').value, // 총량 추가
-            unit: medicineUnitValue,
-            medicineInfo: {
-                ...medicineInfo,
-                drug_name: medicineNameValue,
-                cls_code: medicineTypeValue,
-                unit: medicineUnitValue
-            },
-            dosageText: dosageText,
-            medicineType: medicineTypeValue,
-            // 약품 유형 업데이트 플래그 추가
-            updateMedicineType: shouldUpdateMedicineType,
-            // 약품명 업데이트 플래그 추가
-            updateMedicineName: shouldUpdateMedicineName,
-            // 단위 업데이트 플래그 추가
-            updateUnit: shouldUpdateUnit,
-            // 특수용법 저장
-            saveCustomUsage: shouldSaveCustomUsage && customUsageValue !== null,
-            customUsage: customUsageValue,
-            medicineCode: prescriptionData.code
-        };
-        
-        // 메인 프로세스에 출력 요청
-        const result = await ipcRenderer.invoke('print-from-editor', updatedData);
-        
-        if (result.success) {
-            // 출력 성공 시 창 닫기
-            window.close();
-        } else {
-            throw new Error(result.error || '출력 실패');
-        }
-    } catch (error) {
+    // 자동출력 체크
+    const autoPrintCheckbox = document.getElementById('autoPrintCheck');
+    const autoPrintValue = autoPrintCheckbox ? autoPrintCheckbox.checked : false;
+    const shouldUpdateAutoPrint = medicineInfo && (autoPrintValue !== (medicineInfo.autoPrint === 1));
+
+    const updatedData = {
+        ...prescriptionData,
+        patientName: document.getElementById('patientName').value,
+        name: medicineNameValue,
+        receiptDate: document.getElementById('receiptDate').value, // 수정된 처방일 포함
+        prescriptionDays: document.getElementById('prescriptionDays').value,
+        singleDose: document.getElementById('singleDose').value,
+        dailyDose: document.getElementById('dailyDose').value, // 하루 복용횟수 추가
+        totalAmount: document.getElementById('totalAmount').value, // 총량 추가
+        unit: medicineUnitValue,
+        medicineInfo: {
+            ...medicineInfo,
+            drug_name: medicineNameValue,
+            cls_code: medicineTypeValue,
+            unit: medicineUnitValue
+        },
+        dosageText: dosageText,
+        medicineType: medicineTypeValue,
+        // 약품 유형 업데이트 플래그 추가
+        updateMedicineType: shouldUpdateMedicineType,
+        // 약품명 업데이트 플래그 추가
+        updateMedicineName: shouldUpdateMedicineName,
+        // 단위 업데이트 플래그 추가
+        updateUnit: shouldUpdateUnit,
+        // 특수용법 저장
+        saveCustomUsage: shouldSaveCustomUsage && customUsageValue !== null,
+        customUsage: customUsageValue,
+        // 자동출력 저장
+        updateAutoPrint: shouldUpdateAutoPrint,
+        autoPrint: autoPrintValue,
+        medicineCode: prescriptionData.code
+    };
+
+    // Fire-and-forget: 메인 프로세스에 출력 요청을 보내고 바로 창 닫기
+    // 인쇄는 백그라운드에서 처리됨
+    ipcRenderer.invoke('print-from-editor', updatedData).catch(error => {
         console.error('Print error:', error);
-        alert(`출력 중 오류가 발생했습니다: ${error.message}`);
-    } finally {
-        // 로딩 숨기기
-        document.getElementById('loading').classList.remove('active');
-        document.getElementById('printButton').disabled = false;
-    }
+        // 에러는 로그만 남기고 사용자에게는 알리지 않음 (이미 창이 닫힌 후일 수 있음)
+    });
+
+    // 즉시 창 닫기 (인쇄 완료를 기다리지 않음)
+    window.close();
 }
 
 // 날짜 선택기 초기화

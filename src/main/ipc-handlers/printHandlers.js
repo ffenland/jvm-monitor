@@ -2,9 +2,9 @@ const { ipcMain, BrowserWindow } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { app } = require('electron');
-const { printWithBrother, getBrotherPrinters } = require('../../../print_brother');
-const { processPrescriptionData } = require('../../../dataProcessor');
-const DatabaseManager = require('../../../database');
+const { printWithBrother, getBrotherPrinters } = require('../../services/print_brother');
+const { processPrescriptionData } = require('../../services/dataProcessor');
+const DatabaseManager = require('../../services/database');
 
 /**
  * 프린터 및 출력 관련 IPC 핸들러
@@ -114,7 +114,7 @@ function registerPrintHandlers(dbManager, getMainWindow, loadConfig) {
             };
             const dataStr = encodeURIComponent(JSON.stringify(data));
 
-            editorWindow.loadFile(path.join(__dirname, '../../../label-editor.html'), {
+            editorWindow.loadFile(path.join(__dirname, '../../views/label-editor.html'), {
                 query: { data: dataStr }
             });
 

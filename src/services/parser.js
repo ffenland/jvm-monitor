@@ -10,7 +10,7 @@
  */
 async function parseFile(filePath) {
     try {
-        const { parseTxtFile } = await import('./scripts/prescript-parser-js.js');
+        const { parseTxtFile } = await import('../../scripts/prescript-parser-js.js');
         const parseResult = parseTxtFile(filePath);
 
         if (!parseResult.success || !parseResult.records || parseResult.records.length === 0) {

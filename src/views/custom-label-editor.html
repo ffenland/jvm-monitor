@@ -506,6 +506,13 @@
                 </div>
             </div>
 
+            <div class="checkbox-container hidden" id="autoPrintCheckboxContainer" style="margin-top: 10px; padding: 8px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 3px;">
+                <label style="display: flex; align-items: center; cursor: pointer;">
+                    <input type="checkbox" id="autoPrintCheck" style="width: 14px; height: 14px; margin-right: 5px;">
+                    <span style="font-size: 12px; color: #333;">이 약품의 라벨은 자동출력</span>
+                </label>
+            </div>
+
             <div class="dosage-result">
                 <div class="dosage-result-label">생성된 용법:</div>
                 <div class="dosage-result-text" id="dosageResult">-</div>
@@ -530,6 +537,6 @@
     <!-- Flatpickr Korean Locale -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
 
-    <script src="custom-label-editor-renderer.js"></script>
+    <script src="../renderer/custom-label-editor-renderer.js"></script>
 </body>
 </html>

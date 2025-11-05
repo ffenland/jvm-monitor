@@ -344,7 +344,25 @@ function renderMedicineDetail(medicine) {
         </div>
 
         <div class="form-group">
-            <label>용법 우선순위:</label>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="checkbox" id="edit-auto-print" ${medicine.autoPrint ? 'checked' : ''} style="width: auto; margin: 0;">
+                <span>자동 인쇄 설정</span>
+            </label>
+            <small style="color: #666; font-size: 12px;">
+                체크 시, 처방전 파싱 후 이 약품의 라벨이 자동으로 출력됩니다
+            </small>
+        </div>
+
+        <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <label style="margin-bottom: 0;">용법 우선순위:</label>
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" class="btn btn-amber" id="edit-priority-btn">우선순위 수정하기</button>
+                    <button type="button" class="btn btn-success" id="save-priority-btn" style="display: none;">저장</button>
+                    <button type="button" class="btn btn-secondary" id="cancel-priority-btn" style="display: none;">취소</button>
+                </div>
+            </div>
+
             <div class="priority-info">
                 <p><strong>처방 횟수에 따른 용법 우선순위를 설정합니다.</strong></p>
                 <p>예를 들어 "아침","저녁","점심","취침전" 순의 경우:</p>
@@ -370,23 +388,23 @@ function renderMedicineDetail(medicine) {
                 </div>
                 <div class="priority-result" id="priority-result"></div>
             </div>
-
-            <div class="priority-actions">
-                <button type="button" class="btn btn-primary" id="edit-priority-btn">수정하기</button>
-                <button type="button" class="btn btn-success" id="save-priority-btn" style="display: none;">저장</button>
-                <button type="button" class="btn btn-secondary" id="cancel-priority-btn" style="display: none;">취소</button>
-            </div>
         </div>
 
         <div class="detail-buttons">
-            <button class="btn btn-primary" id="search-medicine-btn">약품 검색으로 정보 찾기</button>
-            <button class="btn btn-success" id="save-medicine-btn">저장</button>
+            <div>
+                <button class="btn btn-danger" id="delete-medicine-btn">약품 삭제</button>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-primary" id="search-medicine-btn">약품 검색으로 정보 찾기</button>
+                <button class="btn btn-success" id="save-medicine-btn">저장</button>
+            </div>
         </div>
     `;
 
     // 버튼 이벤트 리스너
     document.getElementById('save-medicine-btn').addEventListener('click', saveMedicine);
     document.getElementById('search-medicine-btn').addEventListener('click', searchMedicine);
+    document.getElementById('delete-medicine-btn').addEventListener('click', deleteMedicine);
 
     // 우선순위 초기화 및 이벤트 리스너
     initializePriorityUI(medicine.usage_priority || '1324');
@@ -396,7 +414,13 @@ function renderMedicineDetail(medicine) {
  * 약품 정보 저장
  */
 async function saveMedicine() {
-    if (!selectedMedicine) return;
+    console.log('[saveMedicine] 저장 시작, selectedMedicine:', selectedMedicine);
+
+    if (!selectedMedicine) {
+        console.error('[saveMedicine] selectedMedicine이 없습니다');
+        showToast('약품이 선택되지 않았습니다', 'error');
+        return;
+    }
 
     const updatedData = {
         yakjung_code: selectedMedicine.yakjung_code,
@@ -409,9 +433,12 @@ async function saveMedicine() {
         temperature: document.getElementById('edit-temperature').value.trim(),
         unit: document.getElementById('edit-unit').value.trim(),
         custom_usage: document.getElementById('edit-custom-usage').value.trim() || null,
-        usage_priority: document.getElementById('edit-usage-priority').value.trim(),
+        autoPrint: document.getElementById('edit-auto-print').checked ? 1 : 0,
+        // usage_priority는 savePriority 함수에서 별도로 처리하므로 제외
         api_fetched: 1  // 수동으로 입력했으므로 완성으로 표시
     };
+
+    console.log('[saveMedicine] 저장할 데이터:', updatedData);
 
     try {
         const result = await ipcRenderer.invoke('update-medicine-info', updatedData);
@@ -462,6 +489,48 @@ async function searchMedicine() {
     } catch (error) {
         console.error('약품 검색 창 열기 실패:', error);
         showToast('약품 검색 창을 열 수 없습니다', 'error');
+    }
+}
+
+/**
+ * 약품 삭제
+ */
+async function deleteMedicine() {
+    if (!selectedMedicine) {
+        showToast('약품이 선택되지 않았습니다', 'error');
+        return;
+    }
+
+    const drugName = selectedMedicine.drug_name || '정보없음';
+    const yakjungCode = selectedMedicine.yakjung_code;
+
+    // 확인 다이얼로그
+    const confirmed = confirm(
+        `약품 "${drugName}"을(를) 삭제하시겠습니까?\n\n` +
+        `⚠️ 주의: 이 약품과 연결된 모든 보험코드와 처방전도 함께 삭제됩니다.\n` +
+        `이 작업은 취소할 수 없습니다.`
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+        const result = await ipcRenderer.invoke('delete-medicine', { yakjungCode });
+
+        if (result.success) {
+            showToast(result.message, 'success');
+            // 목록 새로고침
+            await loadMedicines();
+            // 상세 정보 초기화
+            medicineDetail.innerHTML = '<div class="detail-empty">왼쪽 목록에서 약품을 선택하세요</div>';
+            selectedMedicine = null;
+        } else {
+            showToast('삭제 실패: ' + result.message, 'error');
+        }
+    } catch (error) {
+        console.error('약품 삭제 오류:', error);
+        showToast('약품 삭제 중 오류가 발생했습니다', 'error');
     }
 }
 

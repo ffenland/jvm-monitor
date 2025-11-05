@@ -1,7 +1,7 @@
 const Database = require('better-sqlite3-multiple-ciphers');
 const path = require('path');
 const fs = require('fs');
-const { getEncryptionKey } = require('./src/utils/encryptionKey');
+const { getEncryptionKey } = require('../utils/encryptionKey');
 
 /**
  * 새로운 데이터베이스 구조
@@ -146,6 +146,7 @@ class DatabaseManager {
                 unit TEXT,
                 custom_usage TEXT,
                 usage_priority TEXT DEFAULT '1324',
+                autoPrint INTEGER DEFAULT 0,
                 api_fetched INTEGER DEFAULT 0,
                 createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
                 updatedAt TEXT DEFAULT CURRENT_TIMESTAMP
@@ -215,6 +216,18 @@ class DatabaseManager {
                 lastVerifiedAt TEXT
             )
         `);
+
+        // 8. app_settings 테이블 (앱 설정 정보)
+        this.db.exec(`
+            CREATE TABLE IF NOT EXISTS app_settings (
+                id INTEGER PRIMARY KEY CHECK (id = 1),
+                atcPath TEXT DEFAULT 'C:\\ATDPS\\Data',
+                templatePath TEXT,
+                deleteOriginalFile INTEGER DEFAULT 0,
+                createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+                updatedAt TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
     }
 
     prepareStatements() {
@@ -256,11 +269,11 @@ class DatabaseManager {
                 INSERT INTO medicines (
                     yakjung_code, drug_name, drug_form, dosage_route,
                     cls_code, upso_name, medititle,
-                    stmt, temperature, unit, custom_usage, usage_priority, api_fetched
+                    stmt, temperature, unit, custom_usage, usage_priority, autoPrint, api_fetched
                 ) VALUES (
                     @yakjung_code, @drug_name, @drug_form, @dosage_route,
                     @cls_code, @upso_name, @medititle,
-                    @stmt, @temperature, @unit, @custom_usage, @usage_priority, @api_fetched
+                    @stmt, @temperature, @unit, @custom_usage, @usage_priority, @autoPrint, @api_fetched
                 )
             `),
 
@@ -313,7 +326,10 @@ class DatabaseManager {
             insertParsingHistory: this.db.prepare(`
                 INSERT INTO parsing_history (prescriptionId, parsedDate, parsedAt)
                 VALUES (@prescriptionId, @parsedDate, @parsedAt)
-            `)
+            `),
+
+            // === 앱 설정 관련 ===
+            getAppSettings: this.db.prepare('SELECT * FROM app_settings WHERE id = 1')
         };
     }
 
@@ -484,6 +500,23 @@ class DatabaseManager {
     }
 
     /**
+     * 약품의 autoPrint(자동인쇄 여부) 업데이트
+     * @param {string} yakjungCode - 약학정보원 코드
+     * @param {number} autoPrint - 자동인쇄 여부 (0: false, 1: true)
+     * @returns {Object} 업데이트된 약품 정보
+     */
+    updateMedicineAutoPrint(yakjungCode, autoPrint) {
+        const updateStmt = this.db.prepare(`
+            UPDATE medicines
+            SET autoPrint = ?,
+                updatedAt = CURRENT_TIMESTAMP
+            WHERE yakjung_code = ?
+        `);
+        updateStmt.run(autoPrint ? 1 : 0, yakjungCode);
+        return this.statements.getMedicine.get(yakjungCode);
+    }
+
+    /**
      * 약품 정보 전체 업데이트 (약학정보원에서 데이터 재조회 시 사용)
      * @param {string} yakjungCode - 약학정보원 코드
      * @param {Object} medicineData - 업데이트할 약품 정보
@@ -541,7 +574,7 @@ class DatabaseManager {
                 temperature = ?,
                 unit = ?,
                 custom_usage = ?,
-                usage_priority = ?,
+                autoPrint = ?,
                 api_fetched = 1,
                 updatedAt = CURRENT_TIMESTAMP
             WHERE yakjung_code = ?
@@ -557,57 +590,7 @@ class DatabaseManager {
             medicineData.temperature || null,
             medicineData.unit || '회',
             medicineData.custom_usage || null,
-            medicineData.usage_priority || '1324',
-            yakjungCode
-        );
-
-        return this.statements.getMedicine.get(yakjungCode);
-    }
-
-    /**
-     * 약품 정보 수동 업데이트 (사용자가 직접 입력한 데이터 저장)
-     * 사용자가 입력한 값을 그대로 저장하며, custom_usage와 usage_priority도 포함
-     * 기존 api_fetched가 0이면 1로 변경
-     * @param {string} yakjungCode - 약학정보원 코드
-     * @param {Object} medicineData - 사용자가 입력한 약품 정보
-     * @returns {Object} 업데이트된 약품 정보
-     */
-    updateMedicineManually(yakjungCode, medicineData) {
-        // 기존 약품 정보 조회
-        const existingMedicine = this.statements.getMedicine.get(yakjungCode);
-
-        // api_fetched 값 결정: 기존이 0이면 1로, 이미 1이면 그대로 유지
-        const newApiFetched = (existingMedicine && existingMedicine.api_fetched === 0) ? 1 : (existingMedicine?.api_fetched || 1);
-
-        const updateStmt = this.db.prepare(`
-            UPDATE medicines
-            SET drug_name = ?,
-                drug_form = ?,
-                dosage_route = ?,
-                cls_code = ?,
-                upso_name = ?,
-                medititle = ?,
-                temperature = ?,
-                unit = ?,
-                custom_usage = ?,
-                usage_priority = ?,
-                api_fetched = ?,
-                updatedAt = CURRENT_TIMESTAMP
-            WHERE yakjung_code = ?
-        `);
-
-        updateStmt.run(
-            medicineData.drug_name || null,
-            medicineData.drug_form || null,
-            medicineData.dosage_route || null,
-            medicineData.cls_code || null,
-            medicineData.upso_name || null,
-            medicineData.medititle || null,
-            medicineData.temperature || null,
-            medicineData.unit || '회',
-            medicineData.custom_usage || null,
-            medicineData.usage_priority || '1324',
-            newApiFetched,
+            medicineData.autoPrint !== undefined ? medicineData.autoPrint : 0,
             yakjungCode
         );
 
@@ -677,6 +660,7 @@ class DatabaseManager {
                     unit: medicineData.unit || oldMedicine.unit || '회',
                     custom_usage: oldMedicine.custom_usage,  // 기존 custom_usage 유지
                     usage_priority: oldMedicine.usage_priority || '1324',  // 기존 usage_priority 유지
+                    autoPrint: oldMedicine.autoPrint || 0,  // 기존 autoPrint 유지
                     api_fetched: 1
                 });
 
@@ -790,6 +774,7 @@ class DatabaseManager {
                             unit: '회',
                             custom_usage: null,
                             usage_priority: '1324',
+                            autoPrint: 0,
                             api_fetched: 0
                         });
 
@@ -972,7 +957,8 @@ class DatabaseManager {
                 m.temperature,
                 m.unit,
                 m.custom_usage,
-                m.usage_priority
+                m.usage_priority,
+                m.autoPrint
             FROM prescription_medicines pm
             LEFT JOIN medicine_bohcodes mb ON pm.medicineCode = mb.bohcode
             LEFT JOIN medicines m ON mb.yakjung_code = m.yakjung_code
@@ -982,6 +968,78 @@ class DatabaseManager {
     }
 
     // ========== 유틸리티 메서드 ==========
+
+    /**
+     * 약품 삭제 (트랜잭션)
+     * 약품 삭제 시:
+     * 1. 해당 약품과 연결된 모든 bohcode 조회
+     * 2. 해당 bohcode를 사용하는 모든 처방전 조회
+     * 3. 해당 처방전들 삭제 (prescription_medicines, parsing_history는 CASCADE로 자동 삭제)
+     * 4. bohcode 매핑 삭제
+     * 5. 약품 정보 삭제
+     *
+     * @param {string} yakjungCode - 약학정보원 코드
+     * @returns {Object} { success: boolean, message?: string, deletedPrescriptionCount?: number }
+     */
+    deleteMedicine(yakjungCode) {
+        try {
+            const transaction = this.db.transaction((code) => {
+                // 1. 약품 존재 확인
+                const medicine = this.statements.getMedicine.get(code);
+                if (!medicine) {
+                    return { success: false, message: '약품을 찾을 수 없습니다.' };
+                }
+
+                // 2. 해당 약품과 연결된 모든 bohcode 조회
+                const bohcodes = this.getBohcodesByYakjungCode(code);
+
+                // 3. 해당 bohcode를 사용하는 모든 처방전 ID 조회
+                let prescriptionIds = [];
+                if (bohcodes.length > 0) {
+                    const placeholders = bohcodes.map(() => '?').join(', ');
+                    const query = `
+                        SELECT DISTINCT prescriptionId
+                        FROM prescription_medicines
+                        WHERE medicineCode IN (${placeholders})
+                    `;
+                    const result = this.db.prepare(query).all(...bohcodes);
+                    prescriptionIds = result.map(row => row.prescriptionId);
+                }
+
+                // 4. 처방전 삭제 (prescription_medicines, parsing_history는 CASCADE로 자동 삭제)
+                if (prescriptionIds.length > 0) {
+                    const deletePrescriptionStmt = this.db.prepare('DELETE FROM prescriptions WHERE id = ?');
+                    for (const id of prescriptionIds) {
+                        deletePrescriptionStmt.run(id);
+                    }
+                }
+
+                // 5. bohcode 매핑 삭제
+                const deleteBohcodeStmt = this.db.prepare('DELETE FROM medicine_bohcodes WHERE yakjung_code = ?');
+                deleteBohcodeStmt.run(code);
+
+                // 6. 약품 정보 삭제
+                const deleteMedicineStmt = this.db.prepare('DELETE FROM medicines WHERE yakjung_code = ?');
+                const result = deleteMedicineStmt.run(code);
+
+                if (result.changes > 0) {
+                    return {
+                        success: true,
+                        message: `약품이 삭제되었습니다. (연결된 처방전 ${prescriptionIds.length}개도 함께 삭제됨)`,
+                        deletedPrescriptionCount: prescriptionIds.length,
+                        deletedBohcodeCount: bohcodes.length
+                    };
+                } else {
+                    return { success: false, message: '약품 삭제에 실패했습니다.' };
+                }
+            });
+
+            return transaction(yakjungCode);
+        } catch (error) {
+            console.error('[DB] 약품 삭제 오류:', error);
+            return { success: false, message: error.message };
+        }
+    }
 
     /**
      * 처방전 삭제 (트랜잭션)
@@ -1079,6 +1137,62 @@ class DatabaseManager {
         } catch (error) {
             console.error('[DB] 마지막 인증 시간 업데이트 실패:', error);
             return false;
+        }
+    }
+
+    /**
+     * 앱 설정 저장
+     * @param {Object} settings - { atcPath, templatePath, deleteOriginalFile }
+     * @returns {boolean} 성공 여부
+     */
+    saveAppSettings(settings) {
+        try {
+            const stmt = this.db.prepare(`
+                INSERT OR REPLACE INTO app_settings (id, atcPath, templatePath, deleteOriginalFile, updatedAt)
+                VALUES (1, @atcPath, @templatePath, @deleteOriginalFile, CURRENT_TIMESTAMP)
+            `);
+
+            stmt.run({
+                atcPath: settings.atcPath || 'C:\\ATDPS\\Data',
+                templatePath: settings.templatePath || null,
+                deleteOriginalFile: settings.deleteOriginalFile ? 1 : 0
+            });
+
+            return true;
+        } catch (error) {
+            console.error('[DB] 앱 설정 저장 실패:', error);
+            return false;
+        }
+    }
+
+    /**
+     * 앱 설정 조회
+     * @returns {Object} { id, atcPath, templatePath, deleteOriginalFile, createdAt, updatedAt }
+     */
+    getAppSettings() {
+        try {
+            const settings = this.statements.getAppSettings.get();
+
+            // 설정이 없으면 기본값으로 초기화
+            if (!settings) {
+                const defaultSettings = {
+                    atcPath: 'C:\\ATDPS\\Data',
+                    templatePath: null,
+                    deleteOriginalFile: 0
+                };
+                this.saveAppSettings(defaultSettings);
+                return { ...defaultSettings, id: 1 };
+            }
+
+            return settings;
+        } catch (error) {
+            console.error('[DB] 앱 설정 조회 실패:', error);
+            return {
+                id: 1,
+                atcPath: 'C:\\ATDPS\\Data',
+                templatePath: null,
+                deleteOriginalFile: 0
+            };
         }
     }
 

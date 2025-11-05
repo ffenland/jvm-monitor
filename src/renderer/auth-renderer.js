@@ -11,6 +11,7 @@ const pharmacyNameInput = document.getElementById('pharmacyName');
 const ownerNameInput = document.getElementById('ownerName');
 const emailInput = document.getElementById('email');
 const licenseKeyInput = document.getElementById('licenseKey');
+const exitBtn = document.getElementById('exitBtn');
 
 // 인증키 입력 시 숫자만 허용
 licenseKeyInput.addEventListener('input', (e) => {
@@ -105,8 +106,9 @@ function isValidEmail(email) {
     return emailRegex.test(email);
 }
 
-// 창이 닫히지 않도록 방지 (인증 필수)
-window.addEventListener('beforeunload', (e) => {
-    e.preventDefault();
-    e.returnValue = '';
+// 프로그램 종료 버튼 이벤트
+exitBtn.addEventListener('click', () => {
+    if (window.authAPI && window.authAPI.closeApp) {
+        window.authAPI.closeApp();
+    }
 });

@@ -2,9 +2,9 @@ const { app, BrowserWindow, dialog, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const chokidar = require('chokidar');
-const { parseFile } = require('./parser');
-const { fetchAndSaveMedicine } = require('./medicine-fetcher');
-const DatabaseManager = require('./database');
+const { parseFile } = require('./src/services/parser');
+const { fetchAndSaveMedicine } = require('./src/services/medicine-fetcher');
+const DatabaseManager = require('./src/services/database');
 const { spawn } = require('child_process');
 const { registerAllHandlers } = require('./src/main/ipc-handlers');
 const { checkLicenseOnStartup } = require('./src/services/authService');
@@ -93,15 +93,21 @@ function createAuthWindow() {
     authWindow.setMenuBarVisibility(false);
     authWindow.setMenu(null);
 
-    authWindow.loadFile(path.join(__dirname, 'src', 'auth.html'));
+    authWindow.loadFile(path.join(__dirname, 'src', 'views', 'auth.html'));
 
-    // 인증 창이 닫히면 앱 종료
+    // 인증 창이 닫히면 앱 종료 (인증 성공한 경우는 제외)
+    let authSucceeded = false;
     authWindow.on('closed', () => {
         authWindow = null;
-        // 인증 없이 창을 닫으면 앱 종료
-        if (!mainWindow || !mainWindow.isVisible()) {
+        // 인증 성공하지 않고 창을 닫으면 앱 종료
+        if (!authSucceeded && (!mainWindow || !mainWindow.isVisible())) {
             app.quit();
         }
+    });
+
+    // 인증 성공 플래그 설정을 위한 이벤트 리스너
+    ipcMain.once('auth:success-flag', () => {
+        authSucceeded = true;
     });
 
     // Open DevTools for debugging
@@ -129,7 +135,7 @@ function createUpdateWindow(versionInfo) {
     updateWindow.setMenuBarVisibility(false);
     updateWindow.setMenu(null);
 
-    updateWindow.loadFile(path.join(__dirname, 'src', 'update.html'));
+    updateWindow.loadFile(path.join(__dirname, 'src', 'views', 'update.html'));
 
     // 업데이트 창 닫기 방지
     updateWindow.on('close', (e) => {
@@ -148,87 +154,90 @@ function createUpdateWindow(versionInfo) {
     console.log('[Main] Update window created');
 }
 
-// 설정 파일 읽기/쓰기 함수
+// 설정 파일 읽기/쓰기 함수 (DB 기반)
 function loadConfig() {
-    const appDataDir = DatabaseManager.getAppDataDir();
-    if (!fs.existsSync(appDataDir)) {
-        fs.mkdirSync(appDataDir, { recursive: true });
-    }
-    const configPath = DatabaseManager.getConfigPath();
     try {
-        if (fs.existsSync(configPath)) {
-            const configData = fs.readFileSync(configPath, 'utf8');
-            currentConfig = JSON.parse(configData);
-            // atcPath가 있으면 monitorPath 업데이트
-            if (currentConfig.atcPath) {
-                monitorPath = currentConfig.atcPath;
-                // console.log('ATC path loaded from config:', monitorPath);
-            }
-        } else {
-            // 기본 설정
-            const templatesDir = path.join(appDataDir, 'templates');
-            
-            // 템플릿 폴더가 없으면 생성하고 기본 템플릿 복사
+        // DB에서 앱 설정 조회
+        const dbSettings = dbManager.getAppSettings();
+
+        // DB에서 라이선스 정보 조회
+        const licenseInfo = dbManager.getLicense();
+
+        // monitorPath 업데이트
+        if (dbSettings.atcPath) {
+            monitorPath = dbSettings.atcPath;
+        }
+
+        // templatePath 기본값 설정
+        if (!dbSettings.templatePath) {
+            const templatesDir = DatabaseManager.getTemplatesDir();
+            const defaultTemplatePath = path.join(templatesDir, 'default.lbx');
+
+            // 템플릿 폴더가 없으면 생성
             if (!fs.existsSync(templatesDir)) {
                 fs.mkdirSync(templatesDir, { recursive: true });
             }
-            
-            // 기본 템플릿 경로
-            const defaultTemplatePath = path.join(templatesDir, 'default.lbx');
-            
-            // 기본 템플릿이 없으면 app 폴더에서 복사 시도
+
+            // 기본 템플릿이 없으면 app 폴더에서 복사
             if (!fs.existsSync(defaultTemplatePath)) {
                 const sourceTemplate = path.join(__dirname, 'templates', 'default.lbx');
                 if (fs.existsSync(sourceTemplate)) {
                     fs.copyFileSync(sourceTemplate, defaultTemplatePath);
                 }
             }
-            
-            currentConfig = {
-                templatePath: defaultTemplatePath,
-                atcPath: "C:\\atc",
-                isFirstRun: true  // 첫 실행 플래그
-            };
-            saveConfig(currentConfig);
+
+            dbSettings.templatePath = defaultTemplatePath;
+            dbManager.saveAppSettings(dbSettings);
         }
-    } catch (error) {
-        console.error('Error loading config:', error);
-        const templatesDir = path.join(appDataDir, 'templates');
-        
-        // 템플릿 폴더가 없으면 생성
-        if (!fs.existsSync(templatesDir)) {
-            fs.mkdirSync(templatesDir, { recursive: true });
-        }
-        
-        const defaultTemplatePath = path.join(templatesDir, 'default.lbx');
-        
-        // 기본 템플릿이 없으면 app 폴더에서 복사 시도
-        if (!fs.existsSync(defaultTemplatePath)) {
-            const sourceTemplate = path.join(__dirname, 'templates', 'default.lbx');
-            if (fs.existsSync(sourceTemplate)) {
-                fs.copyFileSync(sourceTemplate, defaultTemplatePath);
-            }
-        }
-        
+
         currentConfig = {
-            templatePath: defaultTemplatePath,
-            atcPath: "C:\\atc",
-            isFirstRun: true
+            atcPath: dbSettings.atcPath,
+            templatePath: dbSettings.templatePath,
+            deleteOriginalFile: dbSettings.deleteOriginalFile === 1,
+            pharmacyName: licenseInfo?.pharmacyName || ''
         };
+
+        return currentConfig;
+    } catch (error) {
+        console.error('Error loading config from DB:', error);
+
+        // DB 조회 실패 시 기본값 반환
+        const templatesDir = DatabaseManager.getTemplatesDir();
+        const defaultTemplatePath = path.join(templatesDir, 'default.lbx');
+
+        currentConfig = {
+            atcPath: 'C:\\ATDPS\\Data',
+            templatePath: defaultTemplatePath,
+            deleteOriginalFile: false,
+            pharmacyName: ''
+        };
+
+        return currentConfig;
     }
-    return currentConfig;
 }
 
 function saveConfig(config) {
-    const appDataDir = DatabaseManager.getAppDataDir();
-    const configPath = DatabaseManager.getConfigPath();
-
     try {
-        fs.writeFileSync(configPath, JSON.stringify(config, null, 2), 'utf8');
-        currentConfig = config;
-        return true;
+        // DB에 앱 설정 저장
+        const success = dbManager.saveAppSettings({
+            atcPath: config.atcPath,
+            templatePath: config.templatePath,
+            deleteOriginalFile: config.deleteOriginalFile
+        });
+
+        if (success) {
+            currentConfig = config;
+
+            // atcPath가 변경되었으면 monitorPath 업데이트
+            if (config.atcPath) {
+                monitorPath = config.atcPath;
+            }
+
+            return true;
+        }
+        return false;
     } catch (error) {
-        console.error('Error saving config:', error);
+        console.error('Error saving config to DB:', error);
         return false;
     }
 }
@@ -253,18 +262,29 @@ app.whenReady().then(async () => {
 
     // 인증 성공 이벤트 리스너
     ipcMain.on('auth:success', () => {
-        // 인증 창 닫기
-        if (authWindow && !authWindow.isDestroyed()) {
-            authWindow.removeAllListeners('close');
-            authWindow.destroy();
-            authWindow = null;
-        }
+        console.log('[Main] Authentication succeeded, showing main window...');
 
-        // 메인 창 표시
+        // 메인 창 먼저 표시
         if (mainWindow && !mainWindow.isDestroyed()) {
             mainWindow.show();
             mainWindow.focus();
         }
+
+        // 인증 성공 플래그 설정
+        ipcMain.emit('auth:success-flag');
+
+        // 인증 창 닫기
+        if (authWindow && !authWindow.isDestroyed()) {
+            authWindow.removeAllListeners('closed');
+            authWindow.destroy();
+            authWindow = null;
+        }
+
+        // 파일 감시 시작 (인증 완료 후)
+        console.log('[Main] Starting file watcher after authentication...');
+        startFileWatcher();
+
+        console.log('[Main] Main window shown, auth window closed');
     });
 
     // ========== 버전 체크 (최우선!) ==========
@@ -290,6 +310,10 @@ app.whenReady().then(async () => {
         // 인증 불필요 - 메인 창 바로 표시
         createWindow();
         mainWindow.show();
+
+        // 파일 감시 시작 (인증이 필요 없는 경우)
+        console.log('[Main] Starting file watcher (no auth needed)...');
+        startFileWatcher();
     }
 
     // IPC 핸들러 등록
@@ -318,9 +342,6 @@ app.whenReady().then(async () => {
             checkBpacInstallation();
         }, 1000); // 1초 후에 실행
     });
-
-    // 파일 감시 시작
-    startFileWatcher();
 });
 
 // 파일 감시 시작 함수
@@ -441,8 +462,40 @@ function startFileWatcher() {
                     mainWindow.webContents.send('update-date-list', allDates);
                 }
 
-                // 6. 자동 출력 처리 (autoPrint 필드가 있는 약품만)
-                // TODO: autoPrint 기능은 나중에 추가
+                // 6. 자동 출력 처리 (autoPrint가 true인 약품만)
+                const prescriptionWithMeds = dbManager.getPrescriptionById(saveResult.id);
+
+                if (prescriptionWithMeds) {
+                    const prescriptionMedicines = dbManager.getPrescriptionMedicines(saveResult.id);
+                    const patientInfo = dbManager.getPatient(prescriptionWithMeds.patientId);
+                    const autoPrintMedicines = prescriptionMedicines.filter(med => med.autoPrint === 1);
+
+                    if (autoPrintMedicines.length > 0) {
+                        mainWindow.webContents.send('log-message', `자동 출력 시작: ${autoPrintMedicines.length}개 약품`);
+
+                        // 자동 출력 요청 전송 (환자명 추가)
+                        mainWindow.webContents.send('auto-print-medicines', {
+                            prescription: {
+                                ...prescriptionWithMeds,
+                                patientName: patientInfo ? patientInfo.name : '환자명 없음'
+                            },
+                            medicines: autoPrintMedicines
+                        });
+                    }
+                }
+
+                // 7. 설정에 따라 원본 파일 삭제
+                const currentConfig = loadConfig();
+                if (currentConfig.deleteOriginalFile === true) {
+                    try {
+                        fs.unlinkSync(filePath);
+                        console.log(`[File Watcher] 원본 파일 삭제 완료: ${fileName}`);
+                        mainWindow.webContents.send('log-message', `원본 파일 삭제 완료: ${fileName}`);
+                    } catch (deleteError) {
+                        console.error('[File Watcher] 원본 파일 삭제 실패:', deleteError);
+                        mainWindow.webContents.send('log-message', `⚠️ 원본 파일 삭제 실패: ${fileName} (${deleteError.message})`);
+                    }
+                }
 
             } else {
                 mainWindow.webContents.send('log-message', `Failed to save prescription: ${saveResult.message || 'Unknown error'}`);

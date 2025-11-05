@@ -3,8 +3,8 @@ const path = require('path');
 const fs = require('fs');
 const { app, shell } = require('electron');
 const { spawn } = require('child_process');
-const { previewTemplate } = require('../../../print_brother');
-const DatabaseManager = require('../../../database');
+const { previewTemplate } = require('../../services/print_brother');
+const DatabaseManager = require('../../services/database');
 
 /**
  * 설정 및 템플릿 관련 IPC 핸들러

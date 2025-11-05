@@ -4,8 +4,8 @@
  */
 
 const DatabaseManager = require('./database.js');
-const { extractTemperature } = require('./scripts/extract-temperature.js');
-const { getUnitFromDrugForm } = require('./scripts/drug-form-unit-map.js');
+const { extractTemperature } = require('../../scripts/extract-temperature.js');
+const { getUnitFromDrugForm } = require('../../scripts/drug-form-unit-map.js');
 
 /**
  * 중복되지 않는 랜덤 4자리 숫자 생성
@@ -45,7 +45,7 @@ async function fetchAndSaveMedicine(bohcode, drugNameFromParsing = null, dbInsta
         }
 
         // 2. yakjung_code(icode) 조회
-        const { searchMedicineByBohcode } = require('./scripts/medicine-api.js');
+        const { searchMedicineByBohcode } = require('../../scripts/medicine-api.js');
         const searchResult = await searchMedicineByBohcode(bohcode);
 
         if (!searchResult || !searchResult.icode) {
@@ -64,6 +64,7 @@ async function fetchAndSaveMedicine(bohcode, drugNameFromParsing = null, dbInsta
                 unit: '회',
                 custom_usage: null,
                 usage_priority: '1324',
+                autoPrint: 0,
                 api_fetched: 0
             };
 
@@ -74,7 +75,7 @@ async function fetchAndSaveMedicine(bohcode, drugNameFromParsing = null, dbInsta
         const yakjungCode = searchResult.icode;
 
         // 3. 약학정보원 API 호출
-        const { fetchMedicineDetailByYakjungCode } = require('./scripts/medicine-api.js');
+        const { fetchMedicineDetailByYakjungCode } = require('../../scripts/medicine-api.js');
         const medicineInfo = await fetchMedicineDetailByYakjungCode(yakjungCode);
 
         if (!medicineInfo) {
@@ -93,6 +94,7 @@ async function fetchAndSaveMedicine(bohcode, drugNameFromParsing = null, dbInsta
                 unit: '회',
                 custom_usage: null,
                 usage_priority: '1324',
+                autoPrint: 0,
                 api_fetched: 0
             };
 
@@ -106,7 +108,8 @@ async function fetchAndSaveMedicine(bohcode, drugNameFromParsing = null, dbInsta
             bohcode: bohcode,
             ...medicineInfo,  // yakjung_code, drug_name, drug_form, dosage_route, cls_code, upso_name, medititle, stmt, temperature, unit, api_fetched 포함
             custom_usage: null,
-            usage_priority: '1324'
+            usage_priority: '1324',
+            autoPrint: 0
         };
 
         // 5. DB 저장
@@ -131,6 +134,7 @@ async function fetchAndSaveMedicine(bohcode, drugNameFromParsing = null, dbInsta
                 unit: '회',
                 custom_usage: null,
                 usage_priority: '1324',
+                autoPrint: 0,
                 api_fetched: 0
             };
 
@@ -165,7 +169,7 @@ async function fetchAndSaveMedicineByYakjungCode(yakjungCode, dbInstance = null)
         }
 
         // 2. 약학정보원 API 호출
-        const { fetchMedicineDetailByYakjungCode, fetchBohCodesFromYakjung } = require('./scripts/medicine-api.js');
+        const { fetchMedicineDetailByYakjungCode, fetchBohCodesFromYakjung } = require('../../scripts/medicine-api.js');
         const medicineInfo = await fetchMedicineDetailByYakjungCode(yakjungCode);
 
         if (!medicineInfo) {
@@ -183,7 +187,8 @@ async function fetchAndSaveMedicineByYakjungCode(yakjungCode, dbInstance = null)
             bohcode: bohcodes.length > 0 ? bohcodes[0] : null, // 첫 번째 bohcode를 기본값으로
             ...medicineInfo,
             custom_usage: null,
-            usage_priority: '1324'
+            usage_priority: '1324',
+            autoPrint: 0
         };
 
         // 5. DB 저장 (트랜잭션 시작)
