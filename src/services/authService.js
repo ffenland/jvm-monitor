@@ -1,6 +1,7 @@
 const { doc, getDoc, updateDoc, serverTimestamp } = require('firebase/firestore');
 const bcrypt = require('bcryptjs');
 const { getDb } = require('./firebaseService');
+const logger = require('./logger');
 
 /**
  * 라이선스 인증 서비스
@@ -73,7 +74,11 @@ async function verifyLicense(pharmacyName, ownerName, email, licenseKey) {
             });
             console.log('[AuthService] Firebase에 인증 시점 기록 완료');
         } catch (updateError) {
-            console.error('[AuthService] Firebase 인증 시점 기록 실패:', updateError);
+            logger.error('Firebase 인증 시점 기록 실패', {
+                category: 'api',
+                error: updateError,
+                details: { email }
+            });
             // 기록 실패해도 인증은 성공으로 처리
         }
 
@@ -88,7 +93,11 @@ async function verifyLicense(pharmacyName, ownerName, email, licenseKey) {
             }
         };
     } catch (error) {
-        console.error('[AuthService] 인증 실패:', error);
+        logger.error('라이선스 인증 실패', {
+            category: 'api',
+            error: error,
+            details: { email, pharmacyName }
+        });
         return {
             success: false,
             message: '인증 중 오류가 발생했습니다: ' + error.message
@@ -113,7 +122,14 @@ function saveLicenseToLocal(db, data) {
             lastVerifiedAt: new Date().toISOString()
         });
     } catch (error) {
-        console.error('[AuthService] 로컬 저장 실패:', error);
+        logger.error('라이선스 로컬 저장 실패', {
+            category: 'database',
+            error: error,
+            details: {
+                email: data.email,
+                pharmacyName: data.pharmacyName
+            }
+        });
         return false;
     }
 }
@@ -127,7 +143,10 @@ function getLocalLicense(db) {
     try {
         return db.getLicense();
     } catch (error) {
-        console.error('[AuthService] 로컬 조회 실패:', error);
+        logger.error('라이선스 로컬 조회 실패', {
+            category: 'database',
+            error: error
+        });
         return null;
     }
 }
@@ -149,22 +168,8 @@ async function checkLicenseOnStartup(db) {
             };
         }
 
-        // 마지막 인증 시간 확인
-        const lastVerified = new Date(license.lastVerifiedAt);
-        const now = new Date();
-        const daysSinceVerified = (now - lastVerified) / (1000 * 60 * 60 * 24);
-
-        // 5일 이내면 오프라인 허용
-        if (daysSinceVerified <= OFFLINE_DAYS) {
-            return {
-                needsAuth: false,
-                license: license,
-                message: '로컬 인증 성공'
-            };
-        }
-
-        // 5일 초과 - Firestore 재인증 시도
-        console.log('[AuthService] 5일 초과, Firestore 재인증 시도...');
+        // 프로그램 시작 시 무조건 Firestore 서버 인증 시도
+        console.log('[AuthService] 프로그램 시작, Firestore 서버 인증 시도...');
         const result = await verifyLicense(
             license.pharmacyName,
             license.ownerName,
@@ -173,25 +178,28 @@ async function checkLicenseOnStartup(db) {
         );
 
         if (result.success) {
-            // 재인증 성공 - lastVerifiedAt 업데이트
+            // 서버 인증 성공 - lastVerifiedAt 업데이트
             // verifyLicense 함수에서 이미 Firebase에 인증 시점 기록됨
             db.updateLastVerified();
             return {
                 needsAuth: false,
                 license: license,
-                message: 'Firestore 재인증 성공'
+                message: 'Firestore 서버 인증 성공'
             };
         } else {
-            // 재인증 실패 - 인증 필요
+            // 서버 인증 실패 - 인증 필요
             return {
                 needsAuth: true,
-                message: '재인증이 필요합니다: ' + result.message
+                message: '서버 인증 실패: ' + result.message
             };
         }
     } catch (error) {
-        console.error('[AuthService] 시작 시 인증 체크 실패:', error);
+        logger.error('시작 시 인증 체크 실패 (네트워크 오류)', {
+            category: 'system',
+            error: error
+        });
 
-        // 네트워크 오류인 경우 로컬 라이선스 사용
+        // 네트워크 오류인 경우에만 로컬 라이선스 사용 (5일 이내)
         const license = getLocalLicense(db);
         if (license) {
             const lastVerified = new Date(license.lastVerifiedAt);
@@ -199,17 +207,20 @@ async function checkLicenseOnStartup(db) {
             const daysSinceVerified = (now - lastVerified) / (1000 * 60 * 60 * 24);
 
             if (daysSinceVerified <= OFFLINE_DAYS) {
+                console.log(`[AuthService] 네트워크 오류 발생, 로컬 인증 사용 (마지막 인증: ${Math.floor(daysSinceVerified)}일 전)`);
                 return {
                     needsAuth: false,
                     license: license,
-                    message: '네트워크 오류, 로컬 인증 사용'
+                    message: '네트워크 오류, 로컬 인증 사용 (마지막 인증: ' + Math.floor(daysSinceVerified) + '일 전)'
                 };
+            } else {
+                console.log(`[AuthService] 네트워크 오류 + 5일 초과 (마지막 인증: ${Math.floor(daysSinceVerified)}일 전) - 인증 필요`);
             }
         }
 
         return {
             needsAuth: true,
-            message: '인증 체크 중 오류 발생'
+            message: '네트워크 오류로 서버 인증 실패. 마지막 인증이 5일을 초과했거나 로컬 인증 정보가 없습니다.'
         };
     }
 }

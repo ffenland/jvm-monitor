@@ -2,6 +2,7 @@ const { ipcMain, BrowserWindow } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { app } = require('electron');
+const logger = require('../../services/logger');
 const { printWithBrother, getBrotherPrinters } = require('../../services/print_brother');
 const { processPrescriptionData } = require('../../services/dataProcessor');
 const DatabaseManager = require('../../services/database');
@@ -35,7 +36,10 @@ function registerPrintHandlers(dbManager, getMainWindow, loadConfig) {
                 });
             }
         } catch (error) {
-            console.error(`Failed to get printers: ${error.message}`);
+            logger.error('프린터 목록 가져오기 실패', {
+                category: 'print',
+                error: error
+            });
             mainWindow.webContents.send('log-message', `Failed to get printers: ${error.message}`);
             event.sender.send('printer-list', {
                 error: true,
@@ -51,7 +55,10 @@ function registerPrintHandlers(dbManager, getMainWindow, loadConfig) {
             const printers = await getBrotherPrinters();
             return { success: true, printers };
         } catch (error) {
-            console.error('Error getting printers:', error);
+            logger.error('Brother 프린터 목록 조회 실패', {
+                category: 'print',
+                error: error
+            });
             return { success: false, error: error.message, printers: [] };
         }
     });
@@ -77,7 +84,11 @@ function registerPrintHandlers(dbManager, getMainWindow, loadConfig) {
             const result = await printWithBrother(printData);
             return { success: true, message: result };
         } catch (error) {
-            console.error('Error printing prescription:', error);
+            logger.error('처방전 출력 실패', {
+                category: 'print',
+                error: error,
+                details: { printerName }
+            });
             return { success: false, error: error.message };
         }
     });
@@ -131,7 +142,11 @@ function registerPrintHandlers(dbManager, getMainWindow, loadConfig) {
 
             return { success: true };
         } catch (error) {
-            console.error('Error opening label editor:', error);
+            logger.error('라벨 편집기 열기 실패', {
+                category: 'system',
+                error: error,
+                details: { medicineCode }
+            });
             return { success: false, error: error.message };
         }
     });
@@ -186,7 +201,11 @@ function registerPrintHandlers(dbManager, getMainWindow, loadConfig) {
                         }
                     }
                 } catch (updateError) {
-                    console.error('Error updating medicine info in DB:', updateError);
+                    logger.error('약품 정보 업데이트 실패', {
+                        category: 'database',
+                        error: updateError,
+                        details: { yakjungCode: printData.medicineInfo?.yakjung_code }
+                    });
                     // 업데이트 실패해도 출력은 계속 진행
                 }
             }
@@ -227,7 +246,14 @@ function registerPrintHandlers(dbManager, getMainWindow, loadConfig) {
 
             return result;
         } catch (error) {
-            console.error('Error in print-from-editor:', error);
+            logger.error('편집기 출력 실패', {
+                category: 'print',
+                error: error,
+                details: {
+                    medicineName: printData.name,
+                    patientName: printData.patientName
+                }
+            });
             return { success: false, error: error.message };
         }
     });
@@ -256,8 +282,15 @@ function registerPrintHandlers(dbManager, getMainWindow, loadConfig) {
             });
 
         } catch (error) {
+            logger.error('라벨 출력 실패', {
+                category: 'print',
+                error: error,
+                details: {
+                    printerName: printData.printerName,
+                    templatePath: printData.templatePath
+                }
+            });
             const errorMessage = `Failed to print: ${error.message}`;
-            console.error(errorMessage, error.stack);
             mainWindow.webContents.send('log-message', errorMessage);
             event.sender.send('print-label-result', {
                 success: false,

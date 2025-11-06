@@ -5,6 +5,7 @@ const chokidar = require('chokidar');
 const { parseFile } = require('./src/services/parser');
 const { fetchAndSaveMedicine } = require('./src/services/medicine-fetcher');
 const DatabaseManager = require('./src/services/database');
+const logger = require('./src/services/logger');
 const { spawn } = require('child_process');
 const { registerAllHandlers } = require('./src/main/ipc-handlers');
 const { checkLicenseOnStartup } = require('./src/services/authService');
@@ -274,7 +275,10 @@ function loadConfig() {
 
         return currentConfig;
     } catch (error) {
-        console.error('Error loading config from DB:', error);
+        logger.error('설정 로드 실패', {
+            category: 'system',
+            error: error
+        });
 
         // DB 조회 실패 시 빈 값 반환
         const templatesDir = DatabaseManager.getTemplatesDir();
@@ -312,7 +316,14 @@ function saveConfig(config) {
         }
         return false;
     } catch (error) {
-        console.error('Error saving config to DB:', error);
+        logger.error('설정 저장 실패', {
+            category: 'system',
+            error: error,
+            details: {
+                atcPath: config.atcPath,
+                templatePath: config.templatePath
+            }
+        });
         return false;
     }
 }
@@ -331,6 +342,11 @@ app.whenReady().then(async () => {
     // ========== 1. 데이터베이스 초기화 (최우선!) ==========
     console.log('[Main] Initializing database...');
     dbManager = new DatabaseManager();
+
+    // ========== 1-1. 로거 초기화 및 30일 이상 된 로그 정리 ==========
+    logger.setDatabaseManager(dbManager);
+    logger.cleanupOldLogs();
+    logger.info('Application started', { category: 'system' });
 
     // ========== 2. DB에서 설정 로드 (monitorPath 업데이트) ==========
     console.log('[Main] Loading config from database...');
@@ -516,7 +532,7 @@ function startFileWatcher() {
             const parseResult = await parseFile(fileBuffer, fileName);
 
             if (!parseResult.success) {
-                // 검증 실패인 경우 경고 다이얼로그 표시
+                // 검증 실패인 경우 HTML 모달 표시
                 if (parseResult.validationFailed) {
                     console.error('[Validation Failed]', parseResult.validationErrors);
                     mainWindow.webContents.send('log-message', `⚠️ 파일 검증 실패: ${fileName}`);
@@ -527,13 +543,10 @@ function startFileWatcher() {
                         mainWindow.webContents.send('log-message', `  ⚠️ ${error}`);
                     });
 
-                    // 경고 다이얼로그 표시
-                    dialog.showMessageBox(mainWindow, {
-                        type: 'warning',
-                        title: 'OCS 파일 읽기 실패',
-                        message: 'OCS 파일의 정보를 읽는데 실패했습니다.',
-                        detail: '파일 형식이 올바르지 않거나 데이터가 손상되었을 수 있습니다.\n\n다시 시도해보세요.',
-                        buttons: ['확인']
+                    // HTML 모달 표시
+                    mainWindow.webContents.send('show-validation-warning', {
+                        errors: parseResult.validationErrors,
+                        fileName: fileName
                     });
 
                     return; // DB 저장하지 않고 종료
@@ -654,7 +667,11 @@ function startFileWatcher() {
                         console.log(`[File Watcher] 원본 파일 삭제 완료: ${fileName}`);
                         mainWindow.webContents.send('log-message', `원본 파일 삭제 완료: ${fileName}`);
                     } catch (deleteError) {
-                        console.error('[File Watcher] 원본 파일 삭제 실패:', deleteError);
+                        logger.error('원본 파일 삭제 실패', {
+                            category: 'system',
+                            error: deleteError,
+                            details: { fileName, filePath }
+                        });
                         mainWindow.webContents.send('log-message', `⚠️ 원본 파일 삭제 실패: ${fileName} (${deleteError.message})`);
                     }
                 }
@@ -664,8 +681,12 @@ function startFileWatcher() {
             }
 
         } catch (parseError) {
+            logger.error('파일 파싱 실패', {
+                category: 'parsing',
+                error: parseError,
+                details: { fileName, filePath }
+            });
             const errorMessage = `Error parsing ${fileName}: ${parseError.message}`;
-            console.error(errorMessage);
             mainWindow.webContents.send('log-message', errorMessage);
         }
     });
@@ -791,8 +812,88 @@ async function checkBpacInstallation() {
     });
     
     ps.on('error', (error) => {
-        console.error('Failed to check b-PAC:', error);
+        logger.error('b-PAC 체크 실패', {
+            category: 'system',
+            error: error
+        });
         // 에러가 발생해도 앱은 계속 실행되도록
         mainWindow.webContents.send('bpac-status', { installed: false });
     });
 }
+
+// ========== 로그 관련 IPC 핸들러 ==========
+
+/**
+ * 로그 조회
+ */
+ipcMain.handle('get-app-logs', async () => {
+    try {
+        const logs = dbManager.getAllLogs(100);
+        return logs;
+    } catch (error) {
+        logger.error('Failed to get app logs', {
+            category: 'system',
+            error: error
+        });
+        return [];
+    }
+});
+
+/**
+ * 로그 내보내기 (텍스트 파일로 저장)
+ */
+ipcMain.handle('export-app-logs', async () => {
+    try {
+        const logs = dbManager.getAllLogs(1000); // 최대 1000개 로그 내보내기
+
+        // 로그를 텍스트로 변환
+        const logText = logs.map(log => {
+            const timestamp = new Date(log.timestamp).toLocaleString('ko-KR');
+            const details = log.details ? `\n상세: ${JSON.stringify(log.details, null, 2)}` : '';
+            const stack = log.stack ? `\n스택: ${log.stack}` : '';
+            return `[${timestamp}] [${log.level.toUpperCase()}] ${log.category ? `[${log.category}] ` : ''}${log.message}${details}${stack}`;
+        }).join('\n\n' + '='.repeat(80) + '\n\n');
+
+        // 파일 저장 경로 (앱 데이터 디렉토리)
+        const appDataDir = DatabaseManager.getAppDataDir();
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        const filePath = path.join(appDataDir, `app-logs-${timestamp}.txt`);
+
+        fs.writeFileSync(filePath, logText, 'utf8');
+
+        logger.info('Logs exported', {
+            category: 'system',
+            details: { filePath, logCount: logs.length }
+        });
+
+        return { success: true, filePath };
+    } catch (error) {
+        logger.error('Failed to export logs', {
+            category: 'system',
+            error: error
+        });
+        return { success: false, error: error.message };
+    }
+});
+
+/**
+ * 로그 전체 삭제
+ */
+ipcMain.handle('delete-all-app-logs', async () => {
+    try {
+        const result = dbManager.deleteAllLogs();
+
+        logger.info('All logs deleted', {
+            category: 'system',
+            details: { deletedCount: result.changes }
+        });
+
+        return { success: true, deletedCount: result.changes };
+    } catch (error) {
+        logger.error('Failed to delete all logs', {
+            category: 'system',
+            error: error
+        });
+        return { success: false, error: error.message };
+    }
+});

@@ -307,6 +307,37 @@
             background-color: #da190b;
         }
 
+        /* 경고 모달 스타일 */
+        .warning-modal .modal-content {
+            max-width: 500px;
+        }
+
+        .warning-modal h2 {
+            color: #d32f2f;
+            margin-top: 0;
+        }
+
+        .warning-modal .warning-icon {
+            font-size: 48px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .warning-modal .warning-message {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .warning-modal .warning-detail {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            margin: 15px 0;
+            font-size: 13px;
+            color: #856404;
+        }
+
         /* API 에러 메시지 스타일 */
         #api-error-message {
             position: fixed;
@@ -387,6 +418,7 @@
                 </div>
                 <div class="modal-buttons">
                     <button type="button" id="label-template-info-btn" style="padding: 8px 16px; background-color: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: auto;">라벨템플릿정보</button>
+                    <button type="button" id="error-log-btn" style="padding: 8px 16px; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">에러기록</button>
                     <button type="button" class="cancel-btn" id="cancel-btn">취소</button>
                     <button type="submit" class="save-btn">저장</button>
                 </div>
@@ -394,6 +426,63 @@
         </div>
     </div>
     
+    <!-- 검증 실패 경고 모달 -->
+    <div id="validation-warning-modal" class="modal warning-modal">
+        <div class="modal-content">
+            <span class="close" id="validation-warning-close">&times;</span>
+            <h2>⚠️ OCS 파일 읽기 실패</h2>
+            <div class="warning-message">
+                <p>OCS 파일의 정보를 읽는데 실패했습니다.</p>
+                <p>파일 형식이 올바르지 않거나 데이터가 손상되었을 수 있습니다.</p>
+            </div>
+            <div class="warning-detail" id="validation-error-details">
+                <!-- 상세 오류 내용이 여기에 표시됩니다 -->
+            </div>
+            <p style="margin: 15px 0 5px 0; padding: 10px; background-color: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 4px; font-size: 13px; color: #1565c0;">
+                💡 자세한 기록은 설정의 <strong>에러기록</strong> 메뉴에서 확인하세요.
+            </p>
+            <div class="modal-buttons">
+                <button type="button" class="save-btn" id="validation-warning-ok">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 에러 로그 뷰어 모달 -->
+    <div id="error-log-modal" class="modal">
+        <div class="modal-content" style="max-width: 900px; max-height: 80vh; display: flex; flex-direction: column;">
+            <span class="close" id="error-log-close">&times;</span>
+            <h2>에러 기록</h2>
+
+            <!-- 필터 및 버튼 -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 10px;">
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <label style="font-size: 14px; font-weight: bold;">필터:</label>
+                    <select id="log-level-filter" style="padding: 5px 10px; border-radius: 4px; border: 1px solid #ddd;">
+                        <option value="all">전체</option>
+                        <option value="info">정보</option>
+                        <option value="warning">경고</option>
+                        <option value="error">에러</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button id="log-copy-btn" style="padding: 6px 12px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">로그 복사</button>
+                    <button id="log-export-btn" style="padding: 6px 12px; background-color: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">내보내기</button>
+                    <button id="log-delete-all-btn" style="padding: 6px 12px; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">전체 삭제</button>
+                </div>
+            </div>
+
+            <!-- 로그 목록 -->
+            <div id="log-list-container" style="flex: 1; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 10px; background-color: #f9f9f9; font-family: 'Consolas', 'Monaco', monospace; font-size: 12px;">
+                <!-- 로그가 여기에 표시됩니다 -->
+                <p style="color: #999;">로그를 불러오는 중...</p>
+            </div>
+
+            <div class="modal-buttons" style="margin-top: 15px;">
+                <button type="button" class="cancel-btn" id="error-log-cancel">닫기</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 라벨정보 모달 -->
     <div id="label-info-modal" class="modal">
         <div class="modal-content" style="max-width: 700px; max-height: 80vh; overflow-y: auto;">

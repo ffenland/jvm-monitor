@@ -2,6 +2,7 @@ const Database = require('better-sqlite3-multiple-ciphers');
 const path = require('path');
 const fs = require('fs');
 const { getEncryptionKey } = require('../utils/encryptionKey');
+const logger = require('./logger');
 
 /**
  * 새로운 데이터베이스 구조
@@ -228,6 +229,27 @@ class DatabaseManager {
                 updatedAt TEXT DEFAULT CURRENT_TIMESTAMP
             )
         `);
+
+        // 9. app_logs 테이블 (에러 로그)
+        this.db.exec(`
+            CREATE TABLE IF NOT EXISTS app_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp TEXT NOT NULL,
+                level TEXT NOT NULL CHECK(level IN ('info', 'warning', 'error')),
+                category TEXT,
+                message TEXT NOT NULL,
+                details TEXT,
+                stack TEXT,
+                createdAt TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // app_logs 인덱스 추가
+        this.db.exec(`
+            CREATE INDEX IF NOT EXISTS idx_app_logs_level ON app_logs(level);
+            CREATE INDEX IF NOT EXISTS idx_app_logs_category ON app_logs(category);
+            CREATE INDEX IF NOT EXISTS idx_app_logs_timestamp ON app_logs(timestamp DESC);
+        `);
     }
 
     prepareStatements() {
@@ -329,7 +351,35 @@ class DatabaseManager {
             `),
 
             // === 앱 설정 관련 ===
-            getAppSettings: this.db.prepare('SELECT * FROM app_settings WHERE id = 1')
+            getAppSettings: this.db.prepare('SELECT * FROM app_settings WHERE id = 1'),
+
+            // === 로그 관련 ===
+            insertLog: this.db.prepare(`
+                INSERT INTO app_logs (timestamp, level, category, message, details, stack)
+                VALUES (@timestamp, @level, @category, @message, @details, @stack)
+            `),
+
+            getLogsByLevel: this.db.prepare(`
+                SELECT * FROM app_logs
+                WHERE level = ?
+                ORDER BY timestamp DESC
+                LIMIT ?
+            `),
+
+            getAllLogs: this.db.prepare(`
+                SELECT * FROM app_logs
+                ORDER BY timestamp DESC
+                LIMIT ?
+            `),
+
+            deleteOldLogs: this.db.prepare(`
+                DELETE FROM app_logs
+                WHERE datetime(createdAt) < datetime('now', '-30 days')
+            `),
+
+            deleteAllLogs: this.db.prepare(`
+                DELETE FROM app_logs
+            `)
         };
     }
 
@@ -616,7 +666,6 @@ class DatabaseManager {
 
             // 2. yakjung_code가 동일한 경우: 기존 약품 정보만 업데이트
             if (oldYakjungCode === newYakjungCode) {
-                console.log('[DEBUG] yakjung_code가 동일함 - 기존 약품 정보만 업데이트:', oldYakjungCode);
                 this.updateMedicineFromYakjungwon(oldYakjungCode, medicineData);
                 return this.statements.getMedicine.get(oldYakjungCode);
             }
@@ -1036,7 +1085,11 @@ class DatabaseManager {
 
             return transaction(yakjungCode);
         } catch (error) {
-            console.error('[DB] 약품 삭제 오류:', error);
+            logger.error('약품 삭제 오류', {
+                category: 'database',
+                error: error,
+                details: { yakjungCode }
+            });
             return { success: false, message: error.message };
         }
     }
@@ -1069,7 +1122,11 @@ class DatabaseManager {
 
             return transaction(prescriptionId);
         } catch (error) {
-            console.error('[DB] 처방전 삭제 오류:', error);
+            logger.error('처방전 삭제 오류', {
+                category: 'database',
+                error: error,
+                details: { prescriptionId }
+            });
             return { success: false, message: error.message };
         }
     }
@@ -1108,7 +1165,14 @@ class DatabaseManager {
 
             return true;
         } catch (error) {
-            console.error('[DB] 라이선스 저장 실패:', error);
+            logger.error('라이선스 저장 실패', {
+                category: 'database',
+                error: error,
+                details: {
+                    pharmacyName: data.pharmacyName,
+                    email: data.email
+                }
+            });
             return false;
         }
     }
@@ -1121,7 +1185,10 @@ class DatabaseManager {
             const stmt = this.db.prepare('SELECT * FROM license WHERE id = 1');
             return stmt.get();
         } catch (error) {
-            console.error('[DB] 라이선스 조회 실패:', error);
+            logger.error('라이선스 조회 실패', {
+                category: 'database',
+                error: error
+            });
             return null;
         }
     }
@@ -1135,7 +1202,10 @@ class DatabaseManager {
             stmt.run(this.getKSTTimestamp());
             return true;
         } catch (error) {
-            console.error('[DB] 마지막 인증 시간 업데이트 실패:', error);
+            logger.error('마지막 인증 시간 업데이트 실패', {
+                category: 'database',
+                error: error
+            });
             return false;
         }
     }
@@ -1160,7 +1230,14 @@ class DatabaseManager {
 
             return true;
         } catch (error) {
-            console.error('[DB] 앱 설정 저장 실패:', error);
+            logger.error('앱 설정 저장 실패', {
+                category: 'database',
+                error: error,
+                details: {
+                    atcPath: settings.atcPath,
+                    templatePath: settings.templatePath
+                }
+            });
             return false;
         }
     }
@@ -1186,7 +1263,10 @@ class DatabaseManager {
 
             return settings;
         } catch (error) {
-            console.error('[DB] 앱 설정 조회 실패:', error);
+            logger.error('앱 설정 조회 실패', {
+                category: 'database',
+                error: error
+            });
             return {
                 id: 1,
                 atcPath: 'C:\\ATDPS\\Data',
@@ -1194,6 +1274,69 @@ class DatabaseManager {
                 deleteOriginalFile: 0
             };
         }
+    }
+
+    // ========== 로그 관련 메서드 ==========
+
+    /**
+     * 로그 저장
+     * @param {string} level - 'info', 'warning', 'error'
+     * @param {string} message - 로그 메시지
+     * @param {Object} options - { category, details, stack }
+     */
+    saveLog(level, message, options = {}) {
+        const timestamp = new Date().toISOString();
+        const { category = null, details = null, stack = null } = options;
+
+        this.statements.insertLog.run({
+            timestamp,
+            level,
+            category,
+            message,
+            details: details ? JSON.stringify(details) : null,
+            stack
+        });
+    }
+
+    /**
+     * 로그 조회 (레벨별)
+     * @param {string} level - 'info', 'warning', 'error'
+     * @param {number} limit - 조회할 로그 개수 (기본 100)
+     * @returns {Array} 로그 목록
+     */
+    getLogsByLevel(level, limit = 100) {
+        return this.statements.getLogsByLevel.all(level, limit).map(log => ({
+            ...log,
+            details: log.details ? JSON.parse(log.details) : null
+        }));
+    }
+
+    /**
+     * 모든 로그 조회
+     * @param {number} limit - 조회할 로그 개수 (기본 100)
+     * @returns {Array} 로그 목록
+     */
+    getAllLogs(limit = 100) {
+        return this.statements.getAllLogs.all(limit).map(log => ({
+            ...log,
+            details: log.details ? JSON.parse(log.details) : null
+        }));
+    }
+
+    /**
+     * 30일 이상 된 로그 삭제
+     * @returns {Object} { changes: 삭제된 로그 수 }
+     */
+    deleteOldLogs() {
+        return this.statements.deleteOldLogs.run();
+    }
+
+    /**
+     * 모든 로그 삭제
+     * @returns {Object} { changes: 삭제된 로그 수 }
+     */
+    deleteAllLogs() {
+        return this.statements.deleteAllLogs.run();
     }
 
     /**

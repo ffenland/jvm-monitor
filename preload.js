@@ -63,12 +63,18 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onAutoPrintMedicines: (callback) => ipcRenderer.on('auto-print-medicines', (_event, value) => callback(value)),
     // OCS 경로 경고 이벤트
     onOcsPathWarning: (callback) => ipcRenderer.on('ocs-path-warning', (_event, message) => callback(message)),
+    // 검증 실패 경고 이벤트
+    onValidationWarning: (callback) => ipcRenderer.on('show-validation-warning', (_event, data) => callback(data)),
     // 처방전 삭제 API
     deletePrescription: (prescriptionId) => ipcRenderer.invoke('delete-prescription', prescriptionId),
     // 업데이트 관련 API
     getUpdateInfo: () => ipcRenderer.invoke('update:get-info'),
     openDownloadPage: () => ipcRenderer.invoke('update:open-download'),
-    quitApp: () => ipcRenderer.invoke('update:quit-app')
+    quitApp: () => ipcRenderer.invoke('update:quit-app'),
+    // 로그 관련 API
+    getAppLogs: () => ipcRenderer.invoke('get-app-logs'),
+    exportAppLogs: () => ipcRenderer.invoke('export-app-logs'),
+    deleteAllAppLogs: () => ipcRenderer.invoke('delete-all-app-logs')
 });
 
 // 인증 관련 API (별도 노출)

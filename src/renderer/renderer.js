@@ -984,6 +984,23 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // 날짜별 처방전 데이터 재로드 함수
+    function reloadPrescriptionsForDate(date) {
+        return new Promise((resolve) => {
+            // 한 번만 실행되는 이벤트 핸들러 등록
+            const handleDataReload = (data) => {
+                updatePrescriptionsAndDisplay(data);
+                resolve();
+            };
+
+            // 데이터 수신 대기
+            window.electronAPI.onDataForDate(handleDataReload);
+
+            // 데이터 요청
+            window.electronAPI.getDataForDate(date);
+        });
+    }
+
     // 처방전 삭제 실행
     async function deletePrescription(prescriptionId, index) {
         try {
@@ -992,17 +1009,15 @@ window.addEventListener('DOMContentLoaded', () => {
             if (result.success) {
                 showToast('처방전이 삭제되었습니다.', 'success');
 
-                // 목록에서 제거
-                prescriptions.splice(index, 1);
+                // DB에서 현재 선택된 날짜의 데이터를 다시 불러옴
+                const currentDate = dateSelect.value;
+                await reloadPrescriptionsForDate(currentDate);
 
-                // 선택 인덱스 조정
-                if (selectedPrescriptionIndex >= prescriptions.length) {
-                    selectedPrescriptionIndex = prescriptions.length - 1;
-                }
+                // 선택 인덱스 초기화
+                selectedPrescriptionIndex = -1;
 
-                // 화면 업데이트
-                renderPrescriptionList();
-                updateDetailView(prescriptions[selectedPrescriptionIndex]);
+                // 상세 보기 초기화
+                updateDetailView(null);
             } else {
                 showToast('처방전 삭제 실패: ' + result.message, 'error');
             }
@@ -1022,6 +1037,196 @@ window.addEventListener('DOMContentLoaded', () => {
             settingsModal.style.display = 'block';
         }, 1000);
     });
+
+    // 검증 실패 경고 모달 처리
+    window.electronAPI.onValidationWarning((data) => {
+        const modal = document.getElementById('validation-warning-modal');
+        const errorDetails = document.getElementById('validation-error-details');
+
+        // 에러 메시지 표시
+        if (data.errors && data.errors.length > 0) {
+            errorDetails.innerHTML = '<ul style="margin: 0; padding-left: 20px;">' +
+                data.errors.map(error => `<li>${error}</li>`).join('') +
+                '</ul>';
+        } else {
+            errorDetails.innerHTML = '<p>알 수 없는 오류가 발생했습니다.</p>';
+        }
+
+        // 모달 표시
+        modal.style.display = 'block';
+    });
+
+    // 검증 경고 모달 닫기 버튼
+    const validationWarningClose = document.getElementById('validation-warning-close');
+    const validationWarningOk = document.getElementById('validation-warning-ok');
+    const validationWarningModal = document.getElementById('validation-warning-modal');
+
+    if (validationWarningClose) {
+        validationWarningClose.onclick = () => {
+            validationWarningModal.style.display = 'none';
+        };
+    }
+
+    if (validationWarningOk) {
+        validationWarningOk.onclick = () => {
+            validationWarningModal.style.display = 'none';
+        };
+    }
+
+    // ===== 에러 로그 뷰어 =====
+    const errorLogBtn = document.getElementById('error-log-btn');
+    const errorLogModal = document.getElementById('error-log-modal');
+    const errorLogClose = document.getElementById('error-log-close');
+    const errorLogCancel = document.getElementById('error-log-cancel');
+    const logLevelFilter = document.getElementById('log-level-filter');
+    const logListContainer = document.getElementById('log-list-container');
+    const logCopyBtn = document.getElementById('log-copy-btn');
+    const logExportBtn = document.getElementById('log-export-btn');
+    const logDeleteAllBtn = document.getElementById('log-delete-all-btn');
+
+    let currentLogs = [];
+
+    // 에러기록 버튼 클릭
+    if (errorLogBtn) {
+        errorLogBtn.onclick = async () => {
+            errorLogModal.style.display = 'block';
+            await loadLogs();
+        };
+    }
+
+    // 모달 닫기
+    if (errorLogClose) {
+        errorLogClose.onclick = () => {
+            errorLogModal.style.display = 'none';
+        };
+    }
+
+    if (errorLogCancel) {
+        errorLogCancel.onclick = () => {
+            errorLogModal.style.display = 'none';
+        };
+    }
+
+    // 로그 레벨 필터 변경
+    if (logLevelFilter) {
+        logLevelFilter.onchange = () => {
+            renderLogs();
+        };
+    }
+
+    // 로그 불러오기
+    async function loadLogs() {
+        try {
+            logListContainer.innerHTML = '<p style="color: #999;">로그를 불러오는 중...</p>';
+            const logs = await window.electronAPI.getAppLogs();
+            currentLogs = logs;
+            renderLogs();
+        } catch (error) {
+            logListContainer.innerHTML = '<p style="color: #dc3545;">로그를 불러오는데 실패했습니다.</p>';
+            console.error('Failed to load logs:', error);
+        }
+    }
+
+    // 로그 렌더링
+    function renderLogs() {
+        const selectedLevel = logLevelFilter.value;
+        const filteredLogs = selectedLevel === 'all'
+            ? currentLogs
+            : currentLogs.filter(log => log.level === selectedLevel);
+
+        if (filteredLogs.length === 0) {
+            logListContainer.innerHTML = '<p style="color: #999;">로그가 없습니다.</p>';
+            return;
+        }
+
+        const logsHtml = filteredLogs.map(log => {
+            const levelColor = log.level === 'error' ? '#dc3545' : log.level === 'warning' ? '#ffc107' : '#28a745';
+            const timestamp = new Date(log.timestamp).toLocaleString('ko-KR');
+            const details = log.details ? `\n상세: ${JSON.stringify(log.details, null, 2)}` : '';
+            const stack = log.stack ? `\n스택: ${log.stack}` : '';
+
+            return `
+                <div style="margin-bottom: 15px; padding: 10px; background-color: white; border-left: 4px solid ${levelColor}; border-radius: 4px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span style="font-weight: bold; color: ${levelColor};">[${log.level.toUpperCase()}]</span>
+                        <span style="color: #666; font-size: 11px;">${timestamp}</span>
+                    </div>
+                    <div style="margin-bottom: 3px;">
+                        ${log.category ? `<span style="background-color: #e9ecef; padding: 2px 6px; border-radius: 3px; font-size: 11px; margin-right: 8px;">${log.category}</span>` : ''}
+                        <span>${log.message}</span>
+                    </div>
+                    ${details ? `<pre style="margin: 5px 0; padding: 8px; background-color: #f8f9fa; border-radius: 3px; overflow-x: auto; font-size: 11px;">${details}</pre>` : ''}
+                    ${stack ? `<pre style="margin: 5px 0; padding: 8px; background-color: #fff3cd; border-radius: 3px; overflow-x: auto; font-size: 11px; color: #856404;">${stack}</pre>` : ''}
+                </div>
+            `;
+        }).join('');
+
+        logListContainer.innerHTML = logsHtml;
+    }
+
+    // 로그 복사
+    if (logCopyBtn) {
+        logCopyBtn.onclick = () => {
+            const selectedLevel = logLevelFilter.value;
+            const filteredLogs = selectedLevel === 'all'
+                ? currentLogs
+                : currentLogs.filter(log => log.level === selectedLevel);
+
+            const logText = filteredLogs.map(log => {
+                const timestamp = new Date(log.timestamp).toLocaleString('ko-KR');
+                const details = log.details ? `\n상세: ${JSON.stringify(log.details, null, 2)}` : '';
+                const stack = log.stack ? `\n스택: ${log.stack}` : '';
+                return `[${timestamp}] [${log.level.toUpperCase()}] ${log.category ? `[${log.category}] ` : ''}${log.message}${details}${stack}`;
+            }).join('\n\n');
+
+            navigator.clipboard.writeText(logText).then(() => {
+                showToast('로그가 클립보드에 복사되었습니다.', 'success');
+            }).catch(err => {
+                showToast('로그 복사에 실패했습니다.', 'error');
+                console.error('Failed to copy logs:', err);
+            });
+        };
+    }
+
+    // 로그 내보내기
+    if (logExportBtn) {
+        logExportBtn.onclick = async () => {
+            try {
+                const result = await window.electronAPI.exportAppLogs();
+                if (result.success) {
+                    showToast(`로그가 ${result.filePath}에 저장되었습니다.`, 'success');
+                } else {
+                    showToast('로그 내보내기에 실패했습니다.', 'error');
+                }
+            } catch (error) {
+                showToast('로그 내보내기에 실패했습니다.', 'error');
+                console.error('Failed to export logs:', error);
+            }
+        };
+    }
+
+    // 로그 전체 삭제
+    if (logDeleteAllBtn) {
+        logDeleteAllBtn.onclick = async () => {
+            if (!confirm('모든 로그를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) {
+                return;
+            }
+
+            try {
+                const result = await window.electronAPI.deleteAllAppLogs();
+                if (result.success) {
+                    currentLogs = [];
+                    renderLogs();
+                    showToast('모든 로그가 삭제되었습니다.', 'success');
+                } else {
+                    showToast('로그 삭제에 실패했습니다.', 'error');
+                }
+            } catch (error) {
+                showToast('로그 삭제에 실패했습니다.', 'error');
+                console.error('Failed to delete logs:', error);
+            }
+        };
+    }
 
     // Request initial data when the app loads
     window.electronAPI.getInitialData();

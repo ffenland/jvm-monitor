@@ -1,4 +1,5 @@
 const { ipcMain } = require('electron');
+const logger = require('../../services/logger');
 
 /**
  * 처방전 관련 IPC 핸들러
@@ -70,7 +71,11 @@ function registerPrescriptionHandlers(dbManager, getMainWindow) {
             const result = dbManager.deletePrescription(prescriptionId);
             return result;
         } catch (error) {
-            console.error('[IPC] 처방전 삭제 오류:', error);
+            logger.error('처방전 삭제 IPC 오류', {
+                category: 'system',
+                error: error,
+                details: { prescriptionId }
+            });
             return { success: false, message: error.message };
         }
     });

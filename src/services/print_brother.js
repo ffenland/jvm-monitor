@@ -1,6 +1,7 @@
 const { spawn, execSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+const logger = require('./logger');
 
 /**
  * PowerShell 실행 파일 경로를 동적으로 찾는 함수
@@ -234,7 +235,11 @@ catch {
                     throw new Error('No JSON output found');
                 }
             } catch (e) {
-                console.error('Failed to parse PowerShell output:', stdout);
+                logger.error('PowerShell 출력 파싱 실패', {
+                    category: 'print',
+                    error: e,
+                    details: { stdout: stdout.substring(0, 500) }
+                });
                 reject(new Error(`Failed to parse PowerShell output as JSON: ${e.message}. Output: ${stdout}`));
             }
         });
@@ -276,7 +281,11 @@ async function printWithBrother(data) {
         
         // 템플릿 파일이 실제로 존재하는지 확인
         if (!fs.existsSync(data.templatePath)) {
-            console.error('Template file not found:', data.templatePath);
+            logger.error('템플릿 파일 없음', {
+                category: 'print',
+                error: new Error('Template file not found'),
+                details: { templatePath: data.templatePath }
+            });
             return {
                 success: false,
                 error: `템플릿 파일을 찾을 수 없습니다: ${data.templatePath}`
@@ -302,7 +311,11 @@ async function printWithBrother(data) {
             };
         }
     } catch (error) {
-        console.error('Error in printWithBrother:', error);
+        logger.error('printWithBrother 오류', {
+            category: 'print',
+            error: error,
+            details: { templatePath: data?.templatePath }
+        });
         return { 
             success: false, 
             error: error.message 

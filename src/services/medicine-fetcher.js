@@ -5,6 +5,7 @@
 
 const path = require('path');
 const DatabaseManager = require('./database.js');
+const logger = require('./logger');
 const { extractTemperature } = require(path.join(__dirname, '../../scripts/extract-temperature.js'));
 const { getUnitFromDrugForm } = require(path.join(__dirname, '../../scripts/drug-form-unit-map.js'));
 
@@ -227,7 +228,11 @@ async function fetchAndSaveMedicineByYakjungCode(yakjungCode, dbInstance = null)
         };
 
     } catch (error) {
-        console.error('약품 저장 실패:', error);
+        logger.error('약품 저장 실패', {
+            category: 'database',
+            error: error,
+            details: { bohcode }
+        });
         return {
             success: false,
             error: error.message

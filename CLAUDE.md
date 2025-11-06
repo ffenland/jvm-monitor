@@ -357,6 +357,141 @@ SQLite 데이터베이스 작업을 관리하는 핵심 클래스입니다.
 - 파싱된 원본 TXT 파일을 날짜별 폴더에 복사 보관
 - 파싱 오류 발생 시: `originFiles/error/` 폴더로 이동
 
+## 에러 로깅 시스템
+
+### 개요
+프로덕션 환경에서 개발자 도구를 비활성화한 상태에서도 오류를 추적하고 사용자가 개발자에게 리포트할 수 있도록 DB 기반 로깅 시스템을 구현합니다.
+
+### 데이터베이스 구조
+
+#### app_logs 테이블
+```sql
+CREATE TABLE app_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp TEXT NOT NULL,           -- ISO 8601 형식 (2025-11-07T12:34:56.789Z)
+    level TEXT NOT NULL,                -- 'info', 'warning', 'error'
+    category TEXT,                      -- 'parsing', 'api', 'print', 'database', 'validation' 등
+    message TEXT NOT NULL,              -- 사용자 친화적인 메시지
+    details TEXT,                       -- JSON 형식의 상세 정보
+    stack TEXT,                         -- 에러 스택 트레이스 (error 레벨인 경우)
+    createdAt TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_app_logs_level ON app_logs(level);
+CREATE INDEX idx_app_logs_category ON app_logs(category);
+CREATE INDEX idx_app_logs_timestamp ON app_logs(timestamp DESC);
+```
+
+### 로거 모듈 (src/services/logger.js)
+
+#### 사용법
+```javascript
+const logger = require('./src/services/logger');
+
+// 정보 로그
+logger.info('약품 정보 조회 시작', {
+    category: 'api',
+    details: { medicineCode: '123456789' }
+});
+
+// 경고 로그
+logger.warning('API 응답 지연', {
+    category: 'api',
+    details: { responseTime: 5000 }
+});
+
+// 에러 로그
+logger.error('API 호출 실패', {
+    category: 'api',
+    error: error,  // Error 객체 전달 시 자동으로 스택 추출
+    details: { url: apiUrl, code: '123456789' }
+});
+```
+
+#### 자동 정리
+- 30일 이상 된 로그는 자동 삭제
+- 앱 시작 시 자동으로 정리 실행
+
+### 에러 처리 지침
+
+#### 1. 에러 발생 시 처리 순서
+```javascript
+try {
+    // 작업 수행
+} catch (error) {
+    // 1. 로거에 에러 기록
+    logger.error('작업 실패', {
+        category: 'parsing',  // 또는 'api', 'print', 'database'
+        error: error,
+        details: { fileName: fileName }
+    });
+
+    // 2. 사용자에게 에러 모달 표시 (일관된 메시지)
+    mainWindow.webContents.send('show-error-modal', {
+        title: 'OCS 파일 읽기 오류',
+        message: 'OCS 파일을 읽는 중 오류가 발생했습니다.',
+        footer: '자세한 기록은 설정의 에러기록 메뉴에서 확인하세요.'
+    });
+}
+```
+
+#### 2. 에러 모달 표준 문구
+모든 에러 모달은 다음 형식을 따릅니다:
+- **제목**: 구체적인 작업명 (예: "OCS 파일 읽기 오류", "약품 정보 조회 오류")
+- **메시지**: 사용자 친화적인 설명
+- **Footer**: **"자세한 기록은 설정의 에러기록 메뉴에서 확인하세요."** (고정)
+
+#### 3. 카테고리 분류
+- `parsing`: 파일 파싱 관련
+- `api`: 외부 API 호출 관련
+- `print`: 라벨 출력 관련
+- `database`: DB 작업 관련
+- `validation`: 데이터 검증 관련
+- `system`: 시스템 오류 (파일 접근, 권한 등)
+
+### 에러 기록 뷰어
+
+#### 위치
+- 메인 화면 헤더의 "설정" 버튼 클릭
+- 설정 모달 내부에 "에러기록" 버튼 추가
+
+#### 기능
+1. **로그 레벨별 필터링**: 전체 / 정보 / 경고 / 에러
+2. **로그 목록**: 최근 로그가 상단에 표시 (timestamp DESC)
+3. **로그 복사**: 선택한 로그를 클립보드에 복사 (개발자 리포트용)
+4. **로그 내보내기**: 전체 로그를 텍스트 파일로 저장
+5. **로그 전체 삭제**: 모든 로그 삭제 (확인 대화상자 포함)
+
+#### 로그 표시 형식
+```
+[2025-11-07 12:34:56] [ERROR] [api] API 호출 실패
+상세: {"url": "https://...", "code": "123456789"}
+스택: Error: Request timeout
+    at fetchMedicine (medicine-fetcher.js:45)
+    ...
+```
+
+### console.log 대체 규칙
+
+#### 기존 코드
+```javascript
+console.log('약품 정보 조회 중...');
+console.error('API 호출 실패:', error);
+```
+
+#### 변경 후
+```javascript
+logger.info('약품 정보 조회 중...', { category: 'api' });
+logger.error('API 호출 실패', { category: 'api', error: error });
+```
+
+#### 주의사항
+- 개발 중에는 console.log를 사용해도 되지만, 프로덕션 빌드 전에 logger로 변경
+- 에러는 반드시 logger.error()로 기록
+- 사용자에게 보여줄 필요가 없는 디버그 정보는 logger.info()로 기록
+
+---
+
 ## 향후 개선 사항
 - [x] **SQLite 데이터베이스 마이그레이션 완료**
   - JSON 파일 기반에서 SQLite로 전환 완료

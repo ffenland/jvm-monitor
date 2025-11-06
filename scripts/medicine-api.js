@@ -1,4 +1,6 @@
 const fs = require("fs");
+const path = require("path");
+const logger = require(path.join(__dirname, "../src/services/logger.js"));
 const { extractTemperature } = require("./extract-temperature.js");
 const { getUnitFromDrugForm } = require("./drug-form-unit-map.js");
 
@@ -114,7 +116,11 @@ async function searchMedicineByBohcode(bohcode) {
     }
     return null; // 결과 없음
   } catch (error) {
-    console.error("[MedicineAPI] Error searching by bohcode:", error);
+    logger.error('bohcode로 약품 검색 실패', {
+      category: 'api',
+      error: error,
+      details: { bohcode }
+    });
     return null;
   }
 }
@@ -224,7 +230,11 @@ async function searchMedicineByName(drugName) {
     const parsedData = parseSearchResults(html);
     return parsedData;
   } catch (error) {
-    console.error("[MedicineAPI] Error fetching medicine data:", error);
+    logger.error('약품 데이터 조회 실패', {
+      category: 'api',
+      error: error,
+      details: { drugName }
+    });
     throw error;
   }
 }
@@ -429,7 +439,11 @@ async function fetchMedicineDetailByYakjungCode(yakjungCode) {
       api_fetched: 1,
     };
   } catch (error) {
-    console.error("Error fetching medicine detail:", error);
+    logger.error('약품 상세정보 조회 실패', {
+      category: 'api',
+      error: error,
+      details: { yakjungCode }
+    });
     throw error;
   }
 }
@@ -455,7 +469,11 @@ async function fetchBohCodesFromYakjung(yakjungCode) {
     const response = await fetch(url, requestOptions);
 
     if (!response.ok) {
-      console.error(`bohcode API 응답 오류: ${response.status}`);
+      logger.error('bohcode API 응답 오류', {
+        category: 'api',
+        error: new Error(`HTTP ${response.status}`),
+        details: { yakjungCode, status: response.status }
+      });
       return [];
     }
 
@@ -506,7 +524,11 @@ async function fetchBohCodesFromYakjung(yakjungCode) {
     return bohCodes;
 
   } catch (error) {
-    console.error('bohcode 조회 실패:', error);
+    logger.error('bohcode 조회 실패', {
+      category: 'api',
+      error: error,
+      details: { yakjungCode }
+    });
     return [];
   }
 }
