@@ -47,6 +47,44 @@ let currentConfig = {}; // Store current configuration
 let watcher = null; // File watcher instance
 let dbManager; // Database manager instance
 
+// ========== Single Instance Lock ==========
+// 앱이 이미 실행 중이면 새 인스턴스를 종료하고 기존 창을 포커싱
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+    // 이미 다른 인스턴스가 실행 중이면 종료
+    console.log('[Main] Another instance is already running. Quitting...');
+    app.quit();
+} else {
+    // 두 번째 인스턴스가 실행되려고 할 때
+    app.on('second-instance', (event, commandLine, workingDirectory) => {
+        console.log('[Main] Second instance detected. Focusing existing window...');
+
+        // 기존 창이 있으면 포커싱
+        if (mainWindow) {
+            if (mainWindow.isMinimized()) {
+                mainWindow.restore();
+            }
+            mainWindow.focus();
+            mainWindow.show();
+        } else if (authWindow) {
+            // 인증 창이 열려있으면 인증 창 포커싱
+            if (authWindow.isMinimized()) {
+                authWindow.restore();
+            }
+            authWindow.focus();
+            authWindow.show();
+        } else if (updateWindow) {
+            // 업데이트 창이 열려있으면 업데이트 창 포커싱
+            if (updateWindow.isMinimized()) {
+                updateWindow.restore();
+            }
+            updateWindow.focus();
+            updateWindow.show();
+        }
+    });
+}
+
 function createWindow() {
     mainWindow = new BrowserWindow({
         width: 800,
