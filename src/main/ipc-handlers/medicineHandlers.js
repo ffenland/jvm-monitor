@@ -30,12 +30,23 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
                 autoHideMenuBar: true,
                 webPreferences: {
                     nodeIntegration: true,
-                    contextIsolation: false
+                    contextIsolation: false,
+                    devTools: false // 개발자 도구 완전 비활성화
                 }
             });
 
             customLabelWindow.setMenuBarVisibility(false);
             customLabelWindow.setMenu(null);
+
+            // 개발자 도구 단축키 차단
+            customLabelWindow.webContents.on('before-input-event', (event, input) => {
+                if (input.control && input.shift && input.key.toLowerCase() === 'i') {
+                    event.preventDefault();
+                }
+                if (input.key === 'F12') {
+                    event.preventDefault();
+                }
+            });
             customLabelWindow.loadFile(path.join(__dirname, '../../views/custom-label-editor.html'));
 
             return { success: true };
@@ -57,12 +68,23 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
                 autoHideMenuBar: true,
                 webPreferences: {
                     nodeIntegration: true,
-                    contextIsolation: false
+                    contextIsolation: false,
+                    devTools: false // 개발자 도구 완전 비활성화
                 }
             });
 
             settingsWindow.setMenuBarVisibility(false);
             settingsWindow.setMenu(null);
+
+            // 개발자 도구 단축키 차단
+            settingsWindow.webContents.on('before-input-event', (event, input) => {
+                if (input.control && input.shift && input.key.toLowerCase() === 'i') {
+                    event.preventDefault();
+                }
+                if (input.key === 'F12') {
+                    event.preventDefault();
+                }
+            });
 
             const htmlPath = path.join(__dirname, '../../views/medicine-settings.html');
 
@@ -76,9 +98,6 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
             } else {
                 settingsWindow.loadFile(htmlPath);
             }
-
-            // 개발자 도구 열기
-            settingsWindow.webContents.openDevTools();
 
             return { success: true };
         } catch (error) {
@@ -347,12 +366,23 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
                 autoHideMenuBar: true,
                 webPreferences: {
                     nodeIntegration: true,
-                    contextIsolation: false
+                    contextIsolation: false,
+                    devTools: false // 개발자 도구 완전 비활성화
                 }
             });
 
             searchWindow.setMenuBarVisibility(false);
             searchWindow.setMenu(null);
+
+            // 개발자 도구 단축키 차단
+            searchWindow.webContents.on('before-input-event', (event, input) => {
+                if (input.control && input.shift && input.key.toLowerCase() === 'i') {
+                    event.preventDefault();
+                }
+                if (input.key === 'F12') {
+                    event.preventDefault();
+                }
+            });
 
             const htmlPath = path.join(__dirname, '../../views/medicine-yakjung-search.html');
             searchWindow.loadFile(htmlPath, {
@@ -362,9 +392,6 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
                     yakjungCode: params.yakjungCode || ''
                 }
             });
-
-            // 개발자 도구 열기
-            searchWindow.webContents.openDevTools();
 
             // 검색 완료 알림을 부모 창과 메인 창으로 전달
             const completeHandler = () => {
@@ -435,16 +462,25 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
                 autoHideMenuBar: true,
                 webPreferences: {
                     nodeIntegration: true,
-                    contextIsolation: false
+                    contextIsolation: false,
+                    devTools: false // 개발자 도구 완전 비활성화
                 }
             });
 
             addMedicineWindow.setMenuBarVisibility(false);
             addMedicineWindow.setMenu(null);
-            addMedicineWindow.loadFile(path.join(__dirname, '../../views/add-new-medicine.html'));
 
-            // 개발자 도구 열기
-            addMedicineWindow.webContents.openDevTools();
+            // 개발자 도구 단축키 차단
+            addMedicineWindow.webContents.on('before-input-event', (event, input) => {
+                if (input.control && input.shift && input.key.toLowerCase() === 'i') {
+                    event.preventDefault();
+                }
+                if (input.key === 'F12') {
+                    event.preventDefault();
+                }
+            });
+
+            addMedicineWindow.loadFile(path.join(__dirname, '../../views/add-new-medicine.html'));
 
             return { success: true };
         } catch (error) {

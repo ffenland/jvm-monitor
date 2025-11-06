@@ -11,7 +11,7 @@ const { checkLicenseOnStartup } = require('./src/services/authService');
 const { registerAuthHandlers } = require('./src/ipc/authHandlers');
 const { registerUpdateHandlers } = require('./src/ipc/updateHandlers');
 const { checkVersion } = require('./src/services/versionService');
-let monitorPath = 'C:\\atc'; // Default directory to monitor (can be changed in config)
+let monitorPath = null; // Will be set from DB config (no hardcoded default value)
 
 /**
  * PowerShell 실행 파일 경로를 동적으로 찾는 함수
@@ -58,7 +58,8 @@ function createWindow() {
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'), // Using a preload script for security
             contextIsolation: true, // Recommended for security
-            nodeIntegration: false // Recommended for security
+            nodeIntegration: false, // Recommended for security
+            devTools: false // 개발자 도구 완전 비활성화
         }
     });
 
@@ -66,10 +67,17 @@ function createWindow() {
     mainWindow.setMenuBarVisibility(false);
     mainWindow.setMenu(null);
 
-    mainWindow.loadFile('index.html');
+    // 개발자 도구 단축키 차단
+    mainWindow.webContents.on('before-input-event', (event, input) => {
+        if (input.control && input.shift && input.key.toLowerCase() === 'i') {
+            event.preventDefault();
+        }
+        if (input.key === 'F12') {
+            event.preventDefault();
+        }
+    });
 
-    // Open DevTools for debugging
-    mainWindow.webContents.openDevTools();
+    mainWindow.loadFile('index.html');
 }
 
 /**
@@ -86,12 +94,23 @@ function createAuthWindow() {
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
-            nodeIntegration: false
+            nodeIntegration: false,
+            devTools: false // 개발자 도구 완전 비활성화
         }
     });
 
     authWindow.setMenuBarVisibility(false);
     authWindow.setMenu(null);
+
+    // 개발자 도구 단축키 차단
+    authWindow.webContents.on('before-input-event', (event, input) => {
+        if (input.control && input.shift && input.key.toLowerCase() === 'i') {
+            event.preventDefault();
+        }
+        if (input.key === 'F12') {
+            event.preventDefault();
+        }
+    });
 
     authWindow.loadFile(path.join(__dirname, 'src', 'views', 'auth.html'));
 
@@ -109,9 +128,6 @@ function createAuthWindow() {
     ipcMain.once('auth:success-flag', () => {
         authSucceeded = true;
     });
-
-    // Open DevTools for debugging
-    // authWindow.webContents.openDevTools();
 }
 
 /**
@@ -128,17 +144,25 @@ function createUpdateWindow(versionInfo) {
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
-            nodeIntegration: false
+            nodeIntegration: false,
+            devTools: false // 개발자 도구 완전 비활성화
         }
     });
 
     updateWindow.setMenuBarVisibility(false);
     updateWindow.setMenu(null);
 
-    updateWindow.loadFile(path.join(__dirname, 'src', 'views', 'update.html'));
+    // 개발자 도구 단축키 차단
+    updateWindow.webContents.on('before-input-event', (event, input) => {
+        if (input.control && input.shift && input.key.toLowerCase() === 'i') {
+            event.preventDefault();
+        }
+        if (input.key === 'F12') {
+            event.preventDefault();
+        }
+    });
 
-    // Open DevTools for debugging
-    // updateWindow.webContents.openDevTools();
+    updateWindow.loadFile(path.join(__dirname, 'src', 'views', 'update.html'));
 
     // 업데이트 창 닫기 시 경고 및 종료 확인
     updateWindow.on('close', (e) => {
@@ -214,12 +238,12 @@ function loadConfig() {
     } catch (error) {
         console.error('Error loading config from DB:', error);
 
-        // DB 조회 실패 시 기본값 반환
+        // DB 조회 실패 시 빈 값 반환
         const templatesDir = DatabaseManager.getTemplatesDir();
         const defaultTemplatePath = path.join(templatesDir, 'default.lbx');
 
         currentConfig = {
-            atcPath: 'C:\\ATDPS\\Data',
+            atcPath: '', // 빈 문자열 (기본값 없음)
             templatePath: defaultTemplatePath,
             deleteOriginalFile: false,
             pharmacyName: ''
@@ -266,10 +290,16 @@ function restartFileWatcher(newPath) {
 
 
 app.whenReady().then(async () => {
-    // 데이터베이스 초기화
+    // ========== 1. 데이터베이스 초기화 (최우선!) ==========
+    console.log('[Main] Initializing database...');
     dbManager = new DatabaseManager();
 
-    // 핸들러 등록 (가장 먼저)
+    // ========== 2. DB에서 설정 로드 (monitorPath 업데이트) ==========
+    console.log('[Main] Loading config from database...');
+    const config = loadConfig();
+    console.log('[Main] Monitor path set to:', monitorPath);
+
+    // ========== 3. IPC 핸들러 등록 ==========
     registerAuthHandlers(dbManager);
     registerUpdateHandlers();
 
@@ -300,7 +330,7 @@ app.whenReady().then(async () => {
         console.log('[Main] Main window shown, auth window closed');
     });
 
-    // ========== 버전 체크 (최우선!) ==========
+    // ========== 4. 버전 체크 ==========
     console.log('[Main] Checking app version...');
     const versionCheck = await checkVersion();
 
@@ -312,24 +342,24 @@ app.whenReady().then(async () => {
     }
     console.log('[Main] Version check passed');
 
-    // ========== 라이선스 체크 ==========
+    // ========== 5. 라이선스 체크 ==========
+    console.log('[Main] Checking license...');
     const licenseCheck = await checkLicenseOnStartup(dbManager);
 
+    // ========== 6. 창 생성 ==========
     if (licenseCheck.needsAuth) {
         // 인증 필요 - 인증 창만 표시
+        console.log('[Main] Auth required, creating auth window...');
         createAuthWindow();
         createWindow(); // 메인 창은 숨겨진 상태로 생성
     } else {
         // 인증 불필요 - 메인 창 바로 표시
+        console.log('[Main] No auth required, creating main window...');
         createWindow();
         mainWindow.show();
-
-        // 파일 감시 시작 (인증이 필요 없는 경우)
-        console.log('[Main] Starting file watcher (no auth needed)...');
-        startFileWatcher();
     }
 
-    // IPC 핸들러 등록
+    // ========== 7. IPC 핸들러 등록 (메인 창 생성 후) ==========
     registerAllHandlers({
         dbManager,
         getMainWindow: () => mainWindow,
@@ -339,8 +369,13 @@ app.whenReady().then(async () => {
         restartFileWatcher
     });
 
-    // 설정 파일 로드
-    const config = loadConfig();
+    // ========== 8. 파일 감시 시작 (설정이 이미 로드됨) ==========
+    if (!licenseCheck.needsAuth) {
+        // 인증이 필요 없는 경우에만 여기서 시작
+        console.log('[Main] Starting file watcher (no auth needed)...');
+        console.log('[Main] Monitoring path:', monitorPath);
+        startFileWatcher();
+    }
 
     // Send initial log message to renderer
     mainWindow.webContents.on('did-finish-load', () => {
@@ -360,19 +395,29 @@ app.whenReady().then(async () => {
 // 파일 감시 시작 함수
 function startFileWatcher() {
     if (!mainWindow) return;
-    
+
+    // monitorPath가 비어있으면 경고 메시지 전송하고 종료
+    if (!monitorPath || monitorPath.trim() === '') {
+        console.warn('[File Watcher] OCS 파일 경로가 설정되지 않았습니다.');
+        mainWindow.webContents.send('log-message', '⚠️ OCS 파일 경로를 설정하세요');
+        mainWindow.webContents.send('ocs-path-warning', 'OCS 파일 경로를 설정하세요');
+        return;
+    }
+
     // 기존 watcher가 있으면 종료
     if (watcher) {
         watcher.close();
     }
-    
+
+    console.log('[File Watcher] Starting file watcher for:', monitorPath);
+
     watcher = chokidar.watch(monitorPath, {
         persistent: true,
         ignoreInitial: true,
     });
-    
+
     mainWindow.webContents.send('log-message', `Chokidar watcher initialized for: ${monitorPath}`);
-    
+
     watcher.on('ready', () => {
         mainWindow.webContents.send('log-message', 'Chokidar: Initial scan complete. Ready for changes.');
     });

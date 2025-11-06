@@ -1012,6 +1012,17 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // OCS 경로 경고 메시지 수신 처리
+    window.electronAPI.onOcsPathWarning((message) => {
+        showToast(message, 'error');
+        // 설정 모달 자동 열기 (선택사항)
+        setTimeout(async () => {
+            await loadConfig();
+            await loadTemplates();
+            settingsModal.style.display = 'block';
+        }, 1000);
+    });
+
     // Request initial data when the app loads
     window.electronAPI.getInitialData();
     loadBrotherPrinters();

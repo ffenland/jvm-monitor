@@ -99,13 +99,24 @@ function registerPrintHandlers(dbManager, getMainWindow, loadConfig) {
                 autoHideMenuBar: true, // 메뉴바 숨기기
                 webPreferences: {
                     nodeIntegration: true,
-                    contextIsolation: false
+                    contextIsolation: false,
+                    devTools: false // 개발자 도구 완전 비활성화
                 }
             });
 
             // 메뉴를 완전히 제거 (Alt 키로도 접근 불가)
             editorWindow.setMenuBarVisibility(false);
             editorWindow.setMenu(null);
+
+            // 개발자 도구 단축키 차단
+            editorWindow.webContents.on('before-input-event', (event, input) => {
+                if (input.control && input.shift && input.key.toLowerCase() === 'i') {
+                    event.preventDefault();
+                }
+                if (input.key === 'F12') {
+                    event.preventDefault();
+                }
+            });
 
             // 데이터를 URL 파라미터로 전달
             const data = {

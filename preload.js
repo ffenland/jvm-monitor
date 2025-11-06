@@ -61,6 +61,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onMedicineDataUpdated: (callback) => ipcRenderer.on('medicine-data-updated', (_event) => callback()),
     // 자동 인쇄 이벤트
     onAutoPrintMedicines: (callback) => ipcRenderer.on('auto-print-medicines', (_event, value) => callback(value)),
+    // OCS 경로 경고 이벤트
+    onOcsPathWarning: (callback) => ipcRenderer.on('ocs-path-warning', (_event, message) => callback(message)),
     // 처방전 삭제 API
     deletePrescription: (prescriptionId) => ipcRenderer.invoke('delete-prescription', prescriptionId),
     // 업데이트 관련 API
