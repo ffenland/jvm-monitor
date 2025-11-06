@@ -13,7 +13,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Malgun Gothic", sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f5f5f5;
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -23,24 +23,25 @@
 
         .container {
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
             padding: 40px;
             max-width: 500px;
             width: 100%;
         }
 
         h1 {
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 28px;
+            color: #222;
+            margin-bottom: 8px;
+            font-size: 24px;
+            font-weight: 600;
             text-align: center;
         }
 
         .subtitle {
             color: #666;
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 32px;
             font-size: 14px;
         }
 
@@ -58,16 +59,16 @@
 
         input {
             width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 15px;
-            transition: border-color 0.3s;
+            padding: 10px 12px;
+            border: 1px solid #d0d0d0;
+            border-radius: 3px;
+            font-size: 14px;
+            transition: border-color 0.2s;
         }
 
         input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #333;
         }
 
         .license-key-input {
@@ -80,78 +81,79 @@
 
         button {
             width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 12px;
+            background: #333;
             color: white;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
+            border-radius: 3px;
+            font-size: 15px;
+            font-weight: 500;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: background 0.2s;
             margin-top: 10px;
         }
 
         button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+            background: #222;
         }
 
         button:active {
-            transform: translateY(0);
+            background: #111;
         }
 
         button:disabled {
-            background: #ccc;
+            background: #999;
             cursor: not-allowed;
-            transform: none;
         }
 
         .message {
             margin-top: 20px;
-            padding: 15px;
-            border-radius: 8px;
+            padding: 12px;
+            border-radius: 3px;
             display: none;
             text-align: center;
-            font-weight: 600;
+            font-weight: 500;
+            font-size: 14px;
         }
 
         .message.success {
-            background: #d4edda;
-            border: 2px solid #c3e6cb;
-            color: #155724;
+            background: #f0f0f0;
+            border: 1px solid #333;
+            color: #222;
         }
 
         .message.error {
-            background: #f8d7da;
-            border: 2px solid #f5c6cb;
-            color: #721c24;
+            background: #f5f5f5;
+            border: 1px solid #666;
+            color: #333;
         }
 
         .message.info {
-            background: #d1ecf1;
-            border: 2px solid #bee5eb;
-            color: #0c5460;
+            background: #fafafa;
+            border: 1px solid #999;
+            color: #444;
         }
 
         .info-box {
-            background: #f8f9fa;
-            border: 2px solid #e0e0e0;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
+            background: #fafafa;
+            border: 1px solid #e0e0e0;
+            padding: 16px;
+            border-radius: 3px;
+            margin-top: 24px;
         }
 
         .info-box h3 {
-            color: #333;
-            font-size: 14px;
+            color: #222;
+            font-size: 13px;
+            font-weight: 600;
             margin-bottom: 10px;
         }
 
         .info-box p {
-            color: #666;
-            font-size: 13px;
+            color: #555;
+            font-size: 12px;
             line-height: 1.6;
+            margin-bottom: 4px;
         }
 
         .loading-spinner {
@@ -201,7 +203,7 @@
                 <span id="btnText">인증하기</span>
             </button>
 
-            <button type="button" id="exitBtn" style="background: #6c757d; margin-top: 10px;">
+            <button type="button" id="exitBtn" style="background: #666; margin-top: 10px;">
                 프로그램 종료
             </button>
         </form>
