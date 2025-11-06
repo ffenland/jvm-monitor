@@ -5,29 +5,29 @@ import iconv from 'iconv-lite';
  * TXT 파일 파서 - C# 로직을 JavaScript로 재구현
  * 설치 필요: npm install iconv-lite
  * package.json에 "type": "module" 추가 필요
- * 
+ *
  * 중요: ks_c_5601-1987 인코딩 사용 (고정 길이 형식 바이트 정확도 필수)
+ *
+ * @param {Buffer} fileBuffer - 파일 내용 버퍼 (EUC-KR 인코딩)
+ * @param {string} fileName - 파일명 (예: Copy1-20251106000043.txt)
  */
 
-function parseTxtFile(filePath) {
+function parseTxtFile(fileBuffer, fileName) {
     const result = {
         success: false,
-        filePath: filePath,
-        fileName: null,
+        fileName: fileName,
         preserial: null,
         records: [],
         error: null
     };
-    
+
     try {
-        // 1. ks_c_5601-1987 (EUC-KR) 인코딩으로 파일 읽기
+        // 1. ks_c_5601-1987 (EUC-KR) 인코딩으로 버퍼 디코딩
         // 원본 C#: Encoding.GetEncoding("ks_c_5601-1987")
         const ENCODING = 'ks_c_5601-1987'; // 또는 'euc-kr'
-        const fileBuffer = fs.readFileSync(filePath);
         const fileContent = iconv.decode(fileBuffer, ENCODING);
-        
+
         // 2. 파일명에서 확장자 제거 (preserial로 사용)
-        const fileName = filePath.split(/[/\\]/).pop();
         const preserial = fileName.split('.')[0];
         
         result.fileName = fileName;
@@ -225,15 +225,15 @@ function parseUsageInfo10Chars(chars10) {
     // 5~10자리: 1회복용량 (6자리)
     const singleDose6Chars = chars10.substring(4, 10);
 
-    // 처방일수 파싱 (공백 제거)
-    const prescriptionDays = days3Chars.trim();
+    // 처방일수 파싱 (trim 하지 않음 - 검증을 위해 원본 유지)
+    const prescriptionDays = days3Chars;
 
     // 1일복용횟수 검증 (1~9 사이의 숫자)
     if (!/^[1-9]$/.test(dailyDoseChar)) {
         return result;
     }
 
-    // 1회복용량 파싱 (공백 제거)
+    // 1회복용량 파싱 (공백 제거 - 1회복용량은 trim 허용)
     const singleDose = singleDose6Chars.trim();
 
     // 1회복용량 검증 (숫자 또는 온점 포함 숫자)
@@ -241,8 +241,22 @@ function parseUsageInfo10Chars(chars10) {
         return result;
     }
 
-    // 처방일수 검증 (1~999)
-    const daysNum = parseInt(prescriptionDays);
+    // 처방일수 검증 (왼쪽 정렬: 숫자 뒤에만 공백 가능)
+    // 정규식: ^\d+\s*$ (숫자로 시작, 뒤에 공백 0개 이상)
+    // 허용: "1  ", "11 ", "111"
+    // 오류: " 11", "  1", "1 1", "   "
+    const trimmedDays = prescriptionDays.trim();
+
+    // 왼쪽 정렬 검증: 숫자로 시작하고 뒤에만 공백
+    if (!/^\d+\s*$/.test(prescriptionDays) || trimmedDays === '') {
+        // 형식에 맞지 않으면 원본 그대로 반환 (validator에서 검증 실패)
+        result.tday = prescriptionDays;
+        result.thoi = dailyDoseChar;
+        result.tuse = singleDose;
+        return result;
+    }
+
+    const daysNum = parseInt(trimmedDays);
     if (isNaN(daysNum) || daysNum < 1 || daysNum > 999) {
         return result;
     }
@@ -258,7 +272,8 @@ function parseUsageInfo10Chars(chars10) {
         return result;
     }
 
-    result.tday = prescriptionDays;
+    // 검증 통과 후 trim된 값 저장 (DB에는 공백 제거된 값 저장)
+    result.tday = trimmedDays;  // 원본이 아닌 trim된 값
     result.thoi = dailyDoseChar;
     result.tuse = singleDose;
 

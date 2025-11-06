@@ -3,15 +3,18 @@
  * TXT 파일에서 환자, 처방전, 약품 정보를 파싱
  */
 
+const { validatePrescriptionMedicines } = require('./validator');
+
 /**
- * TXT 파일 파싱
- * @param {string} filePath - TXT 파일 경로
- * @returns {Promise<Object>} { success, patient, prescription, medicines }
+ * TXT 파일 파싱 (메모리 버퍼 기반)
+ * @param {Buffer} fileBuffer - 파일 내용 버퍼 (EUC-KR 인코딩)
+ * @param {string} fileName - 파일명 (예: Copy1-20251106000043.txt)
+ * @returns {Promise<Object>} { success, patient, prescription, medicines, validationErrors }
  */
-async function parseFile(filePath) {
+async function parseFile(fileBuffer, fileName) {
     try {
         const { parseTxtFile } = await import('../../scripts/prescript-parser-js.js');
-        const parseResult = parseTxtFile(filePath);
+        const parseResult = parseTxtFile(fileBuffer, fileName);
 
         if (!parseResult.success || !parseResult.records || parseResult.records.length === 0) {
             return { success: false, error: parseResult.error || 'No records found' };
@@ -49,6 +52,21 @@ async function parseFile(filePath) {
             singleDose: drug.tuse
         }));
 
+        // ===== 약품 정보 검증 =====
+        const validation = validatePrescriptionMedicines(medicines);
+
+        if (!validation.valid) {
+            // 검증 실패 시 상세 오류 정보 반환
+            return {
+                success: false,
+                validationFailed: true,
+                error: 'Medicine validation failed',
+                validationErrors: validation.allErrors,
+                invalidMedicines: validation.invalidMedicines
+            };
+        }
+
+        // 검증 성공 시 정상 반환
         return {
             success: true,
             patient,

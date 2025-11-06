@@ -470,10 +470,76 @@ function startFileWatcher() {
             const fileDate = match ? match[1] : null;
             const todayDate = new Date().toISOString().slice(0, 10).replace(/-/g, '');
 
-            // 새로운 파서 사용
-            const parseResult = await parseFile(filePath);
+            // 파일 내용을 즉시 메모리 버퍼로 읽기 (재시도 로직 포함)
+            // OCS 프로그램이 파일을 삭제하기 전에 안전하게 복사
+            let fileBuffer;
+            let readSuccess = false;
+
+            for (let retry = 0; retry < 3; retry++) {
+                try {
+                    fileBuffer = fs.readFileSync(filePath);
+                    readSuccess = true;
+                    mainWindow.webContents.send('log-message', `File read to buffer: ${fileName}`);
+                    break; // 성공하면 루프 탈출
+                } catch (readError) {
+                    const isLastRetry = retry === 2;
+
+                    if (readError.code === 'ENOENT') {
+                        // 파일이 없음 (OCS가 이미 삭제)
+                        mainWindow.webContents.send('log-message', `⚠️ File disappeared: ${fileName} (retry ${retry + 1}/3)`);
+                        if (isLastRetry) {
+                            throw new Error(`File disappeared before reading: ${fileName}`);
+                        }
+                    } else if (readError.code === 'EBUSY' || readError.code === 'EPERM') {
+                        // 파일이 잠겨있거나 권한 문제
+                        mainWindow.webContents.send('log-message', `⚠️ File locked: ${fileName} (retry ${retry + 1}/3)`);
+                        if (isLastRetry) {
+                            throw new Error(`File locked or permission denied: ${fileName}`);
+                        }
+                    } else {
+                        // 기타 오류
+                        if (isLastRetry) {
+                            throw readError;
+                        }
+                    }
+
+                    // 재시도 전 50ms 대기
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                }
+            }
+
+            if (!readSuccess) {
+                throw new Error(`Failed to read file after 3 retries: ${fileName}`);
+            }
+
+            // 버퍼를 파서에 전달 (원본 파일이 삭제되어도 무관)
+            const parseResult = await parseFile(fileBuffer, fileName);
 
             if (!parseResult.success) {
+                // 검증 실패인 경우 경고 다이얼로그 표시
+                if (parseResult.validationFailed) {
+                    console.error('[Validation Failed]', parseResult.validationErrors);
+                    mainWindow.webContents.send('log-message', `⚠️ 파일 검증 실패: ${fileName}`);
+
+                    // 검증 오류 상세 로그
+                    parseResult.validationErrors.forEach(error => {
+                        console.error(`  - ${error}`);
+                        mainWindow.webContents.send('log-message', `  ⚠️ ${error}`);
+                    });
+
+                    // 경고 다이얼로그 표시
+                    dialog.showMessageBox(mainWindow, {
+                        type: 'warning',
+                        title: 'OCS 파일 읽기 실패',
+                        message: 'OCS 파일의 정보를 읽는데 실패했습니다.',
+                        detail: '파일 형식이 올바르지 않거나 데이터가 손상되었을 수 있습니다.\n\n다시 시도해보세요.',
+                        buttons: ['확인']
+                    });
+
+                    return; // DB 저장하지 않고 종료
+                }
+
+                // 일반 파싱 오류
                 throw new Error(parseResult.error || 'Parsing failed');
             }
 
