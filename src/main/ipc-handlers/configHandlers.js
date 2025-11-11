@@ -58,37 +58,50 @@ function registerConfigHandlers(getMainWindow, loadConfig, saveConfig, getPowerS
         }
     });
 
-    // 템플릿 목록 가져오기
+    // 템플릿 목록 가져오기 (기본 템플릿 + 커스텀 템플릿)
     ipcMain.handle('get-templates', async () => {
         try {
-            // Documents\DrugLabel\templates 폴더에서 템플릿 읽기
-            const templatesDir = DatabaseManager.getTemplatesDir();
+            const templates = [];
 
-            // 템플릿 폴더가 없으면 생성
-            if (!fs.existsSync(templatesDir)) {
-                fs.mkdirSync(templatesDir, { recursive: true });
+            // 1. 기본 템플릿 로드 (프로그램 설치 경로)
+            const defaultTemplatesDir = process.resourcesPath
+                ? path.join(process.resourcesPath, 'templates')
+                : path.join(__dirname, '../../../templates');
 
-                // 기본 템플릿을 앱 폴더에서 복사 (첫 실행 시)
-                const sourceTemplatesDir = path.join(__dirname, '../../../templates');
-                if (fs.existsSync(sourceTemplatesDir)) {
-                    const sourceFiles = fs.readdirSync(sourceTemplatesDir);
-                    sourceFiles.filter(file => file.endsWith('.lbx')).forEach(file => {
-                        const sourcePath = path.join(sourceTemplatesDir, file);
-                        const targetPath = path.join(templatesDir, file);
-                        if (!fs.existsSync(targetPath)) {
-                            fs.copyFileSync(sourcePath, targetPath);
-                        }
-                    });
-                }
+            if (fs.existsSync(defaultTemplatesDir)) {
+                const defaultFiles = fs.readdirSync(defaultTemplatesDir);
+                const defaultTemplates = defaultFiles
+                    .filter(file => file.endsWith('.lbx'))
+                    .map(file => ({
+                        name: `${file} (기본)`,
+                        path: path.join(defaultTemplatesDir, file),
+                        isDefault: true,
+                        originalName: file
+                    }));
+                templates.push(...defaultTemplates);
             }
 
-            const files = fs.readdirSync(templatesDir);
-            const templates = files
-                .filter(file => file.endsWith('.lbx'))
-                .map(file => ({
-                    name: file,
-                    path: path.join(templatesDir, file)
-                }));
+            // 2. 커스텀 템플릿 로드 (Documents\Labelix\templates)
+            const customTemplatesDir = DatabaseManager.getTemplatesDir();
+
+            // 커스텀 템플릿 폴더가 없으면 생성
+            if (!fs.existsSync(customTemplatesDir)) {
+                fs.mkdirSync(customTemplatesDir, { recursive: true });
+            }
+
+            // 커스텀 템플릿 읽기
+            if (fs.existsSync(customTemplatesDir)) {
+                const customFiles = fs.readdirSync(customTemplatesDir);
+                const customTemplates = customFiles
+                    .filter(file => file.endsWith('.lbx'))
+                    .map(file => ({
+                        name: file,
+                        path: path.join(customTemplatesDir, file),
+                        isDefault: false,
+                        originalName: file
+                    }));
+                templates.push(...customTemplates);
+            }
 
             return { success: true, templates };
         } catch (error) {

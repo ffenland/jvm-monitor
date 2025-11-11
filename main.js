@@ -244,41 +244,47 @@ function loadConfig() {
             monitorPath = dbSettings.atcPath;
         }
 
-        // templatePath 기본값 설정
-        if (!dbSettings.templatePath) {
-            const templatesDir = DatabaseManager.getTemplatesDir();
-            const defaultTemplatePath = path.join(templatesDir, 'default.lbx');
+        // 기본 템플릿 경로 설정 (프로그램 설치 경로)
+        // 배포 환경: resources/templates/default.lbx
+        // 개발 환경: __dirname/templates/default.lbx
+        const defaultTemplatePath = process.resourcesPath
+            ? path.join(process.resourcesPath, 'templates', 'default.lbx')
+            : path.join(__dirname, 'templates', 'default.lbx');
 
-            // 템플릿 폴더가 없으면 생성
-            if (!fs.existsSync(templatesDir)) {
-                fs.mkdirSync(templatesDir, { recursive: true });
+        // 기본 템플릿 존재 여부 확인 (필수!)
+        if (!fs.existsSync(defaultTemplatePath)) {
+            dialog.showErrorBox(
+                '기본 템플릿 파일 누락',
+                '프로그램 설치 경로에 기본 템플릿 파일이 없습니다.\n프로그램을 재설치해주세요.\n\n프로그램을 종료합니다.'
+            );
+            app.quit();
+            return null;
+        }
+
+        // DB에 저장된 템플릿 경로 확인
+        if (dbSettings.templatePath) {
+            // 저장된 템플릿 경로가 유효한지 확인
+            if (!fs.existsSync(dbSettings.templatePath)) {
+                console.log('[Config] Saved template not found, reverting to default template');
+                logger.warning('저장된 템플릿을 찾을 수 없어 기본 템플릿으로 전환합니다', {
+                    category: 'system',
+                    details: { savedPath: dbSettings.templatePath, defaultPath: defaultTemplatePath }
+                });
+                dbSettings.templatePath = defaultTemplatePath;
+                dbManager.saveAppSettings(dbSettings);
             }
-
-            // 기본 템플릿이 없으면 app 폴더에서 복사
-            if (!fs.existsSync(defaultTemplatePath)) {
-                // 개발 환경과 배포 환경 모두 지원
-                let sourceTemplate;
-
-                // 배포 환경: resources/templates/default.lbx
-                const productionPath = path.join(process.resourcesPath, 'templates', 'default.lbx');
-                // 개발 환경: __dirname/templates/default.lbx
-                const devPath = path.join(__dirname, 'templates', 'default.lbx');
-
-                if (fs.existsSync(productionPath)) {
-                    sourceTemplate = productionPath;
-                } else if (fs.existsSync(devPath)) {
-                    sourceTemplate = devPath;
-                }
-
-                if (sourceTemplate) {
-                    fs.copyFileSync(sourceTemplate, defaultTemplatePath);
-                    console.log('[Config] Template copied from:', sourceTemplate);
-                    console.log('[Config] Template copied to:', defaultTemplatePath);
-                }
-            }
-
+        } else {
+            // 처음 실행 시 기본 템플릿으로 설정
+            console.log('[Config] Setting default template for first time');
             dbSettings.templatePath = defaultTemplatePath;
             dbManager.saveAppSettings(dbSettings);
+        }
+
+        // Documents/Labelix/templates 폴더는 커스텀 템플릿 전용으로 생성만 해둠
+        const customTemplatesDir = DatabaseManager.getTemplatesDir();
+        if (!fs.existsSync(customTemplatesDir)) {
+            fs.mkdirSync(customTemplatesDir, { recursive: true });
+            console.log('[Config] Created custom templates directory:', customTemplatesDir);
         }
 
         currentConfig = {
@@ -295,9 +301,10 @@ function loadConfig() {
             error: error
         });
 
-        // DB 조회 실패 시 빈 값 반환
-        const templatesDir = DatabaseManager.getTemplatesDir();
-        const defaultTemplatePath = path.join(templatesDir, 'default.lbx');
+        // DB 조회 실패 시 기본 템플릿 경로 사용
+        const defaultTemplatePath = process.resourcesPath
+            ? path.join(process.resourcesPath, 'templates', 'default.lbx')
+            : path.join(__dirname, 'templates', 'default.lbx');
 
         currentConfig = {
             atcPath: '', // 빈 문자열 (기본값 없음)
