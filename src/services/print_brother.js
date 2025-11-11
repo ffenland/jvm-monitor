@@ -594,8 +594,8 @@ try {
             '-NoProfile',
             '-File', tempScriptPath
         ], {
-            cwd: __dirname,
-            windowsHide: true
+            stdio: ['pipe', 'pipe', 'pipe'],
+            encoding: 'utf8'
         });
 
         let stdout = '';
