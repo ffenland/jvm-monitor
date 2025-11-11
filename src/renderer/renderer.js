@@ -137,12 +137,22 @@ window.addEventListener('DOMContentLoaded', () => {
         try {
             const result = await window.electronAPI.getBrotherPrinters();
             printerSelect.innerHTML = '';
-            
+
             if (result.success && result.printers.length > 0) {
                 result.printers.forEach(printer => {
                     const option = document.createElement('option');
-                    option.value = printer;
-                    option.textContent = printer;
+                    // 프린터 객체에서 이름 추출
+                    const printerName = typeof printer === 'string' ? printer : printer.name;
+                    option.value = printerName;
+
+                    // 오프라인 상태 표시
+                    if (typeof printer === 'object' && printer.isOffline) {
+                        option.textContent = `${printerName} (오프라인)`;
+                        option.style.color = '#999';
+                    } else {
+                        option.textContent = printerName;
+                    }
+
                     printerSelect.appendChild(option);
                 });
             } else {

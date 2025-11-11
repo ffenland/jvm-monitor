@@ -324,34 +324,81 @@ async function printWithBrother(data) {
 }
 
 /**
- * Gets a list of available Brother printers
+ * Gets a list of available Brother printers using b-PAC SDK
  * @returns {Promise<string[]>} A promise that resolves with a list of printer names.
  */
 async function getBrotherPrinters() {
     return new Promise((resolve) => {
-        // 한글 지원을 위한 PowerShell 스크립트 생성
+        // b-PAC SDK의 GetInstalledPrinters() 메서드를 사용하여 제어 가능한 프린터만 조회
         const scriptContent = `
-# Get Brother printers
+# Get Brother printers using b-PAC SDK
 $OutputEncoding = [System.Text.Encoding]::UTF8
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 try {
-    $printers = Get-WmiObject -Class Win32_Printer | Where-Object { 
+    # 1단계: WMI로 모든 Brother 프린터 찾기 (온라인 상태 포함)
+    $allPrinters = Get-WmiObject -Class Win32_Printer | Where-Object {
         $_.Name -match "Brother" -or $_.DriverName -match "Brother"
-    } | Select-Object -ExpandProperty Name
-    
+    }
+
+    # 2단계: b-PAC으로 각 프린터를 검증하고 상태 확인
+    $validPrinters = @()
+
+    if ($allPrinters.Count -gt 0) {
+        foreach ($printer in $allPrinters) {
+            try {
+                $printerName = $printer.Name
+
+                # b-PAC COM 객체 생성
+                $bpac = New-Object -ComObject "bpac.Document"
+
+                # SetPrinter로 프린터 설정 시도
+                $result = $bpac.SetPrinter($printerName, $false)
+
+                if ($result -eq $true) {
+                    # 프린터 상태 확인
+                    # WorkOffline: True이면 오프라인, False이면 온라인
+                    # PrinterState: 0=준비됨, 1=일시중지, 2=오류, 3=삭제중, 4=용지걸림 등
+                    $isOffline = $printer.WorkOffline
+                    $printerState = $printer.PrinterState
+                    $printerStatus = $printer.PrinterStatus
+
+                    # 프린터 정보 객체 생성
+                    $printerInfo = @{
+                        name = $printerName
+                        isOffline = $isOffline
+                        state = $printerState
+                        status = $printerStatus
+                    }
+
+                    $validPrinters += $printerInfo
+                }
+
+                # COM 객체 정리
+                $bpac.Close()
+                [System.Runtime.Interopservices.Marshal]::ReleaseComObject($bpac) | Out-Null
+                $bpac = $null
+
+            } catch {
+                # 오류 발생 시 무시
+            }
+        }
+    }
+
     $result = @{
         error = $false
-        data = @($printers)
+        data = $validPrinters
     }
     Write-Output ($result | ConvertTo-Json -Compress)
+
 } catch {
     $result = @{
         error = $true
-        message = "Error getting printers: $_"
+        message = "Error getting printers: $($_.Exception.Message)"
         data = @()
     }
     Write-Output ($result | ConvertTo-Json -Compress)
+    exit 1
 }`;
 
         const BOM = '\ufeff';
@@ -380,12 +427,17 @@ try {
         });
 
         let stdout = '';
-        
+        let stderr = '';
+
         ps.stdout.on('data', (data) => {
             stdout += data.toString();
         });
 
-        ps.on('close', () => {
+        ps.stderr.on('data', (data) => {
+            stderr += data.toString();
+        });
+
+        ps.on('close', (code) => {
             // Clean up temp file
             try {
                 fs.unlinkSync(tempScriptPath);
@@ -406,7 +458,7 @@ try {
             }
         });
 
-        ps.on('error', () => {
+        ps.on('error', (error) => {
             // Clean up temp file
             try {
                 fs.unlinkSync(tempScriptPath);

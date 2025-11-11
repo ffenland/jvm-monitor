@@ -23,8 +23,8 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
         try {
             const mainWindow = getMainWindow();
             const customLabelWindow = new BrowserWindow({
-                width: 450,
-                height: 750,
+                width: 800,
+                height: 800,
                 parent: mainWindow,
                 icon: path.join(__dirname, '../../../build', 'icon.ico'),
                 autoHideMenuBar: true,

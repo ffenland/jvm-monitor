@@ -27,7 +27,7 @@
             border-radius: 5px;
             padding: 15px;
             width: 100%;
-            max-width: 400px;
+            max-width: 750px;
             margin: 0 auto;
         }
 
@@ -401,57 +401,55 @@
             </div>
         </div>
 
-        <div class="form-group">
-            <label>약품명</label>
-            <input type="text" id="medicineName" value="">
+        <!-- 약품 정보: 약품명, 단위 (한 줄) -->
+        <div class="form-row">
+            <div class="form-group" style="flex: 1;">
+                <label>약품명</label>
+                <input type="text" id="medicineName" value="">
+                <div class="checkbox-container hidden" id="medicineNameCheckboxContainer">
+                    <label style="font-size: 10px; display: flex; align-items: center; margin-top: 3px;">
+                        <input type="checkbox" id="updateMedicineName" style="margin-right: 3px; width: 13px; height: 13px;">
+                        <span>수정 다음에도 사용</span>
+                    </label>
+                </div>
+            </div>
+            <div class="form-group" style="flex: 0 0 120px;">
+                <label>단위</label>
+                <input type="text" id="medicineUnit" value="" placeholder="예: 정">
+                <div class="checkbox-container hidden" id="medicineUnitCheckboxContainer">
+                    <label style="font-size: 10px; display: flex; align-items: center; margin-top: 3px;">
+                        <input type="checkbox" id="updateMedicineUnit" style="margin-right: 3px; width: 13px; height: 13px;">
+                        <span>저장</span>
+                    </label>
+                </div>
+            </div>
         </div>
 
-        <div class="checkbox-container hidden" id="medicineNameCheckboxContainer" style="margin-top: 5px; margin-bottom: 10px;">
-            <label style="font-size: 11px; display: flex; align-items: center;">
-                <input type="checkbox" id="updateMedicineName" style="margin-right: 5px;">
-                <span>수정한 약품명을 다음번에도 사용</span>
-            </label>
-        </div>
-
+        <!-- 약품유형 (별도 줄) -->
         <div class="form-group">
             <label>약품유형</label>
             <input type="text" id="medicineType" value="">
+            <div class="checkbox-container hidden" id="medicineTypeCheckboxContainer">
+                <label style="font-size: 10px; display: flex; align-items: center; margin-top: 3px;">
+                    <input type="checkbox" id="updateMedicineType" style="margin-right: 3px; width: 13px; height: 13px;">
+                    <span>다음에도 사용</span>
+                </label>
+            </div>
         </div>
 
-        <div class="checkbox-container hidden" id="medicineTypeCheckboxContainer" style="margin-top: 5px; margin-bottom: 10px;">
-            <label style="font-size: 11px; display: flex; align-items: center;">
-                <input type="checkbox" id="updateMedicineType" style="margin-right: 5px;">
-                <span>수정한 약품 유형을 다음번에도 사용</span>
-            </label>
-        </div>
-
-        <div class="form-group">
-            <label>단위</label>
-            <input type="text" id="medicineUnit" value="" placeholder="예: 정, 캡슐, ml">
-        </div>
-
-        <div class="checkbox-container hidden" id="medicineUnitCheckboxContainer" style="margin-top: 5px; margin-bottom: 10px;">
-            <label style="font-size: 11px; display: flex; align-items: center;">
-                <input type="checkbox" id="updateMedicineUnit" style="margin-right: 5px;">
-                <span>수정한 단위를 다음번에도 사용</span>
-            </label>
-        </div>
-
+        <!-- 처방 정보: 처방일수, 하루복용횟수, 1회투여량, 총량 (한 줄) -->
         <div class="form-row">
             <div class="form-group">
                 <label>처방일수</label>
                 <input type="number" id="prescriptionDays" value="" min="1" max="365">
             </div>
             <div class="form-group">
-                <label>1회 투여량</label>
-                <input type="number" id="singleDose" value="" min="0.1" max="100" step="0.1">
-            </div>
-        </div>
-
-        <div class="form-row">
-            <div class="form-group">
                 <label>하루 복용횟수</label>
                 <input type="number" id="dailyDose" value="" min="1" max="10">
+            </div>
+            <div class="form-group">
+                <label>1회 투여량</label>
+                <input type="number" id="singleDose" value="" min="0.1" max="100" step="0.1">
             </div>
             <div class="form-group">
                 <label>총량</label>
@@ -464,59 +462,67 @@
 
         <div class="section-divider"></div>
 
-        <div class="dosage-section">
-            <div class="section-title">복용 시간 선택</div>
-            <div class="time-buttons">
-                <button class="time-button" data-time="morning">아침</button>
-                <button class="time-button" data-time="lunch">점심</button>
-                <button class="time-button" data-time="evening">저녁</button>
-                <button class="time-button" data-time="bedtime">취침전</button>
+        <!-- 복용 방법: 2열 레이아웃 -->
+        <div style="display: flex; gap: 15px; margin-bottom: 10px;">
+            <!-- 왼쪽: 복용 시간 + 식사와의 관계 -->
+            <div style="flex: 1;">
+                <div class="section-title">복용 시간 선택</div>
+                <div class="time-buttons" style="margin-bottom: 8px;">
+                    <button class="time-button" data-time="morning">아침</button>
+                    <button class="time-button" data-time="lunch">점심</button>
+                    <button class="time-button" data-time="evening">저녁</button>
+                    <button class="time-button" data-time="bedtime">취침전</button>
+                </div>
+
+                <div class="section-title" style="margin-top: 10px;">식사와의 관계</div>
+                <div class="time-buttons" style="margin-bottom: 5px;">
+                    <button class="time-button meal-button" data-meal="식후">식후</button>
+                    <button class="time-button meal-button" data-meal="식전">식전</button>
+                    <button class="time-button meal-button" data-meal="공복">공복</button>
+                    <button class="time-button meal-button" data-meal="식사직후">식사직후</button>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <input type="text" id="customMealRelation" placeholder="기타 입력 (예: 취침전)" style="font-size: 12px; padding: 5px 8px;">
+                </div>
             </div>
 
-            <div class="section-title" style="margin-top: 15px;">식사와의 관계</div>
-            <div class="time-buttons" style="margin-bottom: 5px;">
-                <button class="time-button meal-button" data-meal="식후">식후</button>
-                <button class="time-button meal-button" data-meal="식전">식전</button>
-                <button class="time-button meal-button" data-meal="공복">공복</button>
-                <button class="time-button meal-button" data-meal="식사직후">식사직후</button>
-            </div>
-            <div class="form-group" style="margin-bottom: 10px;">
-                <input type="text" id="customMealRelation" placeholder="기타 입력 (예: 취침전)" style="font-size: 12px; padding: 5px 8px;">
-            </div>
-
-            <div class="special-dosage">
-                <div class="special-dosage-label" style="justify-content: space-between;">
-                    <div style="display: flex; align-items: center;">
+            <!-- 오른쪽: 특수용법 -->
+            <div style="flex: 1;">
+                <div class="section-title">특수용법</div>
+                <div class="special-dosage" style="margin-top: 0;">
+                    <div class="special-dosage-label" style="margin-bottom: 5px;">
                         <input type="checkbox" id="specialDosageCheck">
                         <label for="specialDosageCheck">특수용법 직접 입력</label>
+                        <div style="flex: 1;"></div>
+                        <div class="checkbox-container hidden" id="customUsageCheckboxContainer">
+                            <input type="checkbox" id="saveCustomUsageCheck" style="width: 14px; height: 14px; margin-right: 3px; margin-left: 10px;">
+                            <label for="saveCustomUsageCheck" style="font-size: 11px; color: #333; cursor: pointer;">저장</label>
+                        </div>
                     </div>
-                    <div class="checkbox-container hidden" id="customUsageCheckboxContainer" style="display: flex; align-items: center; margin-left: 15px;">
-                        <input type="checkbox" id="saveCustomUsageCheck" style="width: 14px; height: 14px; margin-right: 5px;">
-                        <label for="saveCustomUsageCheck" style="font-size: 12px; color: #333; cursor: pointer;">특수용법 저장</label>
+                    <input type="text"
+                           class="special-dosage-input"
+                           id="specialDosageInput"
+                           placeholder="예: 필요시 $x씩 복용, 식후 30분"
+                           disabled>
+                    <div style="margin-top: 5px; padding: 5px; background: #f0f8ff; border-radius: 3px; font-size: 10px; color: #666; line-height: 1.3;">
+                        <div>💡 "$x" 입력 시 1회 복용량 자동 입력</div>
+                        <div style="margin-top: 2px;">예: "필요시 $x씩" → "필요시 3정씩"</div>
                     </div>
                 </div>
-                <input type="text"
-                       class="special-dosage-input"
-                       id="specialDosageInput"
-                       placeholder="예: 필요시 $x씩 복용, 식후 30분"
-                       disabled>
-                <div style="margin-top: 5px; padding: 5px; background: #f0f8ff; border-radius: 3px; font-size: 11px; color: #666; line-height: 1.4;">
-                    <div>💡 <strong>안내:</strong> "$x"를 입력하면 1회 복용량과 단위가 자동으로 입력됩니다.</div>
-                    <div style="margin-top: 3px;">예시: "필요시 $x씩 복용" → "필요시 3정씩 복용"</div>
-                </div>
             </div>
+        </div>
 
-            <div class="checkbox-container hidden" id="autoPrintCheckboxContainer" style="margin-top: 10px; padding: 8px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 3px;">
-                <label style="display: flex; align-items: center; cursor: pointer;">
-                    <input type="checkbox" id="autoPrintCheck" style="width: 14px; height: 14px; margin-right: 5px;">
-                    <span style="font-size: 12px; color: #333;">이 약품의 라벨은 자동출력</span>
-                </label>
-            </div>
+        <!-- 자동출력 및 결과 -->
+        <div class="checkbox-container hidden" id="autoPrintCheckboxContainer" style="margin-top: 8px; padding: 8px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 3px;">
+            <label style="display: flex; align-items: center; cursor: pointer;">
+                <input type="checkbox" id="autoPrintCheck" style="width: 14px; height: 14px; margin-right: 5px;">
+                <span style="font-size: 12px; color: #333;">이 약품의 라벨은 자동출력</span>
+            </label>
+        </div>
 
-            <div class="dosage-result">
-                <div class="dosage-result-label">생성된 용법:</div>
-                <div class="dosage-result-text" id="dosageResult">-</div>
-            </div>
+        <div class="dosage-result" style="margin-top: 8px;">
+            <div class="dosage-result-label">생성된 용법:</div>
+            <div class="dosage-result-text" id="dosageResult">-</div>
         </div>
 
         <div class="buttons">

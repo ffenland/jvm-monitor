@@ -102,8 +102,8 @@ function registerPrintHandlers(dbManager, getMainWindow, loadConfig) {
 
             // 편집 창 생성 - 스크롤 없이 볼 수 있도록 높이 조정
             const editorWindow = new BrowserWindow({
-                width: 420,
-                height: 900,
+                width: 800,
+                height: 800,
                 parent: mainWindow,
                 modal: true,
                 icon: path.join(__dirname, '../../../build', 'icon.ico'), // 아이콘 설정
@@ -220,7 +220,7 @@ function registerPrintHandlers(dbManager, getMainWindow, loadConfig) {
 
             const processedData = {
                 patientName: printData.patientName,
-                medicineName: `[${printData.medicineInfo?.drug_name || printData.name}]`,
+                medicineName: printData.medicineInfo?.drug_name || printData.name,
                 medicineType: printData.medicineType,
                 dose: printData.dosageText,
                 prescriptionDays: printData.prescriptionDays + '일분',
