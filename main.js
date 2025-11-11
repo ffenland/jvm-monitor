@@ -256,9 +256,24 @@ function loadConfig() {
 
             // 기본 템플릿이 없으면 app 폴더에서 복사
             if (!fs.existsSync(defaultTemplatePath)) {
-                const sourceTemplate = path.join(__dirname, 'templates', 'default.lbx');
-                if (fs.existsSync(sourceTemplate)) {
+                // 개발 환경과 배포 환경 모두 지원
+                let sourceTemplate;
+
+                // 배포 환경: resources/templates/default.lbx
+                const productionPath = path.join(process.resourcesPath, 'templates', 'default.lbx');
+                // 개발 환경: __dirname/templates/default.lbx
+                const devPath = path.join(__dirname, 'templates', 'default.lbx');
+
+                if (fs.existsSync(productionPath)) {
+                    sourceTemplate = productionPath;
+                } else if (fs.existsSync(devPath)) {
+                    sourceTemplate = devPath;
+                }
+
+                if (sourceTemplate) {
                     fs.copyFileSync(sourceTemplate, defaultTemplatePath);
+                    console.log('[Config] Template copied from:', sourceTemplate);
+                    console.log('[Config] Template copied to:', defaultTemplatePath);
                 }
             }
 
