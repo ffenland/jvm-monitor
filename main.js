@@ -12,6 +12,7 @@ const { checkLicenseOnStartup } = require('./src/services/authService');
 const { registerAuthHandlers } = require('./src/ipc/authHandlers');
 const { registerUpdateHandlers } = require('./src/ipc/updateHandlers');
 const { checkVersion } = require('./src/services/versionService');
+const { getKSTDateString } = require('./src/utils/dateUtils');
 let monitorPath = null; // Will be set from DB config (no hardcoded default value)
 
 /**
@@ -247,7 +248,7 @@ function loadConfig() {
         // 기본 템플릿 경로 설정 (프로그램 설치 경로)
         // 배포 환경: resources/templates/default.lbx
         // 개발 환경: __dirname/templates/default.lbx
-        const defaultTemplatePath = process.resourcesPath
+        const defaultTemplatePath = app.isPackaged
             ? path.join(process.resourcesPath, 'templates', 'default.lbx')
             : path.join(__dirname, 'templates', 'default.lbx');
 
@@ -302,7 +303,7 @@ function loadConfig() {
         });
 
         // DB 조회 실패 시 기본 템플릿 경로 사용
-        const defaultTemplatePath = process.resourcesPath
+        const defaultTemplatePath = app.isPackaged
             ? path.join(process.resourcesPath, 'templates', 'default.lbx')
             : path.join(__dirname, 'templates', 'default.lbx');
 
@@ -506,7 +507,7 @@ function startFileWatcher() {
         try {
             const match = fileName.match(/Copy\d+-(\d{8})(\d{6})\.txt/);
             const fileDate = match ? match[1] : null;
-            const todayDate = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+            const todayDate = getKSTDateString(); // KST 기준 오늘 날짜
 
             // 파일 내용을 즉시 메모리 버퍼로 읽기 (재시도 로직 포함)
             // OCS 프로그램이 파일을 삭제하기 전에 안전하게 복사
@@ -625,7 +626,7 @@ function startFileWatcher() {
                 mainWindow.webContents.send('log-message', `Prescription saved to database (ID: ${saveResult.id})`);
 
                 // 4. 화면 갱신 (오늘 날짜 데이터 재조회)
-                const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+                const today = getKSTDateString(); // KST 기준 오늘 날짜
                 const todayPrescriptions = dbManager.getPrescriptionsByParsingDate(today);
 
                 const refreshedData = todayPrescriptions.map((prescription, index) => ({

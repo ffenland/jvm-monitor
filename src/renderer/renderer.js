@@ -1,3 +1,12 @@
+// KST 기준 현재 날짜를 YYYYMMDD 형식으로 반환
+function getKSTDateString() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}${month}${day}`;
+}
+
 // 시간 정보만 추출하는 함수 (9시 12분 12초 형식)
 function formatTimeKST(dateValue) {
     if (!dateValue) return '';
@@ -445,8 +454,8 @@ window.addEventListener('DOMContentLoaded', () => {
     window.electronAPI.onUpdateDateList((updatedDates) => {
         // 현재 선택된 날짜 저장
         const currentSelectedDate = dateSelect.value;
-        const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-        
+        const today = getKSTDateString(); // KST 기준 오늘 날짜
+
         // Clear existing options
         dateSelect.innerHTML = '';
         // Repopulate with updated dates
@@ -456,7 +465,7 @@ window.addEventListener('DOMContentLoaded', () => {
             option.textContent = `${dateStr.substring(0, 4)}-${dateStr.substring(4, 6)}-${dateStr.substring(6, 8)}`;
             dateSelect.appendChild(option);
         });
-        
+
         // 오늘 날짜가 있고 현재 선택이 오늘이면 오늘 유지, 아니면 현재 선택 유지
         if (updatedDates.includes(today) && currentSelectedDate === today) {
             dateSelect.value = today;

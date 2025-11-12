@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const { getEncryptionKey } = require('../utils/encryptionKey');
 const logger = require('./logger');
+const { getKSTDateString } = require('../utils/dateUtils');
 
 /**
  * 새로운 데이터베이스 구조
@@ -94,9 +95,13 @@ class DatabaseManager {
      */
     getKSTTimestamp() {
         const now = new Date();
-        const kstOffset = 9 * 60; // KST는 UTC+9
-        const kstTime = new Date(now.getTime() + kstOffset * 60 * 1000);
-        return kstTime.toISOString().slice(0, 19).replace('T', ' ');
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
     }
 
     initDatabase() {
@@ -845,7 +850,7 @@ class DatabaseManager {
 
             if (existing) {
                 // 중복 처방전이지만 파싱 이력 추가
-                const parsedDate = data.parsedDate || new Date().toISOString().slice(0, 10).replace(/-/g, '');
+                const parsedDate = data.parsedDate || getKSTDateString(); // KST 기준 오늘 날짜
                 const parsedAt = this.getKSTTimestamp();
                 this.statements.insertParsingHistory.run({
                     prescriptionId: existing.id,
@@ -898,7 +903,7 @@ class DatabaseManager {
             }
 
             // 4. 파싱 이력 추가
-            const parsedDate = data.parsedDate || new Date().toISOString().slice(0, 10).replace(/-/g, '');
+            const parsedDate = data.parsedDate || getKSTDateString(); // KST 기준 오늘 날짜
             const parsedAt = this.getKSTTimestamp();
             this.statements.insertParsingHistory.run({
                 prescriptionId: prescriptionId,

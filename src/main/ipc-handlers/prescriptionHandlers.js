@@ -1,5 +1,6 @@
 const { ipcMain } = require('electron');
 const logger = require('../../services/logger');
+const { getKSTDateString } = require('../../utils/dateUtils');
 
 /**
  * 처방전 관련 IPC 핸들러
@@ -7,7 +8,7 @@ const logger = require('../../services/logger');
 function registerPrescriptionHandlers(dbManager, getMainWindow) {
     // 초기 데이터 가져오기 (오늘 날짜 처방전)
     ipcMain.on('get-initial-data', (event) => {
-        const today = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        const today = getKSTDateString(); // KST 기준 오늘 날짜
 
         // 파싱 이력 기반으로 오늘 날짜의 처방전 가져오기
         const todayPrescriptions = dbManager.getPrescriptionsByParsingDate(today);
