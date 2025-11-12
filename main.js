@@ -590,6 +590,8 @@ function startFileWatcher() {
             mainWindow.webContents.send('log-message', `Fetching ${medicines.length} medicine(s) information...`);
 
             const medicineResults = [];
+            let hasApiFailure = false; // API 실패 플래그
+
             for (const med of medicines) {
                 const result = await fetchAndSaveMedicine(med.code, med.name, dbManager);
                 medicineResults.push({
@@ -599,8 +601,14 @@ function startFileWatcher() {
                 });
 
                 if (result.apiFailure) {
+                    hasApiFailure = true;
                     mainWindow.webContents.send('log-message', `Failed to fetch medicine: ${med.name} (${med.code})`);
                 }
+            }
+
+            // API 실패가 하나라도 있으면 뱃지 업데이트 이벤트 발생
+            if (hasApiFailure) {
+                mainWindow.webContents.send('medicine-data-updated');
             }
 
             // 3. 처방전 정보 저장 (약품 관계 포함)

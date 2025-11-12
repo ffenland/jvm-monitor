@@ -12,11 +12,11 @@
 function validateMedicine(medicine) {
     const errors = [];
 
-    // 약품코드 검증: 숫자로만 구성된 9자리 문자열
+    // 약품코드 검증: 영문자(A-Z)와 숫자(0-9) 조합으로 9자리
     if (!medicine.code) {
         errors.push('약품코드가 없습니다');
-    } else if (!/^\d{9}$/.test(medicine.code)) {
-        errors.push(`약품코드가 유효하지 않습니다 (코드: ${medicine.code}, 형식: 숫자 9자리 필요)`);
+    } else if (!/^[A-Z0-9]{9}$/.test(medicine.code)) {
+        errors.push(`약품코드가 유효하지 않습니다 (코드: ${medicine.code}, 형식: 영문자와 숫자 조합 9자리 필요)`);
     }
 
     return {

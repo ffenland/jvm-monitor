@@ -121,7 +121,8 @@ function getStringFromBuffer(buffer, offset, length, encoding) {
  *
  * 파싱 규칙:
  * - |JVMHEAD| 이후부터 |JVMEND| 이전까지 약품 정보 파싱
- * - 약품코드: T 또는 E로 시작하는 10자리
+ * - 약품코드: T,P,L,J,E로 시작하는 10자리 (구분자 1자리 + 약품코드 9자리)
+ *   - 약품코드 9자리는 영문자(A-Z)와 숫자(0-9) 조합 가능
  * - 복용정보: 뒤에서부터 역방향으로 읽기
  *   - 맨 마지막 약품: |JVMEND| 문구의 40칸 앞에서부터 10자리
  *   - 중간 약품: 다음 약품코드의 42칸 앞에서부터 10자리
@@ -149,8 +150,8 @@ function parseDrugInfo(drugSection, encoding) {
     // 약품 섹션만 추출
     const medicineSection = drugSection.substring(jvmheadStart + 9, jvmendPos);
 
-    // 약품코드 패턴 찾기: T 또는 E로 시작하는 10자리
-    const codePattern = /[TE]\d{9}/g;
+    // 약품코드 패턴 찾기: T,P,L,J,E로 시작하고 뒤에 영문자+숫자 조합 9자리
+    const codePattern = /[TPLJE][A-Z0-9]{9}/g;
     const matches = [...medicineSection.matchAll(codePattern)];
 
     if (matches.length === 0) {
