@@ -52,7 +52,26 @@ function registerPrintHandlers(dbManager, getMainWindow, loadConfig) {
     // Brother 프린터 목록 가져오기 (handle 버전)
     ipcMain.handle('get-brother-printers', async () => {
         try {
+            logger.info('프린터 목록 조회 시작', {
+                category: 'print'
+            });
+
             const printers = await getBrotherPrinters();
+
+            // 프린터 검색 결과 로깅 (디버깅용)
+            logger.info('프린터 검색 완료', {
+                category: 'print',
+                details: {
+                    count: printers.length,
+                    printers: printers.map(p => ({
+                        name: p.name,
+                        source: p.source,
+                        bpacCompatible: p.bpacCompatible,
+                        isOffline: p.isOffline
+                    }))
+                }
+            });
+
             return { success: true, printers };
         } catch (error) {
             logger.error('Brother 프린터 목록 조회 실패', {
@@ -232,7 +251,11 @@ function registerPrintHandlers(dbManager, getMainWindow, loadConfig) {
 
             // Brother 프린터 목록 가져오기
             const printers = await getBrotherPrinters();
-            const printerName = printers.length > 0 ? printers[0] : null;
+
+            // 프린터 객체에서 이름 추출 (객체 배열 또는 문자열 배열 모두 지원)
+            const printerName = printers.length > 0
+                ? (typeof printers[0] === 'string' ? printers[0] : printers[0].name)
+                : null;
 
             if (!printerName) {
                 throw new Error('Brother 프린터를 찾을 수 없습니다.');

@@ -324,70 +324,157 @@ async function printWithBrother(data) {
 }
 
 /**
- * Gets a list of available Brother printers using b-PAC SDK
- * @returns {Promise<string[]>} A promise that resolves with a list of printer names.
+ * Gets a list of available Brother printers using multiple methods
+ * 1. b-PAC SDK GetInstalledPrinters() - SDK가 인식하는 프린터
+ * 2. WMI Win32_Printer - 시스템에 설치된 Brother 프린터
+ * @returns {Promise<string[]>} A promise that resolves with a list of printer info objects.
  */
 async function getBrotherPrinters() {
     return new Promise((resolve) => {
-        // b-PAC SDK의 GetInstalledPrinters() 메서드를 사용하여 제어 가능한 프린터만 조회
+        // 두 가지 방법을 모두 사용하여 프린터 검색
         const scriptContent = `
-# Get Brother printers using b-PAC SDK
+# Get Brother printers using multiple methods
 $OutputEncoding = [System.Text.Encoding]::UTF8
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 try {
-    # 1단계: WMI로 모든 Brother 프린터 찾기 (온라인 상태 포함)
-    $allPrinters = Get-WmiObject -Class Win32_Printer | Where-Object {
-        $_.Name -match "Brother" -or $_.DriverName -match "Brother"
-    }
+    $allFoundPrinters = @{}  # 중복 제거를 위한 해시테이블 (프린터명 -> 정보)
 
-    # 2단계: b-PAC으로 각 프린터를 검증하고 상태 확인
-    $validPrinters = @()
+    Write-Host "[Method 1] Searching via b-PAC GetInstalledPrinters()..." -ForegroundColor Cyan
 
-    if ($allPrinters.Count -gt 0) {
-        foreach ($printer in $allPrinters) {
-            try {
-                $printerName = $printer.Name
+    # ==========================================
+    # 방법 1: b-PAC SDK의 GetInstalledPrinters() 사용
+    # ==========================================
+    try {
+        $bpac = New-Object -ComObject "bpac.Document"
 
-                # b-PAC COM 객체 생성
-                $bpac = New-Object -ComObject "bpac.Document"
+        # GetInstalledPrinters() 메서드 호출
+        $bpacPrinters = $bpac.Printer.GetInstalledPrinters()
 
-                # SetPrinter로 프린터 설정 시도
-                $result = $bpac.SetPrinter($printerName, $false)
+        if ($bpacPrinters -ne $null -and $bpacPrinters.Count -gt 0) {
+            Write-Host "Found $($bpacPrinters.Count) printers via b-PAC SDK" -ForegroundColor Green
 
-                if ($result -eq $true) {
-                    # 프린터 상태 확인
-                    # WorkOffline: True이면 오프라인, False이면 온라인
-                    # PrinterState: 0=준비됨, 1=일시중지, 2=오류, 3=삭제중, 4=용지걸림 등
-                    $isOffline = $printer.WorkOffline
-                    $printerState = $printer.PrinterState
-                    $printerStatus = $printer.PrinterStatus
+            for ($i = 0; $i -lt $bpacPrinters.Count; $i++) {
+                $printerName = $bpacPrinters.Item($i)
 
-                    # 프린터 정보 객체 생성
+                # Brother 프린터만 필터링
+                if ($printerName -match "Brother") {
+                    Write-Host "  - b-PAC: $printerName" -ForegroundColor Gray
+
+                    # WMI에서 프린터 상태 정보 가져오기
+                    $wmiPrinter = Get-WmiObject -Class Win32_Printer | Where-Object { $_.Name -eq $printerName } | Select-Object -First 1
+
                     $printerInfo = @{
                         name = $printerName
-                        isOffline = $isOffline
-                        state = $printerState
-                        status = $printerStatus
+                        source = "bpac"
+                        isOffline = if ($wmiPrinter) { $wmiPrinter.WorkOffline } else { $false }
+                        state = if ($wmiPrinter) { $wmiPrinter.PrinterState } else { 0 }
+                        status = if ($wmiPrinter) { $wmiPrinter.PrinterStatus } else { 3 }
                     }
 
-                    $validPrinters += $printerInfo
+                    $allFoundPrinters[$printerName] = $printerInfo
                 }
-
-                # COM 객체 정리
-                $bpac.Close()
-                [System.Runtime.Interopservices.Marshal]::ReleaseComObject($bpac) | Out-Null
-                $bpac = $null
-
-            } catch {
-                # 오류 발생 시 무시
             }
+        } else {
+            Write-Host "No printers found via b-PAC SDK" -ForegroundColor Yellow
+        }
+
+        # COM 객체 정리
+        $bpac.Close()
+        [System.Runtime.Interopservices.Marshal]::ReleaseComObject($bpac) | Out-Null
+        $bpac = $null
+
+    } catch {
+        Write-Host "b-PAC GetInstalledPrinters failed: $($_.Exception.Message)" -ForegroundColor Yellow
+    }
+
+    Write-Host "[Method 2] Searching via WMI Win32_Printer..." -ForegroundColor Cyan
+
+    # ==========================================
+    # 방법 2: WMI로 Brother 프린터 찾기
+    # ==========================================
+    try {
+        $wmiPrinters = Get-WmiObject -Class Win32_Printer | Where-Object {
+            $_.Name -match "Brother" -or $_.DriverName -match "Brother"
+        }
+
+        if ($wmiPrinters -ne $null) {
+            $wmiCount = if ($wmiPrinters -is [array]) { $wmiPrinters.Count } else { 1 }
+            Write-Host "Found $wmiCount Brother printers via WMI" -ForegroundColor Green
+
+            foreach ($printer in $wmiPrinters) {
+                $printerName = $printer.Name
+                Write-Host "  - WMI: $printerName" -ForegroundColor Gray
+
+                # 이미 b-PAC에서 찾은 프린터면 source만 업데이트
+                if ($allFoundPrinters.ContainsKey($printerName)) {
+                    $allFoundPrinters[$printerName].source = "bpac+wmi"
+                } else {
+                    # WMI에서만 발견된 프린터 추가
+                    $printerInfo = @{
+                        name = $printerName
+                        source = "wmi"
+                        isOffline = $printer.WorkOffline
+                        state = $printer.PrinterState
+                        status = $printer.PrinterStatus
+                    }
+
+                    $allFoundPrinters[$printerName] = $printerInfo
+                }
+            }
+        } else {
+            Write-Host "No Brother printers found via WMI" -ForegroundColor Yellow
+        }
+    } catch {
+        Write-Host "WMI search failed: $($_.Exception.Message)" -ForegroundColor Yellow
+    }
+
+    # ==========================================
+    # 방법 3: b-PAC SetPrinter로 각 프린터 검증
+    # ==========================================
+    Write-Host "[Method 3] Validating printers with b-PAC SetPrinter..." -ForegroundColor Cyan
+
+    $validatedPrinters = @()
+
+    foreach ($printerName in $allFoundPrinters.Keys) {
+        try {
+            $bpac = New-Object -ComObject "bpac.Document"
+
+            # SetPrinter로 프린터 설정 시도 (b-PAC 호환 여부 확인)
+            $result = $bpac.SetPrinter($printerName, $false)
+
+            $printerInfo = $allFoundPrinters[$printerName]
+
+            if ($result -eq $true) {
+                $printerInfo.bpacCompatible = $true
+                Write-Host "  ✓ $printerName - b-PAC compatible" -ForegroundColor Green
+            } else {
+                $printerInfo.bpacCompatible = $false
+                Write-Host "  ✗ $printerName - NOT b-PAC compatible" -ForegroundColor Red
+            }
+
+            $validatedPrinters += $printerInfo
+
+            # COM 객체 정리
+            $bpac.Close()
+            [System.Runtime.Interopservices.Marshal]::ReleaseComObject($bpac) | Out-Null
+            $bpac = $null
+
+        } catch {
+            Write-Host "  ✗ $printerName - Validation failed: $($_.Exception.Message)" -ForegroundColor Red
+            # 검증 실패해도 목록에는 추가 (호환 여부만 false로)
+            $printerInfo = $allFoundPrinters[$printerName]
+            $printerInfo.bpacCompatible = $false
+            $validatedPrinters += $printerInfo
         }
     }
 
+    # 결과 반환
+    Write-Host "Total printers found: $($validatedPrinters.Count)" -ForegroundColor Cyan
+
     $result = @{
         error = $false
-        data = $validPrinters
+        data = $validatedPrinters
     }
     Write-Output ($result | ConvertTo-Json -Compress)
 

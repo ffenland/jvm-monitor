@@ -928,3 +928,71 @@ ipcMain.handle('delete-all-app-logs', async () => {
         return { success: false, error: error.message };
     }
 });
+
+/**
+ * 에러 로그를 Firebase로 전송
+ */
+ipcMain.handle('send-errors-to-firebase', async () => {
+    try {
+        const { sendErrorLogsOnly } = require('./src/services/errorReporter');
+
+        // DB에서 에러 로그만 가져오기
+        const allLogs = dbManager.getAllLogs(100); // 최근 100개
+        const errorLogs = allLogs.filter(log => log.level === 'error');
+
+        if (errorLogs.length === 0) {
+            return {
+                success: true,
+                message: '전송할 에러 로그가 없습니다.',
+                successCount: 0,
+                failCount: 0,
+                total: 0
+            };
+        }
+
+        // 라이선스 정보 가져오기
+        let licenseInfo = {};
+        try {
+            const license = dbManager.getLicense();
+            if (license) {
+                licenseInfo = {
+                    pharmacyName: license.pharmacyName,
+                    licenseKey: license.licenseKey
+                };
+            }
+        } catch (err) {
+            console.warn('Failed to get license info:', err);
+        }
+
+        // Firebase로 전송
+        const result = await sendErrorLogsOnly(errorLogs, licenseInfo);
+
+        logger.info('에러 로그 Firebase 전송 완료', {
+            category: 'system',
+            details: {
+                successCount: result.successCount,
+                failCount: result.failCount,
+                total: result.total
+            }
+        });
+
+        return {
+            success: true,
+            message: `${result.successCount}개의 에러 로그를 전송했습니다.`,
+            successCount: result.successCount,
+            failCount: result.failCount,
+            total: result.total
+        };
+
+    } catch (error) {
+        logger.error('Firebase 전송 실패', {
+            category: 'system',
+            error: error
+        });
+        return {
+            success: false,
+            error: error.message,
+            message: 'Firebase 전송 중 오류가 발생했습니다.'
+        };
+    }
+});

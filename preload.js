@@ -74,7 +74,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // 로그 관련 API
     getAppLogs: () => ipcRenderer.invoke('get-app-logs'),
     exportAppLogs: () => ipcRenderer.invoke('export-app-logs'),
-    deleteAllAppLogs: () => ipcRenderer.invoke('delete-all-app-logs')
+    deleteAllAppLogs: () => ipcRenderer.invoke('delete-all-app-logs'),
+    sendErrorsToFirebase: () => ipcRenderer.invoke('send-errors-to-firebase')
 });
 
 // 인증 관련 API (별도 노출)

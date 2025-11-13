@@ -1101,6 +1101,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const logListContainer = document.getElementById('log-list-container');
     const logCopyBtn = document.getElementById('log-copy-btn');
     const logExportBtn = document.getElementById('log-export-btn');
+    const logSendFirebaseBtn = document.getElementById('log-send-firebase-btn');
     const logDeleteAllBtn = document.getElementById('log-delete-all-btn');
 
     let currentLogs = [];
@@ -1220,6 +1221,38 @@ window.addEventListener('DOMContentLoaded', () => {
             } catch (error) {
                 showToast('로그 내보내기에 실패했습니다.', 'error');
                 console.error('Failed to export logs:', error);
+            }
+        };
+    }
+
+    // 오류보고 (Firebase로 전송)
+    if (logSendFirebaseBtn) {
+        logSendFirebaseBtn.onclick = async () => {
+            if (!confirm('에러 로그를 개발자에게 전송하시겠습니까?\n\n약국명과 에러 정보가 전송됩니다.\n(개인정보는 포함되지 않습니다)')) {
+                return;
+            }
+
+            try {
+                logSendFirebaseBtn.disabled = true;
+                logSendFirebaseBtn.textContent = '전송 중...';
+
+                const result = await window.electronAPI.sendErrorsToFirebase();
+
+                if (result.success) {
+                    if (result.total === 0) {
+                        showToast('전송할 에러 로그가 없습니다.', 'info');
+                    } else {
+                        showToast(`${result.successCount}개의 에러 로그를 전송했습니다.`, 'success');
+                    }
+                } else {
+                    showToast(`전송 실패: ${result.message || result.error}`, 'error');
+                }
+            } catch (error) {
+                showToast('전송 중 오류가 발생했습니다.', 'error');
+                console.error('Failed to send errors to Firebase:', error);
+            } finally {
+                logSendFirebaseBtn.disabled = false;
+                logSendFirebaseBtn.textContent = '오류보고';
             }
         };
     }
