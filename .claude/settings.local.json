@@ -18,7 +18,8 @@
       "Bash(del \"C:\\Users\\BoramATDPS\\Documents\\dev\\electron-file-monitor\\druginfo.js\")",
       "Bash(del \"C:\\Users\\BoramATDPS\\Documents\\dev\\electron-file-monitor\\simpleSecureConfig.js\")",
       "Bash(npm run dist:win:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
