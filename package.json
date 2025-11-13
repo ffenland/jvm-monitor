@@ -1,7 +1,7 @@
 {
   "name": "labelix",
   "productName": "Labelix",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "main.js",
   "description": "약국 전문 라벨 출력 솔루션 - PM 프로그램 연동 약품 라벨 자동화 시스템",
   "author": {
