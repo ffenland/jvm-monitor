@@ -369,17 +369,61 @@ async function migrateTemplatesToDB() {
     try {
         console.log('[Main] Checking template migration...');
 
-        // 이미 템플릿이 DB에 있는지 확인
-        const existingTemplates = dbManager.getAllTemplates();
-        if (existingTemplates.length > 0) {
-            console.log('[Main] Templates already migrated:', existingTemplates.length);
-            return;
-        }
-
-        // templates 폴더의 .lbx 파일 찾기
+        // 올바른 templates 디렉토리 경로
         const templatesDir = app.isPackaged
             ? path.join(process.resourcesPath, 'templates')
             : path.join(__dirname, 'templates');
+
+        // 이미 템플릿이 DB에 있는지 확인
+        const existingTemplates = dbManager.getAllTemplates();
+
+        // 기존 템플릿이 있으면 시스템 템플릿 경로 검증 및 수정
+        if (existingTemplates.length > 0) {
+            console.log('[Main] Templates already exist, validating system template paths...');
+
+            let pathsUpdated = false;
+            const systemTemplates = ['default.lbx', 'simple.lbx'];
+
+            for (const template of existingTemplates) {
+                const fileName = path.basename(template.filePath);
+
+                // 시스템 템플릿인지 확인
+                if (systemTemplates.includes(fileName)) {
+                    const correctPath = path.join(templatesDir, fileName);
+
+                    // 경로가 다르거나 파일이 존재하지 않으면 수정
+                    if (template.filePath !== correctPath || !fs.existsSync(template.filePath)) {
+                        console.log(`[Main] Updating system template path: ${fileName}`);
+                        console.log(`  - Old: ${template.filePath}`);
+                        console.log(`  - New: ${correctPath}`);
+
+                        // DB 경로 업데이트
+                        const updateResult = dbManager.updateTemplate(template.id, {
+                            filePath: correctPath
+                        });
+
+                        if (updateResult.success) {
+                            console.log(`[Main] Updated template path: ${fileName}`);
+                            pathsUpdated = true;
+                        } else {
+                            console.error(`[Main] Failed to update template path: ${fileName}`, updateResult.message);
+                        }
+                    }
+                }
+            }
+
+            if (pathsUpdated) {
+                logger.info('System template paths updated', {
+                    category: 'system',
+                    details: { action: 'path_validation' }
+                });
+            }
+
+            console.log('[Main] Template validation completed');
+            return;
+        }
+
+        // 템플릿이 없으면 새로 추가
         if (!fs.existsSync(templatesDir)) {
             console.log('[Main] Templates directory not found, skipping migration');
             return;

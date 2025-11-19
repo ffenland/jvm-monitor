@@ -1567,15 +1567,16 @@ class DatabaseManager {
      */
     updateTemplate(id, data) {
         try {
-            const { name, description } = data;
+            const { name, description, filePath } = data;
             const stmt = this.db.prepare(`
                 UPDATE label_templates
                 SET name = COALESCE(?, name),
                     description = COALESCE(?, description),
+                    filePath = COALESCE(?, filePath),
                     updatedAt = CURRENT_TIMESTAMP
                 WHERE id = ?
             `);
-            stmt.run(name, description, id);
+            stmt.run(name, description, filePath, id);
             return { success: true };
         } catch (error) {
             logger.error('템플릿 수정 실패', {
