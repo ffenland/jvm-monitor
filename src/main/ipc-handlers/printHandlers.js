@@ -88,9 +88,35 @@ function registerPrintHandlers(dbManager, getMainWindow, loadConfig) {
             // 데이터 가공 - dataProcessor 모듈 사용
             const processedData = processPrescriptionData(prescriptionData);
 
-            // 템플릿 파일 경로
-            const templatesDir = DatabaseManager.getTemplatesDir();
-            const templatePath = path.join(templatesDir, 'prescription_label.lbx');
+            // 템플릿 선택 (우선순위: 환자 > 약품 > 기본)
+            let templatePath = null;
+
+            if (prescriptionData.patientId && prescriptionData.code) {
+                const template = dbManager.getTemplateForPrint(
+                    prescriptionData.patientId,
+                    prescriptionData.code
+                );
+                if (template && fs.existsSync(template.filePath)) {
+                    templatePath = template.filePath;
+                    console.log(`[PrintHandlers] Using template for prescription: ${template.name} (${template.filePath})`);
+                }
+            }
+
+            // 템플릿을 찾지 못한 경우 기본 템플릿 사용
+            if (!templatePath) {
+                const defaultTemplate = dbManager.getDefaultTemplate();
+                if (defaultTemplate && fs.existsSync(defaultTemplate.filePath)) {
+                    templatePath = defaultTemplate.filePath;
+                    console.log(`[PrintHandlers] Using default template: ${defaultTemplate.name}`);
+                } else {
+                    // 최종 폴백
+                    const templatesDir = app.isPackaged
+                        ? path.join(process.resourcesPath, 'templates')
+                        : path.join(__dirname, '../../../templates');
+                    templatePath = path.join(templatesDir, 'default.lbx');
+                    console.log(`[PrintHandlers] Using fallback template: ${templatePath}`);
+                }
+            }
 
             const printData = {
                 templatePath,
@@ -173,14 +199,45 @@ function registerPrintHandlers(dbManager, getMainWindow, loadConfig) {
     // 편집 창에서 출력 요청
     ipcMain.handle('print-from-editor', async (event, printData) => {
         try {
-            const config = loadConfig();
+            let templatePath = null;
 
-            let templatePath = config.templatePath;
+            // 1. 전달받은 templateId가 있으면 해당 템플릿 사용
+            if (printData.templateId) {
+                const template = dbManager.getTemplateById(printData.templateId);
+                if (template && fs.existsSync(template.filePath)) {
+                    templatePath = template.filePath;
+                    console.log(`[PrintHandlers] Using selected template: ${template.name} (${template.filePath})`);
+                }
+            }
 
-            // templatePath가 없거나 존재하지 않는 경우 기본 템플릿 사용
-            if (!templatePath || !fs.existsSync(templatePath)) {
-                const templatesDir = DatabaseManager.getTemplatesDir();
-                templatePath = path.join(templatesDir, 'default.lbx');
+            // 2. templateId가 없으면 우선순위에 따라 조회 (환자 > 약품 > 기본)
+            if (!templatePath && printData.patientId && printData.medicineCode) {
+                const template = dbManager.getTemplateForPrint(printData.patientId, printData.medicineCode);
+                if (template && fs.existsSync(template.filePath)) {
+                    templatePath = template.filePath;
+                    console.log(`[PrintHandlers] Using priority template: ${template.name} (${template.filePath})`);
+                }
+            }
+
+            // 3. 여전히 없으면 config 또는 기본 템플릿 사용
+            if (!templatePath) {
+                const config = loadConfig();
+                templatePath = config.templatePath;
+
+                if (!templatePath || !fs.existsSync(templatePath)) {
+                    const defaultTemplate = dbManager.getDefaultTemplate();
+                    if (defaultTemplate && fs.existsSync(defaultTemplate.filePath)) {
+                        templatePath = defaultTemplate.filePath;
+                        console.log(`[PrintHandlers] Using default template from DB: ${defaultTemplate.name}`);
+                    } else {
+                        // 최종 폴백
+                        const templatesDir = app.isPackaged
+                            ? path.join(process.resourcesPath, 'templates')
+                            : path.join(__dirname, '../../../templates');
+                        templatePath = path.join(templatesDir, 'default.lbx');
+                        console.log(`[PrintHandlers] Using fallback template: ${templatePath}`);
+                    }
+                }
             }
 
             // 약품 정보 업데이트 체크 (SQLite DB 사용)
