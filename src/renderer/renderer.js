@@ -120,7 +120,6 @@ window.addEventListener('DOMContentLoaded', () => {
     const closeBtn = document.querySelector('.close');
     const cancelBtn = document.getElementById('cancel-btn');
     const settingsForm = document.getElementById('settings-form');
-    const templatePathSelect = document.getElementById('template-path');
 
     // 라벨정보 관련 요소
     const labelTemplateInfoBtn = document.getElementById('label-template-info-btn');
@@ -128,13 +127,11 @@ window.addEventListener('DOMContentLoaded', () => {
     const labelInfoClose = document.getElementById('label-info-close');
     const labelInfoOk = document.getElementById('label-info-ok');
     
-    // 템플릿 미리보기 관련 요소
-    const previewTemplateBtn = document.getElementById('preview-template-btn');
-    const templatePreviewDiv = document.getElementById('template-preview');
-    const previewImage = document.getElementById('preview-image');
-    
     // 약품설정 관련 요소
     const medicineBtn = document.getElementById('medicine-btn');
+
+    // 템플릿 관리 관련 요소
+    const templateManagerBtn = document.getElementById('template-manager-btn');
 
     let prescriptions = []; // This will hold the list of prescriptions for the selected date
     let selectedPrescriptionIndex = -1;
@@ -214,7 +211,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
                 let html = `
                     <div style="flex: 1;">
-                        <div><strong>환자: ${data.patientName}</strong> (${data.patientId}) / 접수번호: ${data.receiptNum} / 병원: ${data.hospitalName} / 접수시간: ${formattedTime}</div>
+                        <div>
+                            <strong>환자: <span class="patient-name-link" data-patient-id="${data.patientId}" style="color: #0056b3; cursor: pointer; text-decoration: underline;" title="환자 정보 보기">${data.patientName}</span></strong>
+                            (${data.patientId}) / 접수번호: ${data.receiptNum} / 병원: ${data.hospitalName} / 접수시간: ${formattedTime}
+                        </div>
                         ${dateInfoLine}
                     </div>
                     <span class="delete-icon" data-index="${index}" style="cursor: pointer; font-size: 12.6px; color: #d32f2f; padding: 0 10px; user-select: none;" title="삭제">❌</span>
@@ -341,7 +341,24 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 
     // Event listener for clicking on a prescription item in the list
-    prescriptionListContainer.addEventListener('click', (event) => {
+    prescriptionListContainer.addEventListener('click', async (event) => {
+        // 환자명 링크 클릭 체크
+        const patientNameLink = event.target.closest('.patient-name-link');
+        if (patientNameLink) {
+            event.stopPropagation();
+            const patientId = patientNameLink.dataset.patientId;
+            try {
+                const result = await window.electronAPI.openPatientInfo(patientId);
+                if (!result.success) {
+                    alert('환자 정보 창을 열 수 없습니다: ' + result.error);
+                }
+            } catch (error) {
+                console.error('환자 정보 창 열기 실패:', error);
+                alert('환자 정보 창을 열 수 없습니다');
+            }
+            return;
+        }
+
         // 삭제 아이콘 클릭 체크
         const deleteIcon = event.target.closest('.delete-icon');
         if (deleteIcon) {
@@ -496,57 +513,8 @@ window.addEventListener('DOMContentLoaded', () => {
             if (deleteOriginalFileCheckbox) {
                 deleteOriginalFileCheckbox.checked = currentConfig.deleteOriginalFile || false;
             }
-
-            // 템플릿 선택 상태 업데이트
-            if (currentConfig.templatePath) {
-                // 템플릿 목록이 비어있으면 먼저 로드
-                if (templatePathSelect.options.length === 0) {
-                    await loadTemplates();
-                }
-
-                // 템플릿 선택
-                let templateFound = false;
-                for (let i = 0; i < templatePathSelect.options.length; i++) {
-                    if (templatePathSelect.options[i].value === currentConfig.templatePath) {
-                        templatePathSelect.selectedIndex = i;
-                        templateFound = true;
-                        break;
-                    }
-                }
-
-                // 템플릿을 찾지 못한 경우 기본 템플릿 선택
-                if (!templateFound && templatePathSelect.options.length > 0) {
-                    templatePathSelect.selectedIndex = 0;
-                }
-            } else if (templatePathSelect.options.length > 0) {
-                // 템플릿이 설정되지 않은 경우 첫 번째 템플릿 선택
-                templatePathSelect.selectedIndex = 0;
-            }
         } catch (error) {
             console.error('설정 로드 실패:', error);
-        }
-    }
-    
-    async function loadTemplates() {
-        try {
-            const result = await window.electronAPI.getTemplates();
-            templatePathSelect.innerHTML = '<option value="">템플릿을 선택하세요</option>';
-            
-            if (result.success && result.templates.length > 0) {
-                result.templates.forEach(template => {
-                    const option = document.createElement('option');
-                    option.value = template.path;
-                    option.textContent = template.name;
-                    templatePathSelect.appendChild(option);
-                });
-            }
-            
-            // 현재 설정된 템플릿 선택
-            if (currentConfig.templatePath) {
-                templatePathSelect.value = currentConfig.templatePath;
-            }
-        } catch (error) {
-            console.error('템플릿 목록 로드 실패:', error);
         }
     }
     
@@ -571,27 +539,10 @@ window.addEventListener('DOMContentLoaded', () => {
     // 설정 모달 열기
     settingsBtn.addEventListener('click', async () => {
         await loadConfig();
-        await loadTemplates();
         await loadVersionInfo(); // 버전 정보 로드
         settingsModal.style.display = 'block';
     });
-    
-    // 템플릿 선택 시 필드 확인
-    templatePathSelect.addEventListener('change', async () => {
-        const selectedTemplate = templatePathSelect.value;
-        if (selectedTemplate) {
-            try {
-                const result = await window.electronAPI.checkTemplateFields(selectedTemplate);
-                if (!result.error && result.fields) {
-                } else {
-                    console.error('Failed to check template fields:', result.message);
-                }
-            } catch (error) {
-                console.error('Error checking template:', error);
-            }
-        }
-    });
-    
+
     // 모달 닫기
     closeBtn.addEventListener('click', () => {
         settingsModal.style.display = 'none';
@@ -618,7 +569,6 @@ window.addEventListener('DOMContentLoaded', () => {
         const atcPathInput = document.getElementById('atc-path');
         const deleteOriginalFileCheckbox = document.getElementById('delete-original-file');
         const config = {
-            templatePath: templatePathSelect.value || './templates/default.lbx',
             atcPath: atcPathInput ? atcPathInput.value : 'C:\\ATDPS\\Data',
             deleteOriginalFile: deleteOriginalFileCheckbox ? deleteOriginalFileCheckbox.checked : false
         };
@@ -660,38 +610,6 @@ window.addEventListener('DOMContentLoaded', () => {
     labelInfoOk.addEventListener('click', () => {
         labelInfoModal.style.display = 'none';
     });
-    
-    // 템플릿 미리보기 버튼 이벤트
-    previewTemplateBtn.addEventListener('click', async () => {
-        const templatePath = templatePathSelect.value;
-        if (!templatePath) {
-            alert('템플릿을 먼저 선택해주세요.');
-            return;
-        }
-        
-        // 로딩 표시
-        previewTemplateBtn.disabled = true;
-        previewTemplateBtn.textContent = '로딩...';
-        templatePreviewDiv.style.display = 'none';
-        
-        try {
-            const result = await window.electronAPI.previewTemplate(templatePath);
-            if (result.success && result.data) {
-                // Base64 이미지 표시
-                previewImage.src = `data:image/bmp;base64,${result.data}`;
-                templatePreviewDiv.style.display = 'block';
-            } else {
-                alert(`미리보기 생성 실패: ${result.error || '알 수 없는 오류'}`);
-            }
-        } catch (error) {
-            console.error('미리보기 오류:', error);
-            alert('미리보기 생성 중 오류가 발생했습니다.');
-        } finally {
-            // 버튼 복원
-            previewTemplateBtn.disabled = false;
-            previewTemplateBtn.textContent = '미리보기';
-        }
-    });
 
     // 약품설정 버튼 이벤트 - 새 창 열기로 변경
     medicineBtn.addEventListener('click', async () => {
@@ -718,6 +636,21 @@ window.addEventListener('DOMContentLoaded', () => {
             } catch (error) {
                 console.error('커스텀라벨 창 열기 실패:', error);
                 alert('커스텀라벨 창을 열 수 없습니다');
+            }
+        });
+    }
+
+    // 템플릿 관리 버튼 이벤트
+    if (templateManagerBtn) {
+        templateManagerBtn.addEventListener('click', async () => {
+            try {
+                const result = await window.electronAPI.openTemplateManager();
+                if (!result.success) {
+                    alert('템플릿 관리 창을 열 수 없습니다: ' + result.error);
+                }
+            } catch (error) {
+                console.error('템플릿 관리 창 열기 실패:', error);
+                alert('템플릿 관리 창을 열 수 없습니다');
             }
         });
     }
@@ -792,7 +725,6 @@ window.addEventListener('DOMContentLoaded', () => {
     // 초기 설정 표시 함수 (설정 버튼 클릭 시에만 사용)
     async function showInitialSetup() {
         await loadConfig();
-        await loadTemplates();
         settingsModal.style.display = 'block';
     }
     
@@ -1053,7 +985,6 @@ window.addEventListener('DOMContentLoaded', () => {
         // 설정 모달 자동 열기 (선택사항)
         setTimeout(async () => {
             await loadConfig();
-            await loadTemplates();
             settingsModal.style.display = 'block';
         }, 1000);
     });

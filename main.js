@@ -100,7 +100,7 @@ function createWindow() {
             preload: path.join(__dirname, 'preload.js'), // Using a preload script for security
             contextIsolation: true, // Recommended for security
             nodeIntegration: false, // Recommended for security
-            devTools: false // 개발자 도구 완전 비활성화
+            devTools: false
         }
     });
 

@@ -31,7 +31,7 @@ function registerMedicineHandlers(dbManager, getMainWindow) {
                 webPreferences: {
                     nodeIntegration: true,
                     contextIsolation: false,
-                    devTools: false // 개발자 도구 완전 비활성화
+                    devTools: false
                 }
             });
 

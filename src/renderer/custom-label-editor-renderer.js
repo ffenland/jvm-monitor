@@ -8,8 +8,48 @@ let isSpecialDosage = false;
 let selectedMealRelation = null;
 let userModifiedDailyDose = false;
 
+// 템플릿 목록 로드
+async function loadTemplates() {
+    try {
+        const templateSelect = document.getElementById('templateSelect');
+        templateSelect.innerHTML = '<option value="">로딩 중...</option>';
+
+        // 모든 템플릿 가져오기
+        const result = await ipcRenderer.invoke('get-all-templates');
+
+        if (result.success && result.templates) {
+            templateSelect.innerHTML = '';
+
+            // 기본 템플릿을 먼저 선택
+            const defaultTemplate = result.templates.find(t => t.isDefault);
+
+            result.templates.forEach(template => {
+                const option = document.createElement('option');
+                option.value = template.id;
+                option.textContent = template.name + (template.isDefault ? ' (시스템 기본)' : '');
+
+                // 기본 템플릿 선택
+                if (template.isDefault) {
+                    option.selected = true;
+                }
+
+                templateSelect.appendChild(option);
+            });
+        } else {
+            templateSelect.innerHTML = '<option value="">템플릿을 불러올 수 없습니다</option>';
+        }
+    } catch (error) {
+        console.error('템플릿 로드 실패:', error);
+        const templateSelect = document.getElementById('templateSelect');
+        templateSelect.innerHTML = '<option value="">템플릿 로드 실패</option>';
+    }
+}
+
 // 페이지 로드 시 초기화
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // 템플릿 목록 로드
+    await loadTemplates();
+
     setupEventListeners();
     initializeDatePicker();
 
@@ -429,6 +469,23 @@ async function printLabel() {
     const autoPrintValue = autoPrintCheckbox ? autoPrintCheckbox.checked : false;
     const shouldUpdateAutoPrint = selectedMedicineInfo && (autoPrintValue !== (selectedMedicineInfo.autoPrint === 1));
 
+    // 선택된 템플릿 ID 가져오기
+    const selectedTemplateId = document.getElementById('templateSelect').value;
+
+    // 약품 템플릿 저장 처리 (환자 정보가 없으므로 약품 템플릿만)
+    const saveMedicineTemplateCheckbox = document.getElementById('saveMedicineTemplate');
+    if (saveMedicineTemplateCheckbox && saveMedicineTemplateCheckbox.checked && selectedTemplateId && selectedMedicineInfo) {
+        try {
+            await ipcRenderer.invoke('set-medicine-template',
+                selectedMedicineInfo.bohcode || selectedMedicineInfo.yakjung_code,
+                parseInt(selectedTemplateId)
+            );
+        } catch (error) {
+            console.error('약품 템플릿 저장 실패:', error);
+            // 에러가 발생해도 출력은 진행
+        }
+    }
+
     const printData = {
         patientName: document.getElementById('patientName').value,
         name: medicineNameValue,
@@ -452,7 +509,9 @@ async function printLabel() {
         customUsage: customUsageValue,
         updateAutoPrint: shouldUpdateAutoPrint,
         autoPrint: autoPrintValue,
-        medicineCode: selectedMedicineInfo?.bohcode || selectedMedicineInfo?.yakjung_code || null
+        medicineCode: selectedMedicineInfo?.bohcode || selectedMedicineInfo?.yakjung_code || null,
+        // 선택된 템플릿 ID 추가
+        templateId: selectedTemplateId ? parseInt(selectedTemplateId) : null
     };
 
     // Fire-and-forget: 메인 프로세스에 출력 요청을 보내고 바로 창 닫기

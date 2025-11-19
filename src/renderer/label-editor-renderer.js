@@ -13,22 +13,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     // URL 파라미터에서 데이터 받기
     const params = new URLSearchParams(window.location.search);
     const dataStr = params.get('data');
-    
+
     if (dataStr) {
         try {
             const data = JSON.parse(decodeURIComponent(dataStr));
             prescriptionData = data.prescription;
             medicineInfo = data.medicineInfo;
-            
+
+            // 템플릿 목록 로드
+            await loadTemplates();
+
             // 화면에 정보 표시
             displayInfo();
-            
+
             // 초기 용법 설정
             initializeDosage();
-            
+
             // 이벤트 리스너 설정
             setupEventListeners();
-            
+
             // Flatpickr 날짜 선택기 초기화
             initializeDatePicker();
         } catch (error) {
@@ -36,6 +39,47 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 });
+
+// 템플릿 목록 로드
+async function loadTemplates() {
+    try {
+        const templateSelect = document.getElementById('templateSelect');
+        templateSelect.innerHTML = '<option value="">로딩 중...</option>';
+
+        // 모든 템플릿 가져오기
+        const result = await ipcRenderer.invoke('get-all-templates');
+
+        if (result.success && result.templates) {
+            templateSelect.innerHTML = '';
+
+            // 현재 처방에 적용될 템플릿 가져오기 (우선순위: 환자 > 약품 > 기본)
+            const templateForPrint = await ipcRenderer.invoke('get-template-for-print',
+                prescriptionData.patientId,
+                prescriptionData.code
+            );
+
+            result.templates.forEach(template => {
+                const option = document.createElement('option');
+                option.value = template.id;
+                option.textContent = template.name + (template.isDefault ? ' (시스템 기본)' : '');
+
+                // 현재 적용될 템플릿을 선택
+                if (templateForPrint.success && templateForPrint.template &&
+                    templateForPrint.template.id === template.id) {
+                    option.selected = true;
+                }
+
+                templateSelect.appendChild(option);
+            });
+        } else {
+            templateSelect.innerHTML = '<option value="">템플릿을 불러올 수 없습니다</option>';
+        }
+    } catch (error) {
+        console.error('템플릿 로드 실패:', error);
+        const templateSelect = document.getElementById('templateSelect');
+        templateSelect.innerHTML = '<option value="">템플릿 로드 실패</option>';
+    }
+}
 
 // 정보 표시
 function displayInfo() {
@@ -379,13 +423,43 @@ function updateDosageResult() {
 async function printLabel() {
     const dosageText = document.getElementById('dosageResult').textContent;
     const dailyDose = document.getElementById('dailyDose').value;
-    
+
     // 복용시간 선택 또는 하루 복용횟수 입력 시 출력 허용
     if (dosageText === '-' && !dailyDose) {
         alert('복용시간을 선택하거나 하루 복용횟수를 입력해주세요.');
         return;
     }
-    
+
+    // 환자 템플릿 저장 처리
+    const savePatientTemplateCheckbox = document.getElementById('savePatientTemplate');
+    const saveMedicineTemplateCheckbox = document.getElementById('saveMedicineTemplate');
+    const selectedTemplateId = document.getElementById('templateSelect').value;
+
+    if (savePatientTemplateCheckbox && savePatientTemplateCheckbox.checked && selectedTemplateId) {
+        try {
+            await ipcRenderer.invoke('set-patient-template',
+                prescriptionData.patientId,
+                parseInt(selectedTemplateId)
+            );
+        } catch (error) {
+            console.error('환자 템플릿 저장 실패:', error);
+            // 에러가 발생해도 출력은 진행
+        }
+    }
+
+    // 약품 템플릿 저장 처리
+    if (saveMedicineTemplateCheckbox && saveMedicineTemplateCheckbox.checked && selectedTemplateId) {
+        try {
+            await ipcRenderer.invoke('set-medicine-template',
+                prescriptionData.code,
+                parseInt(selectedTemplateId)
+            );
+        } catch (error) {
+            console.error('약품 템플릿 저장 실패:', error);
+            // 에러가 발생해도 출력은 진행
+        }
+    }
+
     // input 필드에서 수정된 값 가져오기
     const medicineNameValue = document.getElementById('medicineName').value;
     const medicineTypeValue = document.getElementById('medicineType').value;
@@ -434,7 +508,9 @@ async function printLabel() {
         // 자동출력 저장
         updateAutoPrint: shouldUpdateAutoPrint,
         autoPrint: autoPrintValue,
-        medicineCode: prescriptionData.code
+        medicineCode: prescriptionData.code,
+        // 선택된 템플릿 ID 추가
+        templateId: selectedTemplateId ? parseInt(selectedTemplateId) : null
     };
 
     // Fire-and-forget: 메인 프로세스에 출력 요청을 보내고 바로 창 닫기

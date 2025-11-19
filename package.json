@@ -1,7 +1,7 @@
 {
   "name": "labelix",
   "productName": "Labelix",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "main": "main.js",
   "description": "약국 전문 라벨 출력 솔루션 - PM 프로그램 연동 약품 라벨 자동화 시스템",
   "author": {
@@ -10,9 +10,9 @@
   },
   "license": "UNLICENSED",
   "private": true,
-  "homepage":"https://blog.naver.com/cleareach",
+  "homepage": "https://blog.naver.com/cleareach",
   "bugs": {
-    "url":"https://blog.naver.com/cleareach",
+    "url": "https://blog.naver.com/cleareach",
     "email": "cleareach@naver.com"
   },
   "scripts": {

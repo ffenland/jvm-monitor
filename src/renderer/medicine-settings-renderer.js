@@ -344,6 +344,16 @@ function renderMedicineDetail(medicine) {
         </div>
 
         <div class="form-group">
+            <label>기본 템플릿:</label>
+            <select id="edit-template" style="width: 100%; padding: 8px; font-size: 14px; border: 1px solid #ddd; border-radius: 4px;">
+                <option value="">로딩 중...</option>
+            </select>
+            <small style="color: #666; font-size: 12px;">
+                이 약품의 라벨 출력 시 사용할 기본 템플릿 (설정 안함 시 시스템 기본 템플릿 사용)
+            </small>
+        </div>
+
+        <div class="form-group">
             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                 <input type="checkbox" id="edit-auto-print" ${medicine.autoPrint ? 'checked' : ''} style="width: auto; margin: 0;">
                 <span>자동 인쇄 설정</span>
@@ -406,8 +416,47 @@ function renderMedicineDetail(medicine) {
     document.getElementById('search-medicine-btn').addEventListener('click', searchMedicine);
     document.getElementById('delete-medicine-btn').addEventListener('click', deleteMedicine);
 
+    // 템플릿 목록 로드
+    loadTemplates(medicine.templateId);
+
     // 우선순위 초기화 및 이벤트 리스너
     initializePriorityUI(medicine.usage_priority || '1324');
+}
+
+/**
+ * 템플릿 목록 로드
+ */
+async function loadTemplates(selectedTemplateId) {
+    try {
+        const templateSelect = document.getElementById('edit-template');
+        templateSelect.innerHTML = '<option value="">로딩 중...</option>';
+
+        // 모든 템플릿 가져오기
+        const result = await ipcRenderer.invoke('get-all-templates');
+
+        if (result.success && result.templates) {
+            templateSelect.innerHTML = '<option value="">설정 안함 (시스템 기본 템플릿 사용)</option>';
+
+            result.templates.forEach(template => {
+                const option = document.createElement('option');
+                option.value = template.id;
+                option.textContent = template.name + (template.isDefault ? ' (시스템 기본)' : '');
+
+                // 현재 약품에 설정된 템플릿 선택
+                if (selectedTemplateId && template.id === selectedTemplateId) {
+                    option.selected = true;
+                }
+
+                templateSelect.appendChild(option);
+            });
+        } else {
+            templateSelect.innerHTML = '<option value="">템플릿을 불러올 수 없습니다</option>';
+        }
+    } catch (error) {
+        console.error('템플릿 로드 실패:', error);
+        const templateSelect = document.getElementById('edit-template');
+        templateSelect.innerHTML = '<option value="">템플릿 로드 실패</option>';
+    }
 }
 
 /**
@@ -422,6 +471,9 @@ async function saveMedicine() {
         return;
     }
 
+    // 선택된 템플릿 ID 가져오기
+    const selectedTemplateId = document.getElementById('edit-template').value;
+
     const updatedData = {
         yakjung_code: selectedMedicine.yakjung_code,
         drug_name: document.getElementById('edit-drug-name').value.trim(),
@@ -434,6 +486,7 @@ async function saveMedicine() {
         unit: document.getElementById('edit-unit').value.trim(),
         custom_usage: document.getElementById('edit-custom-usage').value.trim() || null,
         autoPrint: document.getElementById('edit-auto-print').checked ? 1 : 0,
+        templateId: selectedTemplateId ? parseInt(selectedTemplateId) : null,
         // usage_priority는 savePriority 함수에서 별도로 처리하므로 제외
         api_fetched: 1  // 수동으로 입력했으므로 완성으로 표시
     };

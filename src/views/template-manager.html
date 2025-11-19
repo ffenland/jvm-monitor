@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>템플릿 관리</title>
     <style>
@@ -322,6 +323,27 @@
         .toast.error {
             background: #dc3545;
         }
+
+        /* 미리보기 모달 */
+        .preview-modal-content {
+            max-width: 800px;
+            width: 90%;
+        }
+
+        .preview-image {
+            width: 100%;
+            max-height: 70vh;
+            object-fit: contain;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #f9f9f9;
+        }
+
+        .preview-loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
     </style>
 </head>
 <body>
@@ -364,6 +386,21 @@
                     <button type="submit" class="btn btn-primary">저장</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- 미리보기 모달 -->
+    <div class="modal" id="previewModal">
+        <div class="modal-content preview-modal-content">
+            <div class="modal-header">
+                <h2>템플릿 미리보기</h2>
+            </div>
+            <div id="previewContent">
+                <div class="preview-loading">미리보기를 생성 중입니다...</div>
+            </div>
+            <div class="modal-buttons">
+                <button type="button" class="btn btn-secondary" id="closePreviewBtn">닫기</button>
+            </div>
         </div>
     </div>
 

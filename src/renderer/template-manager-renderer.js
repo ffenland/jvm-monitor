@@ -18,6 +18,9 @@ const templateDescription = document.getElementById('templateDescription');
 const selectFileBtn = document.getElementById('selectFileBtn');
 const cancelBtn = document.getElementById('cancelBtn');
 const toast = document.getElementById('toast');
+const previewModal = document.getElementById('previewModal');
+const previewContent = document.getElementById('previewContent');
+const closePreviewBtn = document.getElementById('closePreviewBtn');
 
 // 초기 로드
 document.addEventListener('DOMContentLoaded', async () => {
@@ -28,11 +31,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     selectFileBtn.addEventListener('click', selectFile);
     cancelBtn.addEventListener('click', closeModal);
     templateForm.addEventListener('submit', handleSubmit);
+    closePreviewBtn.addEventListener('click', closePreviewModal);
 
     // 모달 외부 클릭 시 닫기
     templateModal.addEventListener('click', (e) => {
         if (e.target === templateModal) {
             closeModal();
+        }
+    });
+
+    previewModal.addEventListener('click', (e) => {
+        if (e.target === previewModal) {
+            closePreviewModal();
         }
     });
 });
@@ -76,25 +86,62 @@ function renderTemplates() {
         return;
     }
 
-    templateList.innerHTML = templates.map(template => `
-        <div class="template-item ${template.isDefault ? 'default' : ''}" data-id="${template.id}">
-            <div class="template-icon">${template.isDefault ? '⭐' : '📄'}</div>
-            <div class="template-info">
-                <div class="template-name">
-                    ${template.name}
-                    ${template.isDefault ? '<span class="default-badge">기본</span>' : ''}
+    templateList.innerHTML = templates.map(template => {
+        // 시스템 제공 템플릿 판별 (default.lbx, simple.lbx)
+        const fileName = template.filePath.split('\\').pop().split('/').pop();
+        const isSystemProvided = fileName === 'default.lbx' || fileName === 'simple.lbx';
+
+        return `
+            <div class="template-item ${template.isDefault ? 'default' : ''}" data-id="${template.id}">
+                <div class="template-icon">${template.isDefault ? '⭐' : '📄'}</div>
+                <div class="template-info">
+                    <div class="template-name">
+                        ${template.name}
+                        ${template.isDefault ? '<span class="default-badge">현재 기본 템플릿</span>' : ''}
+                    </div>
+                    <div class="template-path">${template.filePath}</div>
+                    ${template.description ? `<div class="template-description">${template.description}</div>` : ''}
                 </div>
-                <div class="template-path">${template.filePath}</div>
-                ${template.description ? `<div class="template-description">${template.description}</div>` : ''}
+                <div class="template-actions">
+                    <button class="btn btn-preview" data-action="preview" data-template-id="${template.id}">미리보기</button>
+                    <button class="btn btn-edit" data-action="edit" data-template-id="${template.id}">수정</button>
+                    ${!template.isDefault ? `<button class="btn btn-default" data-action="setDefault" data-template-id="${template.id}">기본 설정</button>` : ''}
+                    <button class="btn btn-delete" data-action="delete" data-template-id="${template.id}" ${isSystemProvided ? 'disabled' : ''}>삭제</button>
+                </div>
             </div>
-            <div class="template-actions">
-                <button class="btn btn-preview" onclick="previewTemplate(${template.id})">미리보기</button>
-                <button class="btn btn-edit" onclick="editTemplate(${template.id})">수정</button>
-                ${!template.isDefault ? `<button class="btn btn-default" onclick="setDefault(${template.id})">기본 설정</button>` : ''}
-                <button class="btn btn-delete" onclick="deleteTemplate(${template.id})" ${template.isDefault ? 'disabled' : ''}>삭제</button>
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
+
+    // 이벤트 위임을 사용하여 버튼 클릭 처리
+    attachTemplateActionListeners();
+}
+
+/**
+ * 템플릿 액션 버튼에 이벤트 리스너 연결
+ */
+function attachTemplateActionListeners() {
+    templateList.addEventListener('click', (e) => {
+        const button = e.target.closest('button[data-action]');
+        if (!button || button.disabled) return;
+
+        const action = button.dataset.action;
+        const templateId = parseInt(button.dataset.templateId);
+
+        switch (action) {
+            case 'preview':
+                previewTemplate(templateId);
+                break;
+            case 'edit':
+                editTemplate(templateId);
+                break;
+            case 'setDefault':
+                setDefault(templateId);
+                break;
+            case 'delete':
+                deleteTemplate(templateId);
+                break;
+        }
+    });
 }
 
 /**
@@ -113,7 +160,7 @@ function openAddModal() {
 /**
  * 템플릿 수정 모달 열기
  */
-window.editTemplate = async function(id) {
+async function editTemplate(id) {
     editingTemplateId = id;
     const template = templates.find(t => t.id === id);
 
@@ -215,25 +262,44 @@ async function handleSubmit(e) {
 /**
  * 템플릿 미리보기
  */
-window.previewTemplate = async function(id) {
+async function previewTemplate(id) {
     const template = templates.find(t => t.id === id);
     if (!template) return;
 
     try {
+        // 미리보기 모달 열기
+        previewContent.innerHTML = '<div class="preview-loading">미리보기를 생성 중입니다...</div>';
+        previewModal.classList.add('active');
+
+        // 미리보기 생성
         const result = await window.electronAPI.previewTemplate(template.filePath);
-        if (!result.success) {
-            showToast('미리보기를 불러올 수 없습니다.', 'error');
+
+        if (result.success && result.data) {
+            // Base64 이미지 표시
+            previewContent.innerHTML = `<img src="data:image/bmp;base64,${result.data}" class="preview-image" alt="템플릿 미리보기">`;
+        } else {
+            previewContent.innerHTML = '<div class="preview-loading" style="color: #dc3545;">미리보기 생성에 실패했습니다.</div>';
+            showToast(result.error || '미리보기를 불러올 수 없습니다.', 'error');
         }
     } catch (error) {
         console.error('Failed to preview template:', error);
+        previewContent.innerHTML = '<div class="preview-loading" style="color: #dc3545;">미리보기 생성 중 오류가 발생했습니다.</div>';
         showToast('미리보기를 불러올 수 없습니다.', 'error');
     }
 };
 
 /**
+ * 미리보기 모달 닫기
+ */
+function closePreviewModal() {
+    previewModal.classList.remove('active');
+    previewContent.innerHTML = '<div class="preview-loading">미리보기를 생성 중입니다...</div>';
+}
+
+/**
  * 기본 템플릿 설정
  */
-window.setDefault = async function(id) {
+async function setDefault(id) {
     try {
         const result = await window.electronAPI.setDefaultTemplate(id);
 
@@ -247,14 +313,23 @@ window.setDefault = async function(id) {
         console.error('Failed to set default template:', error);
         showToast('설정에 실패했습니다.', 'error');
     }
-};
+}
 
 /**
  * 템플릿 삭제
  */
-window.deleteTemplate = async function(id) {
+async function deleteTemplate(id) {
     const template = templates.find(t => t.id === id);
     if (!template) return;
+
+    // 시스템 제공 템플릿 판별 (default.lbx, simple.lbx)
+    const fileName = template.filePath.split('\\').pop().split('/').pop();
+    const isSystemProvided = fileName === 'default.lbx' || fileName === 'simple.lbx';
+
+    if (isSystemProvided) {
+        showToast('시스템 제공 템플릿은 삭제할 수 없습니다.', 'error');
+        return;
+    }
 
     if (template.isDefault) {
         showToast('기본 템플릿은 삭제할 수 없습니다.', 'error');

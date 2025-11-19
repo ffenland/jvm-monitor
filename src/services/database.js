@@ -85,7 +85,8 @@ class DatabaseManager {
         this.db.pragma('temp_store = MEMORY');
         this.db.pragma('foreign_keys = ON');
 
-        this.initDatabase();
+        // DB 마이그레이션 및 초기화
+        this.runDatabaseMigrations();
         this.prepareStatements();
     }
 
@@ -104,7 +105,123 @@ class DatabaseManager {
         return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
     }
 
-    initDatabase() {
+    /**
+     * DB 마이그레이션 및 초기화
+     */
+    runDatabaseMigrations() {
+        const CURRENT_SCHEMA_VERSION = 2;
+        const currentVersion = this.db.pragma('user_version', { simple: true });
+
+        console.log(`[DatabaseManager] Current DB version: ${currentVersion}`);
+
+        if (currentVersion === 0) {
+            // 버전 0: 새 DB 또는 기존 DB (버전 관리 안 했던 것)
+            const tablesExist = this.db.prepare(`
+                SELECT COUNT(*) as count FROM sqlite_master
+                WHERE type='table' AND name='medicines'
+            `).get();
+
+            if (tablesExist.count > 0) {
+                // 기존 DB: 테이블 있음, 마이그레이션 필요
+                console.log('[DatabaseManager] Existing DB detected, running migrations from v0...');
+                this.migrateFromV0ToV1();
+                this.migrateFromV1ToV2();
+            } else {
+                // 완전히 새로운 DB: 최신 스키마로 생성
+                console.log('[DatabaseManager] New DB detected, creating all tables with latest schema...');
+                this.createAllTables();
+            }
+        } else if (currentVersion < CURRENT_SCHEMA_VERSION) {
+            // 부분 마이그레이션 실행
+            console.log(`[DatabaseManager] Upgrading DB from v${currentVersion} to v${CURRENT_SCHEMA_VERSION}...`);
+
+            if (currentVersion < 1) {
+                this.migrateFromV0ToV1();
+            }
+            if (currentVersion < 2) {
+                this.migrateFromV1ToV2();
+            }
+        } else {
+            console.log('[DatabaseManager] DB is up to date.');
+        }
+
+        // 최종 버전 설정
+        this.db.pragma(`user_version = ${CURRENT_SCHEMA_VERSION}`);
+        console.log(`[DatabaseManager] DB version set to ${CURRENT_SCHEMA_VERSION}`);
+    }
+
+    /**
+     * v0 -> v1 마이그레이션
+     * 템플릿 시스템 추가
+     */
+    migrateFromV0ToV1() {
+        console.log('[Migration] Running v0 -> v1 migration...');
+
+        // label_templates 테이블 생성
+        this.db.exec(`
+            CREATE TABLE IF NOT EXISTS label_templates (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                filePath TEXT NOT NULL UNIQUE,
+                description TEXT,
+                isDefault INTEGER DEFAULT 0,
+                createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+                updatedAt TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // patient_template_preferences 테이블 생성
+        this.db.exec(`
+            CREATE TABLE IF NOT EXISTS patient_template_preferences (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                patientId TEXT NOT NULL UNIQUE,
+                templateId INTEGER NOT NULL,
+                createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+                updatedAt TEXT DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (patientId) REFERENCES patients(patientId) ON DELETE CASCADE,
+                FOREIGN KEY (templateId) REFERENCES label_templates(id) ON DELETE CASCADE
+            )
+        `);
+
+        // 인덱스 추가
+        this.db.exec(`
+            CREATE INDEX IF NOT EXISTS idx_label_templates_isDefault ON label_templates(isDefault);
+            CREATE INDEX IF NOT EXISTS idx_patient_template_preferences_patientId ON patient_template_preferences(patientId);
+        `);
+
+        console.log('[Migration] v0 -> v1 migration completed.');
+    }
+
+    /**
+     * v1 -> v2 마이그레이션
+     * medicines 테이블에 templateId 컬럼 추가
+     */
+    migrateFromV1ToV2() {
+        console.log('[Migration] Running v1 -> v2 migration...');
+
+        // templateId 컬럼이 이미 있는지 확인
+        const columnExists = this.db.prepare(`
+            SELECT COUNT(*) as count FROM pragma_table_info('medicines')
+            WHERE name='templateId'
+        `).get();
+
+        if (columnExists.count === 0) {
+            // 컬럼이 없으면 추가
+            this.db.exec('ALTER TABLE medicines ADD COLUMN templateId INTEGER');
+            console.log('[Migration] Added templateId column to medicines table');
+        } else {
+            console.log('[Migration] templateId column already exists, skipping');
+        }
+
+        console.log('[Migration] v1 -> v2 migration completed.');
+    }
+
+    /**
+     * 최신 스키마로 모든 테이블 생성 (새 DB용)
+     */
+    createAllTables() {
+        console.log('[DatabaseManager] Creating all tables with latest schema...');
+
         // 1. patients 테이블 (환자)
         this.db.exec(`
             CREATE TABLE IF NOT EXISTS patients (
@@ -137,7 +254,7 @@ class DatabaseManager {
             )
         `);
 
-        // 3. medicines 테이블 (약품 - yakjung_code 기준)
+        // 3. medicines 테이블 (약품 - yakjung_code 기준) - templateId 포함
         this.db.exec(`
             CREATE TABLE IF NOT EXISTS medicines (
                 yakjung_code TEXT PRIMARY KEY,
@@ -153,6 +270,7 @@ class DatabaseManager {
                 custom_usage TEXT,
                 usage_priority TEXT DEFAULT '1324',
                 autoPrint INTEGER DEFAULT 0,
+                templateId INTEGER,
                 api_fetched INTEGER DEFAULT 0,
                 createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
                 updatedAt TEXT DEFAULT CURRENT_TIMESTAMP
@@ -288,17 +406,7 @@ class DatabaseManager {
             CREATE INDEX IF NOT EXISTS idx_patient_template_preferences_patientId ON patient_template_preferences(patientId);
         `);
 
-        // medicines 테이블에 templateId 컬럼 추가 (이미 있으면 무시)
-        try {
-            this.db.exec(`
-                ALTER TABLE medicines ADD COLUMN templateId INTEGER;
-            `);
-        } catch (error) {
-            // 컬럼이 이미 존재하면 에러 무시
-            if (!error.message.includes('duplicate column name')) {
-                console.error('Failed to add templateId column to medicines:', error);
-            }
-        }
+        console.log('[DatabaseManager] All tables created successfully.');
     }
 
     prepareStatements() {
@@ -674,6 +782,7 @@ class DatabaseManager {
                 unit = ?,
                 custom_usage = ?,
                 autoPrint = ?,
+                templateId = ?,
                 api_fetched = 1,
                 updatedAt = CURRENT_TIMESTAMP
             WHERE yakjung_code = ?
@@ -690,6 +799,7 @@ class DatabaseManager {
             medicineData.unit || '회',
             medicineData.custom_usage || null,
             medicineData.autoPrint !== undefined ? medicineData.autoPrint : 0,
+            medicineData.templateId !== undefined ? medicineData.templateId : null,
             yakjungCode
         );
 

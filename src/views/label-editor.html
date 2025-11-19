@@ -2,9 +2,10 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data:;">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>라벨 편집</title>
-    
+
     <!-- Flatpickr CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     
@@ -263,6 +264,46 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* 툴팁 스타일 */
+        .checkbox-with-tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .checkbox-with-tooltip .tooltip {
+            visibility: hidden;
+            width: 280px;
+            background-color: #333;
+            color: #fff;
+            text-align: left;
+            border-radius: 6px;
+            padding: 8px 10px;
+            position: absolute;
+            z-index: 1000;
+            bottom: 125%;
+            left: 0;
+            font-size: 11px;
+            line-height: 1.4;
+            opacity: 0;
+            transition: opacity 0.3s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .checkbox-with-tooltip .tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 20px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+
+        .checkbox-with-tooltip:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -279,7 +320,27 @@
                 <input type="text" id="receiptDate" value="" placeholder="날짜 선택">
             </div>
         </div>
-        
+
+        <!-- 템플릿 선택 -->
+        <div class="form-group">
+            <label>라벨 템플릿</label>
+            <select id="templateSelect" style="width: 100%; padding: 5px 8px; border: 1px solid #ddd; border-radius: 3px; font-size: 13px;">
+                <option value="">로딩 중...</option>
+            </select>
+            <div style="display: flex; gap: 15px; margin-top: 3px;">
+                <label class="checkbox-with-tooltip" style="font-size: 10px; display: flex; align-items: center; cursor: pointer;">
+                    <input type="checkbox" id="savePatientTemplate" style="margin-right: 3px; width: 13px; height: 13px;">
+                    <span>이 환자의 기본 템플릿으로 저장</span>
+                    <span class="tooltip">체크 시, 이 환자의 모든 약품 라벨 출력 시 선택한 템플릿이 우선 적용됩니다. (약품별 템플릿보다 우선순위가 높음)</span>
+                </label>
+                <label class="checkbox-with-tooltip" style="font-size: 10px; display: flex; align-items: center; cursor: pointer;">
+                    <input type="checkbox" id="saveMedicineTemplate" style="margin-right: 3px; width: 13px; height: 13px;">
+                    <span>이 약품의 기본 템플릿으로 저장</span>
+                    <span class="tooltip">체크 시, 이 약품의 라벨 출력 시 항상 선택한 템플릿이 사용됩니다. (환자 템플릿이 없을 때 적용)</span>
+                </label>
+            </div>
+        </div>
+
         <div class="section-divider"></div>
 
         <!-- 약품 정보: 약품명, 단위 (한 줄) -->
