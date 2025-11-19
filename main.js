@@ -11,6 +11,7 @@ const { registerAllHandlers } = require('./src/main/ipc-handlers');
 const { checkLicenseOnStartup } = require('./src/services/authService');
 const { registerAuthHandlers } = require('./src/ipc/authHandlers');
 const { registerUpdateHandlers } = require('./src/ipc/updateHandlers');
+const { registerTemplateHandlers } = require('./src/main/ipc-handlers/templateHandlers');
 const { checkVersion } = require('./src/services/versionService');
 const { getKSTDateString } = require('./src/utils/dateUtils');
 let monitorPath = null; // Will be set from DB config (no hardcoded default value)
@@ -361,6 +362,64 @@ function restartFileWatcher(newPath) {
 }
 
 
+/**
+ * 기존 템플릿 파일을 DB로 마이그레이션
+ */
+async function migrateTemplatesToDB() {
+    try {
+        console.log('[Main] Checking template migration...');
+
+        // 이미 템플릿이 DB에 있는지 확인
+        const existingTemplates = dbManager.getAllTemplates();
+        if (existingTemplates.length > 0) {
+            console.log('[Main] Templates already migrated:', existingTemplates.length);
+            return;
+        }
+
+        // templates 폴더의 .lbx 파일 찾기
+        const templatesDir = path.join(__dirname, 'templates');
+        if (!fs.existsSync(templatesDir)) {
+            console.log('[Main] Templates directory not found, skipping migration');
+            return;
+        }
+
+        const files = fs.readdirSync(templatesDir).filter(f => f.endsWith('.lbx'));
+        console.log('[Main] Found template files:', files);
+
+        // 각 템플릿 파일을 DB에 추가
+        for (let i = 0; i < files.length; i++) {
+            const fileName = files[i];
+            const filePath = path.join(templatesDir, fileName);
+            const name = path.basename(fileName, '.lbx');
+
+            const result = dbManager.addTemplate(name, filePath, '시스템 기본 템플릿');
+
+            if (result.success) {
+                console.log(`[Main] Migrated template: ${name} (ID: ${result.id})`);
+
+                // 첫 번째 템플릿을 기본 템플릿으로 설정
+                if (i === 0) {
+                    dbManager.setDefaultTemplate(result.id);
+                    console.log(`[Main] Set default template: ${name}`);
+                }
+            } else {
+                console.error(`[Main] Failed to migrate template ${name}:`, result.message);
+            }
+        }
+
+        logger.info('Template migration completed', {
+            category: 'system',
+            details: { templateCount: files.length }
+        });
+    } catch (error) {
+        console.error('[Main] Template migration failed:', error);
+        logger.error('Template migration failed', {
+            category: 'system',
+            error: error
+        });
+    }
+}
+
 app.whenReady().then(async () => {
     // ========== 1. 데이터베이스 초기화 (최우선!) ==========
     console.log('[Main] Initializing database...');
@@ -371,6 +430,9 @@ app.whenReady().then(async () => {
     logger.cleanupOldLogs();
     logger.info('Application started', { category: 'system' });
 
+    // ========== 1-2. 템플릿 마이그레이션 ==========
+    await migrateTemplatesToDB();
+
     // ========== 2. DB에서 설정 로드 (monitorPath 업데이트) ==========
     console.log('[Main] Loading config from database...');
     const config = loadConfig();
@@ -379,6 +441,7 @@ app.whenReady().then(async () => {
     // ========== 3. IPC 핸들러 등록 ==========
     registerAuthHandlers(dbManager);
     registerUpdateHandlers();
+    registerTemplateHandlers(dbManager);
 
     // 인증 성공 이벤트 리스너
     ipcMain.on('auth:success', () => {
@@ -926,6 +989,76 @@ ipcMain.handle('delete-all-app-logs', async () => {
             error: error
         });
         return { success: false, error: error.message };
+    }
+});
+
+/**
+ * 앱 버전 정보 가져오기
+ */
+ipcMain.handle('get-app-version', async () => {
+    const packageJson = require('./package.json');
+    return packageJson.version;
+});
+
+/**
+ * 최신 버전 정보 가져오기 (Firestore에서 조회)
+ */
+ipcMain.handle('get-latest-version', async () => {
+    try {
+        // global.versionInfo가 있으면 사용 (프로그램 시작 시 Firestore에서 가져온 정보)
+        if (global.versionInfo && global.versionInfo.latestVersion) {
+            console.log('[Main] Returning latest version from global:', global.versionInfo.latestVersion);
+            return global.versionInfo.latestVersion;
+        }
+
+        // global에 없으면 versionService로 다시 조회
+        const { getVersionConfig } = require('./src/services/versionService');
+        const versionConfig = await getVersionConfig();
+
+        if (versionConfig && versionConfig.latestVersion) {
+            console.log('[Main] Returning latest version from Firestore:', versionConfig.latestVersion);
+            return versionConfig.latestVersion;
+        }
+
+        // Firestore에 latestVersion이 없으면 minRequiredVersion 사용
+        if (versionConfig && versionConfig.minRequiredVersion) {
+            console.log('[Main] Using minRequiredVersion as latest:', versionConfig.minRequiredVersion);
+            return versionConfig.minRequiredVersion;
+        }
+
+        console.log('[Main] No version info available');
+        return null;
+    } catch (error) {
+        console.error('[Main] Failed to get latest version:', error);
+        return null;
+    }
+});
+
+/**
+ * 다운로드 URL 가져오기 (Firestore에서 조회)
+ */
+ipcMain.handle('get-download-url', async () => {
+    try {
+        // global.versionInfo가 있으면 사용
+        if (global.versionInfo && global.versionInfo.downloadUrl) {
+            console.log('[Main] Returning download URL from global:', global.versionInfo.downloadUrl);
+            return global.versionInfo.downloadUrl;
+        }
+
+        // global에 없으면 versionService로 다시 조회
+        const { getVersionConfig } = require('./src/services/versionService');
+        const versionConfig = await getVersionConfig();
+
+        if (versionConfig && versionConfig.downloadUrl) {
+            console.log('[Main] Returning download URL from Firestore:', versionConfig.downloadUrl);
+            return versionConfig.downloadUrl;
+        }
+
+        console.log('[Main] No download URL available');
+        return null;
+    } catch (error) {
+        console.error('[Main] Failed to get download URL:', error);
+        return null;
     }
 });
 

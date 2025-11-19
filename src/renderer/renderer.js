@@ -572,6 +572,7 @@ window.addEventListener('DOMContentLoaded', () => {
     settingsBtn.addEventListener('click', async () => {
         await loadConfig();
         await loadTemplates();
+        await loadVersionInfo(); // 버전 정보 로드
         settingsModal.style.display = 'block';
     });
     
@@ -1278,6 +1279,92 @@ window.addEventListener('DOMContentLoaded', () => {
                 console.error('Failed to delete logs:', error);
             }
         };
+    }
+
+    /**
+     * 버전 정보 로드 및 표시
+     */
+    async function loadVersionInfo() {
+        try {
+            // 현재 버전 표시
+            const currentVersion = await window.electronAPI.getAppVersion();
+            const currentVersionElement = document.getElementById('current-version');
+            if (currentVersionElement) {
+                currentVersionElement.textContent = currentVersion;
+            }
+
+            // 최신 버전 확인 (비동기, 5초 타임아웃)
+            const latestVersionElement = document.getElementById('latest-version');
+            const latestVersionBadge = document.getElementById('latest-version-badge');
+            const downloadBtn = document.getElementById('download-latest-btn');
+
+            if (latestVersionElement && latestVersionBadge) {
+                latestVersionElement.textContent = '확인중...';
+
+                const latestVersion = await window.electronAPI.getLatestVersion();
+                const downloadUrl = await window.electronAPI.getDownloadUrl();
+
+                if (latestVersion) {
+                    latestVersionElement.textContent = latestVersion;
+
+                    // 버전 비교
+                    if (compareVersions(currentVersion, latestVersion) < 0) {
+                        // 최신 버전이 더 높음 (업데이트 필요)
+                        latestVersionBadge.classList.add('outdated');
+
+                        // 다운로드 버튼 표시
+                        if (downloadBtn && downloadUrl) {
+                            downloadBtn.style.display = 'inline-flex';
+                            downloadBtn.onclick = async () => {
+                                try {
+                                    await window.electronAPI.openExternal(downloadUrl);
+                                    showToast('다운로드 페이지를 열었습니다.', 'success');
+                                } catch (error) {
+                                    console.error('Failed to open download page:', error);
+                                    showToast('다운로드 페이지를 열 수 없습니다.', 'error');
+                                }
+                            };
+                        }
+                    } else {
+                        // 최신 버전임
+                        latestVersionBadge.classList.remove('outdated');
+                        if (downloadBtn) {
+                            downloadBtn.style.display = 'none';
+                        }
+                    }
+                } else {
+                    // 확인 실패
+                    latestVersionElement.textContent = '확인 실패';
+                    latestVersionBadge.classList.remove('outdated');
+                    if (downloadBtn) {
+                        downloadBtn.style.display = 'none';
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Failed to load version info:', error);
+        }
+    }
+
+    /**
+     * 버전 비교 함수
+     * @param {string} v1 - 버전 1 (예: "1.0.1")
+     * @param {string} v2 - 버전 2 (예: "1.0.2")
+     * @returns {number} - v1 < v2이면 -1, v1 === v2이면 0, v1 > v2이면 1
+     */
+    function compareVersions(v1, v2) {
+        const parts1 = v1.split('.').map(Number);
+        const parts2 = v2.split('.').map(Number);
+
+        for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
+            const num1 = parts1[i] || 0;
+            const num2 = parts2[i] || 0;
+
+            if (num1 < num2) return -1;
+            if (num1 > num2) return 1;
+        }
+
+        return 0;
     }
 
     // Request initial data when the app loads

@@ -75,7 +75,26 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getAppLogs: () => ipcRenderer.invoke('get-app-logs'),
     exportAppLogs: () => ipcRenderer.invoke('export-app-logs'),
     deleteAllAppLogs: () => ipcRenderer.invoke('delete-all-app-logs'),
-    sendErrorsToFirebase: () => ipcRenderer.invoke('send-errors-to-firebase')
+    sendErrorsToFirebase: () => ipcRenderer.invoke('send-errors-to-firebase'),
+    // 버전 정보 API
+    getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+    getLatestVersion: () => ipcRenderer.invoke('get-latest-version'),
+    getDownloadUrl: () => ipcRenderer.invoke('get-download-url'),
+    // 템플릿 관련 API
+    getAllTemplates: () => ipcRenderer.invoke('get-all-templates'),
+    getTemplate: (id) => ipcRenderer.invoke('get-template', id),
+    addTemplate: (data) => ipcRenderer.invoke('add-template', data),
+    updateTemplate: (id, data) => ipcRenderer.invoke('update-template', id, data),
+    deleteTemplate: (id) => ipcRenderer.invoke('delete-template', id),
+    setDefaultTemplate: (id) => ipcRenderer.invoke('set-default-template', id),
+    getPatientTemplate: (patientId) => ipcRenderer.invoke('get-patient-template', patientId),
+    setPatientTemplate: (patientId, templateId) => ipcRenderer.invoke('set-patient-template', patientId, templateId),
+    deletePatientTemplate: (patientId) => ipcRenderer.invoke('delete-patient-template', patientId),
+    setMedicineTemplate: (medicineCode, templateId) => ipcRenderer.invoke('set-medicine-template', medicineCode, templateId),
+    getTemplateForPrint: (patientId, medicineCode) => ipcRenderer.invoke('get-template-for-print', patientId, medicineCode),
+    openTemplateManager: () => ipcRenderer.invoke('open-template-manager'),
+    openPatientInfo: (patientId) => ipcRenderer.invoke('open-patient-info', patientId),
+    selectTemplateFile: () => ipcRenderer.invoke('select-template-file')
 });
 
 // 인증 관련 API (별도 노출)

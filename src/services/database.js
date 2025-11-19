@@ -255,6 +255,50 @@ class DatabaseManager {
             CREATE INDEX IF NOT EXISTS idx_app_logs_category ON app_logs(category);
             CREATE INDEX IF NOT EXISTS idx_app_logs_timestamp ON app_logs(timestamp DESC);
         `);
+
+        // 10. label_templates 테이블 (라벨 템플릿)
+        this.db.exec(`
+            CREATE TABLE IF NOT EXISTS label_templates (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                filePath TEXT NOT NULL UNIQUE,
+                description TEXT,
+                isDefault INTEGER DEFAULT 0,
+                createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+                updatedAt TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // 11. patient_template_preferences 테이블 (환자별 템플릿 설정)
+        this.db.exec(`
+            CREATE TABLE IF NOT EXISTS patient_template_preferences (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                patientId TEXT NOT NULL UNIQUE,
+                templateId INTEGER NOT NULL,
+                createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+                updatedAt TEXT DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (patientId) REFERENCES patients(patientId) ON DELETE CASCADE,
+                FOREIGN KEY (templateId) REFERENCES label_templates(id) ON DELETE CASCADE
+            )
+        `);
+
+        // label_templates 인덱스 추가
+        this.db.exec(`
+            CREATE INDEX IF NOT EXISTS idx_label_templates_isDefault ON label_templates(isDefault);
+            CREATE INDEX IF NOT EXISTS idx_patient_template_preferences_patientId ON patient_template_preferences(patientId);
+        `);
+
+        // medicines 테이블에 templateId 컬럼 추가 (이미 있으면 무시)
+        try {
+            this.db.exec(`
+                ALTER TABLE medicines ADD COLUMN templateId INTEGER;
+            `);
+        } catch (error) {
+            // 컬럼이 이미 존재하면 에러 무시
+            if (!error.message.includes('duplicate column name')) {
+                console.error('Failed to add templateId column to medicines:', error);
+            }
+        }
     }
 
     prepareStatements() {
@@ -1342,6 +1386,309 @@ class DatabaseManager {
      */
     deleteAllLogs() {
         return this.statements.deleteAllLogs.run();
+    }
+
+    // ==================== 템플릿 관련 메서드 ====================
+
+    /**
+     * 모든 템플릿 조회
+     * @returns {Array} 템플릿 목록
+     */
+    getAllTemplates() {
+        const stmt = this.db.prepare(`
+            SELECT * FROM label_templates ORDER BY isDefault DESC, name ASC
+        `);
+        return stmt.all();
+    }
+
+    /**
+     * 템플릿 조회 (ID로)
+     * @param {number} id - 템플릿 ID
+     * @returns {Object|null} 템플릿 정보
+     */
+    getTemplateById(id) {
+        const stmt = this.db.prepare(`
+            SELECT * FROM label_templates WHERE id = ?
+        `);
+        return stmt.get(id);
+    }
+
+    /**
+     * 기본 템플릿 조회
+     * @returns {Object|null} 기본 템플릿 정보
+     */
+    getDefaultTemplate() {
+        const stmt = this.db.prepare(`
+            SELECT * FROM label_templates WHERE isDefault = 1 LIMIT 1
+        `);
+        return stmt.get();
+    }
+
+    /**
+     * 템플릿 추가
+     * @param {string} name - 템플릿 이름
+     * @param {string} filePath - 템플릿 파일 경로
+     * @param {string} description - 템플릿 설명
+     * @returns {Object} { success: boolean, id?: number, message?: string }
+     */
+    addTemplate(name, filePath, description = '') {
+        try {
+            const stmt = this.db.prepare(`
+                INSERT INTO label_templates (name, filePath, description)
+                VALUES (?, ?, ?)
+            `);
+            const result = stmt.run(name, filePath, description);
+            return { success: true, id: result.lastInsertRowid };
+        } catch (error) {
+            logger.error('템플릿 추가 실패', {
+                category: 'database',
+                error: error,
+                details: { name, filePath }
+            });
+            return { success: false, message: error.message };
+        }
+    }
+
+    /**
+     * 템플릿 수정 (이름, 설명만)
+     * @param {number} id - 템플릿 ID
+     * @param {Object} data - { name?, description? }
+     * @returns {Object} { success: boolean, message?: string }
+     */
+    updateTemplate(id, data) {
+        try {
+            const { name, description } = data;
+            const stmt = this.db.prepare(`
+                UPDATE label_templates
+                SET name = COALESCE(?, name),
+                    description = COALESCE(?, description),
+                    updatedAt = CURRENT_TIMESTAMP
+                WHERE id = ?
+            `);
+            stmt.run(name, description, id);
+            return { success: true };
+        } catch (error) {
+            logger.error('템플릿 수정 실패', {
+                category: 'database',
+                error: error,
+                details: { id, data }
+            });
+            return { success: false, message: error.message };
+        }
+    }
+
+    /**
+     * 템플릿 삭제
+     * @param {number} id - 템플릿 ID
+     * @returns {Object} { success: boolean, message?: string }
+     */
+    deleteTemplate(id) {
+        try {
+            // 기본 템플릿은 삭제 불가
+            const template = this.getTemplateById(id);
+            if (!template) {
+                return { success: false, message: '템플릿을 찾을 수 없습니다.' };
+            }
+            if (template.isDefault === 1) {
+                return { success: false, message: '기본 템플릿은 삭제할 수 없습니다.' };
+            }
+
+            const stmt = this.db.prepare(`
+                DELETE FROM label_templates WHERE id = ?
+            `);
+            stmt.run(id);
+
+            // ON DELETE CASCADE로 patient_template_preferences와 medicines.templateId는 자동 처리됨
+            return { success: true };
+        } catch (error) {
+            logger.error('템플릿 삭제 실패', {
+                category: 'database',
+                error: error,
+                details: { id }
+            });
+            return { success: false, message: error.message };
+        }
+    }
+
+    /**
+     * 기본 템플릿 설정
+     * @param {number} id - 템플릿 ID
+     * @returns {Object} { success: boolean, message?: string }
+     */
+    setDefaultTemplate(id) {
+        try {
+            // 트랜잭션 시작
+            const transaction = this.db.transaction(() => {
+                // 모든 템플릿의 isDefault를 0으로 설정
+                this.db.prepare(`UPDATE label_templates SET isDefault = 0`).run();
+
+                // 선택한 템플릿의 isDefault를 1로 설정
+                this.db.prepare(`UPDATE label_templates SET isDefault = 1 WHERE id = ?`).run(id);
+            });
+
+            transaction();
+            return { success: true };
+        } catch (error) {
+            logger.error('기본 템플릿 설정 실패', {
+                category: 'database',
+                error: error,
+                details: { id }
+            });
+            return { success: false, message: error.message };
+        }
+    }
+
+    /**
+     * 환자별 템플릿 조회
+     * @param {string} patientId - 환자 ID
+     * @returns {Object|null} 템플릿 정보
+     */
+    getPatientTemplate(patientId) {
+        const stmt = this.db.prepare(`
+            SELECT lt.* FROM label_templates lt
+            INNER JOIN patient_template_preferences ptp ON lt.id = ptp.templateId
+            WHERE ptp.patientId = ?
+        `);
+        return stmt.get(patientId);
+    }
+
+    /**
+     * 환자별 템플릿 설정
+     * @param {string} patientId - 환자 ID
+     * @param {number} templateId - 템플릿 ID
+     * @returns {Object} { success: boolean, message?: string }
+     */
+    setPatientTemplate(patientId, templateId) {
+        try {
+            const stmt = this.db.prepare(`
+                INSERT INTO patient_template_preferences (patientId, templateId)
+                VALUES (?, ?)
+                ON CONFLICT(patientId) DO UPDATE SET
+                    templateId = excluded.templateId,
+                    updatedAt = CURRENT_TIMESTAMP
+            `);
+            stmt.run(patientId, templateId);
+            return { success: true };
+        } catch (error) {
+            logger.error('환자별 템플릿 설정 실패', {
+                category: 'database',
+                error: error,
+                details: { patientId, templateId }
+            });
+            return { success: false, message: error.message };
+        }
+    }
+
+    /**
+     * 환자별 템플릿 설정 삭제
+     * @param {string} patientId - 환자 ID
+     * @returns {Object} { success: boolean, message?: string }
+     */
+    deletePatientTemplate(patientId) {
+        try {
+            const stmt = this.db.prepare(`
+                DELETE FROM patient_template_preferences WHERE patientId = ?
+            `);
+            stmt.run(patientId);
+            return { success: true };
+        } catch (error) {
+            logger.error('환자별 템플릿 설정 삭제 실패', {
+                category: 'database',
+                error: error,
+                details: { patientId }
+            });
+            return { success: false, message: error.message };
+        }
+    }
+
+    /**
+     * 약품별 템플릿 조회
+     * @param {string} medicineCode - 약품 코드 (bohcode)
+     * @returns {Object|null} 템플릿 정보
+     */
+    getMedicineTemplate(medicineCode) {
+        const stmt = this.db.prepare(`
+            SELECT lt.* FROM label_templates lt
+            INNER JOIN medicines m ON lt.id = m.templateId
+            INNER JOIN medicine_bohcodes mb ON m.yakjung_code = mb.yakjung_code
+            WHERE mb.bohcode = ?
+        `);
+        return stmt.get(medicineCode);
+    }
+
+    /**
+     * 약품별 템플릿 설정
+     * @param {string} medicineCode - 약품 코드 (bohcode)
+     * @param {number|null} templateId - 템플릿 ID (null이면 설정 해제)
+     * @returns {Object} { success: boolean, message?: string }
+     */
+    setMedicineTemplate(medicineCode, templateId) {
+        try {
+            // bohcode로 yakjung_code 찾기
+            const bohcodeStmt = this.db.prepare(`
+                SELECT yakjung_code FROM medicine_bohcodes WHERE bohcode = ?
+            `);
+            const bohcodeResult = bohcodeStmt.get(medicineCode);
+
+            if (!bohcodeResult) {
+                return { success: false, message: '약품을 찾을 수 없습니다.' };
+            }
+
+            const stmt = this.db.prepare(`
+                UPDATE medicines SET templateId = ? WHERE yakjung_code = ?
+            `);
+            stmt.run(templateId, bohcodeResult.yakjung_code);
+            return { success: true };
+        } catch (error) {
+            logger.error('약품별 템플릿 설정 실패', {
+                category: 'database',
+                error: error,
+                details: { medicineCode, templateId }
+            });
+            return { success: false, message: error.message };
+        }
+    }
+
+    /**
+     * 출력용 템플릿 조회 (우선순위: 환자 > 약품 > 기본)
+     * @param {string} patientId - 환자 ID
+     * @param {string} medicineCode - 약품 코드 (bohcode)
+     * @returns {Object|null} 템플릿 정보
+     */
+    getTemplateForPrint(patientId, medicineCode) {
+        // 1. 환자별 템플릿 확인
+        const patientTemplate = this.getPatientTemplate(patientId);
+        if (patientTemplate) {
+            return patientTemplate;
+        }
+
+        // 2. 약품별 템플릿 확인
+        const medicineTemplate = this.getMedicineTemplate(medicineCode);
+        if (medicineTemplate) {
+            return medicineTemplate;
+        }
+
+        // 3. 기본 템플릿 반환
+        return this.getDefaultTemplate();
+    }
+
+    /**
+     * 템플릿 사용 통계 조회
+     * @param {number} templateId - 템플릿 ID
+     * @returns {Object} { patientCount: number, medicineCount: number }
+     */
+    getTemplateUsageStats(templateId) {
+        const patientStmt = this.db.prepare(`
+            SELECT COUNT(*) as count FROM patient_template_preferences WHERE templateId = ?
+        `);
+        const medicineStmt = this.db.prepare(`
+            SELECT COUNT(*) as count FROM medicines WHERE templateId = ?
+        `);
+
+        return {
+            patientCount: patientStmt.get(templateId).count,
+            medicineCount: medicineStmt.get(templateId).count
+        };
     }
 
     /**

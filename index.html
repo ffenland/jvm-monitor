@@ -309,6 +309,88 @@
             background-color: #da190b;
         }
 
+        /* 설정 모달 푸터 스타일 */
+        .settings-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .version-info {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .version-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .current-version {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .latest-version {
+            background-color: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .latest-version.outdated {
+            background-color: #fff3e0;
+            color: #f57c00;
+        }
+
+        .sponsor-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .sponsor-logo {
+            height: 24px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background-color: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-decoration: none;
+        }
+
+        .download-btn:hover {
+            background-color: #1565c0;
+        }
+
+        .download-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
         /* 경고 모달 스타일 */
         .warning-modal .modal-content {
             max-width: 500px;
@@ -425,6 +507,26 @@
                     <button type="submit" class="save-btn">저장</button>
                 </div>
             </form>
+
+            <!-- 설정 모달 푸터 -->
+            <div class="settings-footer">
+                <div class="version-info">
+                    <span class="version-badge current-version">
+                        현재 v<span id="current-version">1.0.1</span>
+                    </span>
+                    <span class="version-badge latest-version" id="latest-version-badge">
+                        최신 v<span id="latest-version">확인중...</span>
+                    </span>
+                    <button class="download-btn" id="download-latest-btn" style="display: none;">
+                        📥 최신버전 다운로드
+                    </button>
+                </div>
+                <div class="sponsor-info">
+                    <span>제작 지원:</span>
+                    <img src="src/images/logo.png" alt="강릉시약사회" class="sponsor-logo">
+                    <span style="font-weight: 500;">강릉시약사회</span>
+                </div>
+            </div>
         </div>
     </div>
     
