@@ -377,7 +377,9 @@ async function migrateTemplatesToDB() {
         }
 
         // templates 폴더의 .lbx 파일 찾기
-        const templatesDir = path.join(__dirname, 'templates');
+        const templatesDir = app.isPackaged
+            ? path.join(process.resourcesPath, 'templates')
+            : path.join(__dirname, 'templates');
         if (!fs.existsSync(templatesDir)) {
             console.log('[Main] Templates directory not found, skipping migration');
             return;
