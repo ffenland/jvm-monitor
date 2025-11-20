@@ -343,9 +343,9 @@
 
         <div class="section-divider"></div>
 
-        <!-- 약품 정보: 약품명, 단위 (한 줄) -->
+        <!-- 약품 정보: 약품명, 단위, 약품유형 (한 줄) -->
         <div class="form-row">
-            <div class="form-group" style="flex: 1;">
+            <div class="form-group" style="flex: 2;">
                 <label>약품명</label>
                 <input type="text" id="medicineName" value="">
                 <label style="font-size: 10px; display: flex; align-items: center; margin-top: 3px;">
@@ -353,7 +353,7 @@
                     <span>수정 다음에도 사용</span>
                 </label>
             </div>
-            <div class="form-group" style="flex: 0 0 120px;">
+            <div class="form-group" style="flex: 1;">
                 <label>단위</label>
                 <input type="text" id="medicineUnit" value="" placeholder="예: 정">
                 <label style="font-size: 10px; display: flex; align-items: center; margin-top: 3px;">
@@ -361,16 +361,14 @@
                     <span>저장</span>
                 </label>
             </div>
-        </div>
-
-        <!-- 약품유형 (별도 줄) -->
-        <div class="form-group">
-            <label>약품유형</label>
-            <input type="text" id="medicineType" value="">
-            <label style="font-size: 10px; display: flex; align-items: center; margin-top: 3px;">
-                <input type="checkbox" id="updateMedicineType" style="margin-right: 3px; width: 13px; height: 13px;">
-                <span>다음에도 사용</span>
-            </label>
+            <div class="form-group" style="flex: 3;">
+                <label>약품유형</label>
+                <input type="text" id="medicineType" value="">
+                <label style="font-size: 10px; display: flex; align-items: center; margin-top: 3px;">
+                    <input type="checkbox" id="updateMedicineType" style="margin-right: 3px; width: 13px; height: 13px;">
+                    <span>다음에도 사용</span>
+                </label>
+            </div>
         </div>
 
         <!-- 처방 정보: 처방일수, 하루복용횟수, 1회투여량, 총량 (한 줄) -->

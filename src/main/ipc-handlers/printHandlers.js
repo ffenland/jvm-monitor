@@ -206,7 +206,6 @@ function registerPrintHandlers(dbManager, getMainWindow, loadConfig) {
                 const template = dbManager.getTemplateById(printData.templateId);
                 if (template && fs.existsSync(template.filePath)) {
                     templatePath = template.filePath;
-                    console.log(`[PrintHandlers] Using selected template: ${template.name} (${template.filePath})`);
                 }
             }
 
@@ -215,7 +214,6 @@ function registerPrintHandlers(dbManager, getMainWindow, loadConfig) {
                 const template = dbManager.getTemplateForPrint(printData.patientId, printData.medicineCode);
                 if (template && fs.existsSync(template.filePath)) {
                     templatePath = template.filePath;
-                    console.log(`[PrintHandlers] Using priority template: ${template.name} (${template.filePath})`);
                 }
             }
 
@@ -228,14 +226,12 @@ function registerPrintHandlers(dbManager, getMainWindow, loadConfig) {
                     const defaultTemplate = dbManager.getDefaultTemplate();
                     if (defaultTemplate && fs.existsSync(defaultTemplate.filePath)) {
                         templatePath = defaultTemplate.filePath;
-                        console.log(`[PrintHandlers] Using default template from DB: ${defaultTemplate.name}`);
                     } else {
                         // 최종 폴백
                         const templatesDir = app.isPackaged
                             ? path.join(process.resourcesPath, 'templates')
                             : path.join(__dirname, '../../../templates');
                         templatePath = path.join(templatesDir, 'default.lbx');
-                        console.log(`[PrintHandlers] Using fallback template: ${templatePath}`);
                     }
                 }
             }
@@ -293,6 +289,9 @@ function registerPrintHandlers(dbManager, getMainWindow, loadConfig) {
 
             // 총량: 사용자가 입력한 값 그대로 사용
             const totalAmount = printData.totalAmount || '';
+
+            // config 가져오기 (약국명 필요)
+            const config = loadConfig();
 
             const processedData = {
                 patientName: printData.patientName,

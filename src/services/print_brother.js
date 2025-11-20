@@ -72,7 +72,8 @@ try {
     
     # Set text data to template fields
     ${Object.entries(params).map(([key, value]) => {
-        if (key !== 'templatePath' && key !== 'printerName' && key !== 'medicines' && value) {
+        // 빈 문자열도 허용 (value !== undefined && value !== null)
+        if (key !== 'templatePath' && key !== 'printerName' && key !== 'medicines' && value !== undefined && value !== null) {
             return `
     try {
         $obj = $bpac.GetObject("${key}")
@@ -215,13 +216,22 @@ catch {
                 // Ignore cleanup errors
             }
 
-            
             if (code !== 0) {
-                const fullError = `PowerShell process exited with code ${code}. Stderr: ${stderr} Stdout: ${stdout}`;
+                const fullError = `PowerShell process exited with code ${code}. Stderr: ${stderr}`;
+                logger.error('PowerShell 프로세스 실패', {
+                    category: 'print',
+                    error: new Error(fullError),
+                    details: { exitCode: code, stderr: stderr.substring(0, 500) }
+                });
                 return reject(new Error(fullError));
             }
 
             if (stdout.trim() === '') {
+                logger.error('PowerShell 출력 없음', {
+                    category: 'print',
+                    error: new Error('No output from PowerShell'),
+                    details: { stderr }
+                });
                 return reject(new Error(`No output from PowerShell script. Stderr: ${stderr}`));
             }
 
@@ -273,12 +283,16 @@ async function printWithBrother(data) {
     try {
         // 템플릿 파일 존재 여부 확인
         if (!data.templatePath) {
+            logger.error('템플릿 경로 누락', {
+                category: 'print',
+                error: new Error('Template path missing')
+            });
             return {
                 success: false,
                 error: '템플릿 파일 경로가 지정되지 않았습니다.'
             };
         }
-        
+
         // 템플릿 파일이 실제로 존재하는지 확인
         if (!fs.existsSync(data.templatePath)) {
             logger.error('템플릿 파일 없음', {
@@ -291,23 +305,40 @@ async function printWithBrother(data) {
                 error: `템플릿 파일을 찾을 수 없습니다: ${data.templatePath}`
             };
         }
-        
-        console.log('Using template:', data.templatePath);
-        
+
+        logger.info('라벨 출력 요청', {
+            category: 'print',
+            details: {
+                templatePath: data.templatePath,
+                printerName: data.printerName,
+                patientName: data.patientName,
+                medicineName: data.medicineName
+            }
+        });
+
         // 한글 지원을 위해 새로운 방식 사용
         const result = await executePowerShellWithKorean(data);
-        
+
         if (!result.error) {
             // b-PAC 출력 성공
-            return { 
-                success: true, 
-                message: result.message 
+            logger.info('라벨 출력 성공', {
+                category: 'print',
+                details: { message: result.message }
+            });
+            return {
+                success: true,
+                message: result.message
             };
         } else {
             // b-PAC 출력 실패 - 에러 발생
-            return { 
-                success: false, 
-                error: result.message 
+            logger.error('라벨 출력 실패', {
+                category: 'print',
+                error: new Error(result.message),
+                details: { resultError: result.message }
+            });
+            return {
+                success: false,
+                error: result.message
             };
         }
     } catch (error) {
@@ -316,9 +347,9 @@ async function printWithBrother(data) {
             error: error,
             details: { templatePath: data?.templatePath }
         });
-        return { 
-            success: false, 
-            error: error.message 
+        return {
+            success: false,
+            error: error.message
         };
     }
 }

@@ -457,9 +457,9 @@
             </div>
         </div>
 
-        <!-- 약품 정보: 약품명, 단위 (한 줄) -->
+        <!-- 약품 정보: 약품명, 단위, 약품유형 (한 줄) -->
         <div class="form-row">
-            <div class="form-group" style="flex: 1;">
+            <div class="form-group" style="flex: 2;">
                 <label>약품명</label>
                 <input type="text" id="medicineName" value="">
                 <div class="checkbox-container hidden" id="medicineNameCheckboxContainer">
@@ -469,7 +469,7 @@
                     </label>
                 </div>
             </div>
-            <div class="form-group" style="flex: 0 0 120px;">
+            <div class="form-group" style="flex: 1;">
                 <label>단위</label>
                 <input type="text" id="medicineUnit" value="" placeholder="예: 정">
                 <div class="checkbox-container hidden" id="medicineUnitCheckboxContainer">
@@ -479,17 +479,15 @@
                     </label>
                 </div>
             </div>
-        </div>
-
-        <!-- 약품유형 (별도 줄) -->
-        <div class="form-group">
-            <label>약품유형</label>
-            <input type="text" id="medicineType" value="">
-            <div class="checkbox-container hidden" id="medicineTypeCheckboxContainer">
-                <label style="font-size: 10px; display: flex; align-items: center; margin-top: 3px;">
-                    <input type="checkbox" id="updateMedicineType" style="margin-right: 3px; width: 13px; height: 13px;">
-                    <span>다음에도 사용</span>
-                </label>
+            <div class="form-group" style="flex: 3;">
+                <label>약품유형</label>
+                <input type="text" id="medicineType" value="">
+                <div class="checkbox-container hidden" id="medicineTypeCheckboxContainer">
+                    <label style="font-size: 10px; display: flex; align-items: center; margin-top: 3px;">
+                        <input type="checkbox" id="updateMedicineType" style="margin-right: 3px; width: 13px; height: 13px;">
+                        <span>다음에도 사용</span>
+                    </label>
+                </div>
             </div>
         </div>
 
