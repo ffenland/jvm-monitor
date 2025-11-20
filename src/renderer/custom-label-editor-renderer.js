@@ -435,13 +435,7 @@ function updateDosageResult() {
 // 라벨 출력
 async function printLabel() {
     const dosageText = document.getElementById('dosageResult').textContent;
-    const patientName = document.getElementById('patientName').value.trim();
     const medicineName = document.getElementById('medicineName').value.trim();
-
-    if (!patientName) {
-        alert('환자명을 입력해주세요.');
-        return;
-    }
 
     if (!medicineName) {
         alert('약품명을 입력해주세요.');
