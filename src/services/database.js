@@ -1003,21 +1003,103 @@ class DatabaseManager {
             );
 
             if (existing) {
-                // 중복 처방전이지만 파싱 이력 추가
-                const parsedDate = data.parsedDate || getKSTDateString(); // KST 기준 오늘 날짜
-                const parsedAt = this.getKSTTimestamp();
-                this.statements.insertParsingHistory.run({
-                    prescriptionId: existing.id,
-                    parsedDate: parsedDate,
-                    parsedAt: parsedAt
-                });
+                // 중복 처방전 발견: 약품 내용이 변경되었는지 확인
+                const existingMedicines = this.getPrescriptionMedicines(existing.id);
 
-                return {
-                    success: true,
-                    id: existing.id,
-                    isDuplicate: true,
-                    message: 'Prescription already exists, parsing history added'
-                };
+                // 약품 개수가 다르면 변경된 것
+                let hasChanged = existingMedicines.length !== (data.medicines?.length || 0);
+
+                // 약품 개수가 같으면 내용 비교
+                if (!hasChanged && data.medicines && Array.isArray(data.medicines)) {
+                    // 기존 약품을 medicineCode 기준으로 Map 생성
+                    const existingMap = new Map(
+                        existingMedicines.map(m => [
+                            m.medicineCode,
+                            {
+                                prescriptionDays: m.prescriptionDays,
+                                dailyDose: m.dailyDose,
+                                singleDose: m.singleDose
+                            }
+                        ])
+                    );
+
+                    // 새 약품과 비교
+                    for (const newMed of data.medicines) {
+                        const existingMed = existingMap.get(newMed.code);
+
+                        // 약품이 없거나, 처방 내용이 다르면 변경된 것
+                        if (!existingMed ||
+                            existingMed.prescriptionDays !== newMed.prescriptionDays ||
+                            existingMed.dailyDose !== newMed.dailyDose ||
+                            existingMed.singleDose !== newMed.singleDose) {
+                            hasChanged = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (hasChanged) {
+                    // 내용이 변경되었으면: 기존 약품 삭제 후 새로 저장
+                    this.db.prepare('DELETE FROM prescription_medicines WHERE prescriptionId = ?').run(existing.id);
+
+                    // 새 약품 저장 (배치 INSERT)
+                    if (data.medicines && Array.isArray(data.medicines) && data.medicines.length > 0) {
+                        const placeholders = data.medicines.map(() => '(?, ?, ?, ?, ?)').join(', ');
+                        const batchInsertSql = `
+                            INSERT INTO prescription_medicines (
+                                prescriptionId, medicineCode, prescriptionDays,
+                                dailyDose, singleDose
+                            ) VALUES ${placeholders}
+                        `;
+
+                        const params = [];
+                        for (const medicine of data.medicines) {
+                            params.push(
+                                existing.id,
+                                medicine.code,
+                                medicine.prescriptionDays,
+                                medicine.dailyDose,
+                                medicine.singleDose
+                            );
+                        }
+
+                        this.db.prepare(batchInsertSql).run(...params);
+                    }
+
+                    // 파싱 이력 추가
+                    const parsedDate = data.parsedDate || getKSTDateString();
+                    const parsedAt = this.getKSTTimestamp();
+                    this.statements.insertParsingHistory.run({
+                        prescriptionId: existing.id,
+                        parsedDate: parsedDate,
+                        parsedAt: parsedAt
+                    });
+
+                    return {
+                        success: true,
+                        id: existing.id,
+                        isDuplicate: true,
+                        isUpdated: true,
+                        message: 'Prescription medicines updated'
+                    };
+                } else {
+                    // 내용이 동일하면: 파싱 이력만 추가
+                    const parsedDate = data.parsedDate || getKSTDateString();
+                    const parsedAt = this.getKSTTimestamp();
+                    this.statements.insertParsingHistory.run({
+                        prescriptionId: existing.id,
+                        parsedDate: parsedDate,
+                        parsedAt: parsedAt
+                    });
+
+                    return {
+                        success: true,
+                        id: existing.id,
+                        isDuplicate: true,
+                        isUpdated: false,
+                        message: 'Prescription already exists, parsing history added'
+                    };
+                }
             }
 
             // 2. 처방전 저장
