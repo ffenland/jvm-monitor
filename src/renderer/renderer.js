@@ -109,11 +109,12 @@ window.addEventListener('DOMContentLoaded', () => {
     const prescriptionListContainer = document.getElementById('prescription-list-container');
     const dateSelect = document.getElementById('date-select');
     const printerSelect = document.getElementById('printer-select');
+    const refreshPrinterBtn = document.getElementById('refresh-printer-btn');
     const detailView = document.getElementById('detail-view');
     const detailPatientName = document.getElementById('detail-patient-name');
     const detailPatientId = document.getElementById('detail-patient-id');
     const detailMedicineListTableBody = document.querySelector('#detail-medicine-list tbody');
-    
+
     // 설정 관련 요소
     const settingsBtn = document.getElementById('settings-btn');
     const settingsModal = document.getElementById('settings-modal');
@@ -126,7 +127,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const labelInfoModal = document.getElementById('label-info-modal');
     const labelInfoClose = document.getElementById('label-info-close');
     const labelInfoOk = document.getElementById('label-info-ok');
-    
+
     // 약품설정 관련 요소
     const medicineBtn = document.getElementById('medicine-btn');
 
@@ -137,7 +138,7 @@ window.addEventListener('DOMContentLoaded', () => {
     let selectedPrescriptionIndex = -1;
     let currentConfig = {}; // 현재 설정 저장
     let isFirstRun = false; // 첫 실행 여부
-    
+
     // Brother 프린터 목록 로드
     async function loadBrotherPrinters() {
         try {
@@ -1296,6 +1297,29 @@ window.addEventListener('DOMContentLoaded', () => {
         }
 
         return 0;
+    }
+
+    // 프린터 목록 새로고침 버튼
+    if (refreshPrinterBtn) {
+        refreshPrinterBtn.addEventListener('click', async () => {
+            try {
+                // 버튼 비활성화 및 로딩 상태 표시
+                refreshPrinterBtn.disabled = true;
+                refreshPrinterBtn.textContent = '🔄 새로고침 중...';
+
+                // 프린터 목록 다시 로드
+                await loadBrotherPrinters();
+
+                showToast('프린터 목록이 새로고침되었습니다.', 'success');
+            } catch (error) {
+                console.error('프린터 새로고침 실패:', error);
+                showToast('프린터 새로고침에 실패했습니다.', 'error');
+            } finally {
+                // 버튼 다시 활성화
+                refreshPrinterBtn.disabled = false;
+                refreshPrinterBtn.textContent = '🔄 새로고침';
+            }
+        });
     }
 
     // Request initial data when the app loads

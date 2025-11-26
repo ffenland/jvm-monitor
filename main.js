@@ -804,7 +804,6 @@ function startFileWatcher() {
                 if (currentConfig.deleteOriginalFile === true) {
                     try {
                         fs.unlinkSync(filePath);
-                        console.log(`[File Watcher] 원본 파일 삭제 완료: ${fileName}`);
                         mainWindow.webContents.send('log-message', `원본 파일 삭제 완료: ${fileName}`);
                     } catch (deleteError) {
                         logger.error('원본 파일 삭제 실패', {
