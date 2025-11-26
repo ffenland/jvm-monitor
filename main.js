@@ -374,25 +374,31 @@ async function migrateTemplatesToDB() {
             ? path.join(process.resourcesPath, 'templates')
             : path.join(__dirname, 'templates');
 
+        // templates 폴더의 모든 .lbx 파일 가져오기
+        const availableTemplateFiles = fs.existsSync(templatesDir)
+            ? fs.readdirSync(templatesDir).filter(f => f.endsWith('.lbx'))
+            : [];
+
         // 이미 템플릿이 DB에 있는지 확인
         const existingTemplates = dbManager.getAllTemplates();
 
-        // 기존 템플릿이 있으면 시스템 템플릿 경로 검증 및 수정
+        // 기존 템플릿이 있으면 시스템 템플릿 경로 검증 및 추가
         if (existingTemplates.length > 0) {
-            console.log('[Main] Templates already exist, validating system template paths...');
+            console.log('[Main] Templates already exist, validating and syncing system templates...');
 
             let pathsUpdated = false;
-            const systemTemplates = ['default.lbx', 'simple.lbx'];
+            let templatesAdded = false;
 
+            // 1. 기존 템플릿의 경로 검증 및 수정
             for (const template of existingTemplates) {
                 const fileName = path.basename(template.filePath);
 
-                // 시스템 템플릿인지 확인
-                if (systemTemplates.includes(fileName)) {
+                // templates 폴더에 있는 파일인지 확인 (시스템 템플릿)
+                if (availableTemplateFiles.includes(fileName)) {
                     const correctPath = path.join(templatesDir, fileName);
 
                     // 경로가 다르거나 파일이 존재하지 않으면 수정
-                    if (template.filePath !== correctPath || !fs.existsSync(template.filePath)) {
+                    if (template.filePath !== correctPath) {
                         console.log(`[Main] Updating system template path: ${fileName}`);
                         console.log(`  - Old: ${template.filePath}`);
                         console.log(`  - New: ${correctPath}`);
@@ -412,14 +418,36 @@ async function migrateTemplatesToDB() {
                 }
             }
 
-            if (pathsUpdated) {
-                logger.info('System template paths updated', {
+            // 2. DB에 없는 새 시스템 템플릿 추가
+            const existingFileNames = existingTemplates.map(t => path.basename(t.filePath));
+            const newTemplateFiles = availableTemplateFiles.filter(f => !existingFileNames.includes(f));
+
+            if (newTemplateFiles.length > 0) {
+                console.log(`[Main] Found ${newTemplateFiles.length} new system template(s):`, newTemplateFiles);
+
+                for (const fileName of newTemplateFiles) {
+                    const filePath = path.join(templatesDir, fileName);
+                    const name = path.basename(fileName, '.lbx');
+
+                    const result = dbManager.addTemplate(name, filePath, '시스템 기본 템플릿');
+
+                    if (result.success) {
+                        console.log(`[Main] Added new system template: ${name} (ID: ${result.id})`);
+                        templatesAdded = true;
+                    } else {
+                        console.error(`[Main] Failed to add template ${name}:`, result.message);
+                    }
+                }
+            }
+
+            if (pathsUpdated || templatesAdded) {
+                logger.info('System templates synchronized', {
                     category: 'system',
-                    details: { action: 'path_validation' }
+                    details: { pathsUpdated, templatesAdded, newCount: newTemplateFiles.length }
                 });
             }
 
-            console.log('[Main] Template validation completed');
+            console.log('[Main] Template synchronization completed');
             return;
         }
 

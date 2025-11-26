@@ -71,9 +71,15 @@
             border-radius: 6px;
             padding: 20px;
             display: flex;
+            flex-direction: column;
+            gap: 15px;
+            transition: box-shadow 0.2s;
+        }
+
+        .template-main {
+            display: flex;
             align-items: center;
             gap: 20px;
-            transition: box-shadow 0.2s;
         }
 
         .template-item:hover {
@@ -126,8 +132,11 @@
         .template-path {
             font-size: 12px;
             color: #666;
-            margin-bottom: 5px;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 4px;
             font-family: monospace;
+            word-break: break-all;
         }
 
         .template-description {

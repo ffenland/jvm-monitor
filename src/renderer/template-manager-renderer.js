@@ -72,6 +72,18 @@ async function loadTemplates() {
 }
 
 /**
+ * 시스템 제공 템플릿인지 확인
+ * 시스템 리소스 폴더(resources\templates) 또는 개발 모드(프로젝트\templates)에 있는 템플릿은 시스템 템플릿으로 간주
+ */
+function isSystemTemplate(filePath) {
+    const normalizedPath = filePath.replace(/\//g, '\\').toLowerCase();
+    // 프로덕션: resources\templates
+    // 개발: electron-file-monitor\templates
+    return normalizedPath.includes('\\resources\\templates\\') ||
+           (normalizedPath.includes('\\templates\\') && !normalizedPath.includes('\\appdata\\'));
+}
+
+/**
  * 템플릿 목록 렌더링
  */
 function renderTemplates() {
@@ -87,27 +99,29 @@ function renderTemplates() {
     }
 
     templateList.innerHTML = templates.map(template => {
-        // 시스템 제공 템플릿 판별 (default.lbx, simple.lbx)
-        const fileName = template.filePath.split('\\').pop().split('/').pop();
-        const isSystemProvided = fileName === 'default.lbx' || fileName === 'simple.lbx';
+        // 시스템 제공 템플릿 판별 (resources\templates 폴더에 있는 템플릿)
+        const isSystemProvided = isSystemTemplate(template.filePath);
 
         return `
             <div class="template-item ${template.isDefault ? 'default' : ''}" data-id="${template.id}">
-                <div class="template-icon">${template.isDefault ? '⭐' : '📄'}</div>
-                <div class="template-info">
-                    <div class="template-name">
-                        ${template.name}
-                        ${template.isDefault ? '<span class="default-badge">현재 기본 템플릿</span>' : ''}
+                <div class="template-main">
+                    <div class="template-icon">${template.isDefault ? '⭐' : '📄'}</div>
+                    <div class="template-info">
+                        <div class="template-name">
+                            ${template.name}
+                            ${template.isDefault ? '<span class="default-badge">현재 기본 템플릿</span>' : ''}
+                            ${isSystemProvided ? '<span class="default-badge" style="background: #17a2b8;">시스템 템플릿</span>' : ''}
+                        </div>
+                        ${template.description ? `<div class="template-description">${template.description}</div>` : ''}
                     </div>
-                    <div class="template-path">${template.filePath}</div>
-                    ${template.description ? `<div class="template-description">${template.description}</div>` : ''}
+                    <div class="template-actions">
+                        <button class="btn btn-preview" data-action="preview" data-template-id="${template.id}">미리보기</button>
+                        <button class="btn btn-edit" data-action="edit" data-template-id="${template.id}">수정</button>
+                        ${!template.isDefault ? `<button class="btn btn-default" data-action="setDefault" data-template-id="${template.id}">기본 설정</button>` : ''}
+                        ${!isSystemProvided ? `<button class="btn btn-delete" data-action="delete" data-template-id="${template.id}">삭제</button>` : ''}
+                    </div>
                 </div>
-                <div class="template-actions">
-                    <button class="btn btn-preview" data-action="preview" data-template-id="${template.id}">미리보기</button>
-                    <button class="btn btn-edit" data-action="edit" data-template-id="${template.id}">수정</button>
-                    ${!template.isDefault ? `<button class="btn btn-default" data-action="setDefault" data-template-id="${template.id}">기본 설정</button>` : ''}
-                    <button class="btn btn-delete" data-action="delete" data-template-id="${template.id}" ${isSystemProvided ? 'disabled' : ''}>삭제</button>
-                </div>
+                ${!isSystemProvided ? `<div class="template-path">${template.filePath}</div>` : ''}
             </div>
         `;
     }).join('');
@@ -322,11 +336,8 @@ async function deleteTemplate(id) {
     const template = templates.find(t => t.id === id);
     if (!template) return;
 
-    // 시스템 제공 템플릿 판별 (default.lbx, simple.lbx)
-    const fileName = template.filePath.split('\\').pop().split('/').pop();
-    const isSystemProvided = fileName === 'default.lbx' || fileName === 'simple.lbx';
-
-    if (isSystemProvided) {
+    // 시스템 제공 템플릿 판별 (resources\templates 폴더에 있는 템플릿)
+    if (isSystemTemplate(template.filePath)) {
         showToast('시스템 제공 템플릿은 삭제할 수 없습니다.', 'error');
         return;
     }
