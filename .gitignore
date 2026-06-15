@@ -32,8 +32,10 @@ Thumbs.db
 *.sln
 *.sw?
 
-# Project specific generated files
+# For codex
+testcode.js
 
+# Project specific generated files
 
 /samples
 /originFiles

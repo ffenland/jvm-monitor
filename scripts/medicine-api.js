@@ -4,6 +4,26 @@ const logger = require(path.join(__dirname, "../src/services/logger.js"));
 const { extractTemperature } = require("./extract-temperature.js");
 const { getUnitFromDrugForm } = require("./drug-form-unit-map.js");
 
+function extractYakjungCodeFromSearchHtml(html) {
+  if (!html) return null;
+
+  const patterns = [
+    /drug_detailHref\s*\(\s*['"]([^'"]+)['"]\s*\)/i,
+    /show_idfypop\s*\(\s*['"]([^'"]+)['"]\s*\)/i,
+    /\bresult_drug\.asp\?drug_cd=([^'"&<>\s]+)/i,
+    /\bid\s*=\s*['"]photo([A-Z0-9]+)['"]/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = html.match(pattern);
+    if (match && match[1]) {
+      return match[1].trim();
+    }
+  }
+
+  return null;
+}
+
 /**
  * bohcode(9자리 보험코드)로 약학정보원에서 약품 검색
  * @param {string} bohcode - 9자리 보험코드
@@ -101,15 +121,12 @@ async function searchMedicineByBohcode(bohcode) {
 
   try {
     const response = await fetch(
-      "https://www.health.kr/searchDrug/search_detail.asp",
+      "https://health.kr/searchDrug/search_detail.asp",
       requestOptions
     );
     const html = await response.text();
 
-    // HTML에서 onclick="javascript:drug_detailHref('2020071600007')" 형식의 yakjung_code 추출
-    // 순수 JavaScript 정규식 사용 (cheerio 불필요)
-    const match = html.match(/drug_detailHref\('([^']+)'\)/);
-    const yakjungCode = match ? match[1] : null;
+    const yakjungCode = extractYakjungCodeFromSearchHtml(html);
 
     if (yakjungCode) {
       return { icode: yakjungCode };
@@ -222,7 +239,7 @@ async function searchMedicineByName(drugName) {
 
   try {
     const response = await fetch(
-      "https://www.health.kr/searchDrug/search_detail.asp",
+      "https://health.kr/searchDrug/search_detail.asp",
       requestOptions
     );
     const html = await response.text();
@@ -255,13 +272,10 @@ async function searchMedicineByName(drugName) {
 function parseSearchResults(html) {
   const results = [];
 
-  // id="tbl_proY" 테이블 찾기
-  const tableMatch = html.match(/<table[^>]*id="tbl_proY"[^>]*>([\s\S]*?)<\/table>/i);
-  if (!tableMatch) {
-    return results;
-  }
-
-  const tableContent = tableMatch[1];
+  const tableMatch =
+    html.match(/<table[^>]*id=["']tbl_proY["'][^>]*>([\s\S]*?)<\/table>/i) ||
+    html.match(/<table[^>]*id=["']result_recorded["'][^>]*>([\s\S]*?)<\/table>/i);
+  const tableContent = tableMatch ? tableMatch[1] : html;
 
   // <tr>...</tr> 블록들을 모두 추출
   const trMatches = tableContent.match(/<tr[^>]*>([\s\S]*?)<\/tr>/gi);
@@ -299,8 +313,8 @@ function parseSearchResults(html) {
 
     // 헬퍼 함수: 속성값 추출
     const extractAttr = (tdHtml, attrName) => {
-      const attrMatch = tdHtml.match(new RegExp(`${attrName}="([^"]*)"`, 'i'));
-      return attrMatch ? attrMatch[1] : null;
+      const attrMatch = tdHtml.match(new RegExp(`${attrName}\\s*=\\s*(['"])(.*?)\\1`, 'i'));
+      return attrMatch ? attrMatch[2] : null;
     };
 
     try {
@@ -315,21 +329,21 @@ function parseSearchResults(html) {
         // 이미 절대 경로인 경우가 많지만, 혹시 상대 경로면 변환
         if (imageUrl && !imageUrl.startsWith('http')) {
           imageUrl = imageUrl.startsWith('/')
-            ? `https://www.health.kr${imageUrl}`
-            : `https://www.health.kr/${imageUrl}`;
+            ? `https://health.kr${imageUrl}`
+            : `https://health.kr/${imageUrl}`;
         }
       }
 
       // onclick="show_idfypop('2020071600007')" 에서 yakjungCode 추출 (fallback)
-      const onclickImgMatch = td0.match(/show_idfypop\(['"]([^'"]+)['"]\)/);
+      const onclickImgMatch = td0.match(/show_idfypop\s*\(\s*['"]([^'"]+)['"]\s*\)/i);
       const yakjungCodeFromImg = onclickImgMatch ? onclickImgMatch[1] : '';
 
       // 2. 제품명 및 yakjungCode (td[1])
       const td1 = tdMatches[1];
       const name = extractText(td1);
-      const onclickAttr = extractAttr(td1, 'onclick') || '';
-      const yakjungCodeMatch = onclickAttr.match(/drug_detailHref\('([^']+)'\)/);
-      const yakjungCode = yakjungCodeMatch ? yakjungCodeMatch[1] : yakjungCodeFromImg;
+      const yakjungCode =
+        extractYakjungCodeFromSearchHtml(tr) ||
+        yakjungCodeFromImg;
 
       // 3. 성분/함량 (td[2])
       const td2 = tdMatches[2];
@@ -398,7 +412,7 @@ function parseUpsoName(upsoName) {
  * @returns {Promise<Object>} 약품 상세 정보
  */
 async function fetchMedicineDetailByYakjungCode(yakjungCode) {
-  const url = `https://www.health.kr/searchDrug/ajax/ajax_result_drug2.asp?drug_cd=${yakjungCode}`;
+  const url = `https://health.kr/searchDrug/ajax/ajax_result_drug2.asp?drug_cd=${yakjungCode}`;
 
   const requestOptions = {
     method: "GET",
@@ -454,7 +468,7 @@ async function fetchMedicineDetailByYakjungCode(yakjungCode) {
  * @returns {Promise<string[]>} 유효한 보험코드 배열 (빈 배열 가능)
  */
 async function fetchBohCodesFromYakjung(yakjungCode) {
-  const url = `https://www.health.kr/searchDrug/ajax/ajax_boh_history2.asp?drug_cd=${yakjungCode}`;
+  const url = `https://health.kr/searchDrug/ajax/ajax_boh_history2.asp?drug_cd=${yakjungCode}`;
 
   const requestOptions = {
     method: "GET",
@@ -537,6 +551,7 @@ async function fetchBohCodesFromYakjung(yakjungCode) {
 module.exports = {
   searchMedicineByName,
   parseSearchResults,
+  extractYakjungCodeFromSearchHtml,
   searchMedicineByBohcode,
   fetchMedicineDetailByYakjungCode,
   fetchBohCodesFromYakjung,

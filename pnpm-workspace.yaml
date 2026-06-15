@@ -1,3 +1,10 @@
+allowBuilds:
+  '@firebase/util': true
+  better-sqlite3-multiple-ciphers: true
+  electron: true
+  esbuild: true
+  lzma-native: true
+  protobufjs: true
 onlyBuiltDependencies:
   - better-sqlite3-multiple-ciphers
   - electron
